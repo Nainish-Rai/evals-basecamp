@@ -1,0 +1,14 @@
+{
+  "scenarioId": "scenario-invalid-001",
+  "title": "Invalid scenario fixture",
+  "agentFamily": "workspace",
+  "taskFamily": "risk",
+  "difficulty": "easy",
+  "modalityProfile": ["text"],
+  "caseBrief": "This fixture is intentionally invalid because it omits expected outcomes.",
+  "environmentSeed": "seed-invalid-001",
+  "expectedOutcomes": [],
+  "evaluationRubric": {
+    "requiredChecks": ["something"]
+  }
+}

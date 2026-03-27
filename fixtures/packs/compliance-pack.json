@@ -1,0 +1,34 @@
+{
+  "packId": "pack-compliance-core",
+  "taskFamily": "compliance",
+  "version": "1.0.0",
+  "description": "Core synthetic records for compliance-oriented benchmark cases.",
+  "entries": [
+    {
+      "entryId": "customer-alpha",
+      "title": "Customer Alpha onboarding file",
+      "summary": "Synthetic onboarding material with one missing KYC requirement.",
+      "tags": ["kyc", "missing-document"],
+      "artifacts": [
+        {
+          "artifactId": "artifact-policy-kyc",
+          "kind": "policy",
+          "title": "KYC onboarding policy",
+          "path": "policies/kyc-onboarding-policy.pdf",
+          "mimeType": "application/pdf"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "customer-db",
+          "kind": "database",
+          "description": "Synthetic customer onboarding records"
+        }
+      ],
+      "facts": {
+        "customerRiskTier": "medium",
+        "missingRequirement": "proof_of_address"
+      }
+    }
+  ]
+}

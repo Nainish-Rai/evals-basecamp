@@ -1,0 +1,112 @@
+{
+  "scenarioId": "scenario-compliance-001",
+  "title": "Missing KYC evidence review",
+  "agentFamily": "tool_chain",
+  "taskFamily": "compliance",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "pdf"],
+  "caseBrief": "Review the synthetic case and identify any missing KYC evidence before the case can proceed.",
+  "environmentSeed": "seed-compliance-001",
+  "artifacts": [
+    {
+      "artifactId": "artifact-policy-kyc",
+      "kind": "policy",
+      "title": "KYC onboarding policy",
+      "path": "policies/kyc-onboarding-policy.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "customer-db",
+      "kind": "database",
+      "description": "Synthetic customer onboarding records"
+    }
+  ],
+  "availableTools": ["policy_search", "customer_lookup"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-compliance-core",
+      "packId": "pack-compliance-core",
+      "entryIds": ["customer-alpha"],
+      "purpose": "Mount the shared customer onboarding material for this case.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-compliance-core"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-missing-proof-of-address",
+      "summary": "The customer file is missing valid proof of address.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-policy-kyc"],
+      "requiredPolicyRefs": ["kyc.section.4"]
+    }
+  ],
+  "trajectoryHints": {
+    "expectedNodes": ["planToolWork", "executeTool", "applyFeedback", "composeFinalAnswer"],
+    "expectedTools": ["policy_search", "customer_lookup"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-proof-of-address",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The first draft missed the proof-of-address requirement.",
+      "instructions": [
+        "Re-check the customer onboarding checklist.",
+        "Update the final finding to include the missing document."
+      ],
+      "correctedFacts": [
+        "Proof of address is mandatory for this customer type."
+      ],
+      "priority": "high",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "retain-proof-of-address-rule",
+      "description": "Retain the corrected proof-of-address requirement after reviewer feedback.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["user"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-proof-of-address",
+        "summary": "The reviewer corrected the case with a missing proof-of-address requirement.",
+        "source": "user",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-2"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-feedback-rerun",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-proof-of-address"],
+        "rationale": "The rerun should retrieve and apply the reviewer correction."
+      }
+    ],
+    "expectedMemoryState": "correct_save_correct_needed_retrieval",
+    "expectedMemoryImpact": "positive"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["identify_missing_document", "cite_policy_source"],
+    "optionalChecks": ["recommend_case_escalation"],
+    "prohibitedFailures": ["hallucinated_document"]
+  },
+  "failureModes": ["missed_required_document"]
+}
