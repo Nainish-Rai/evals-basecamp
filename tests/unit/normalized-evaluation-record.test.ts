@@ -179,4 +179,109 @@ describe("normalizedEvaluationRecordSchema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("accepts milestone 6 tool-chain outputs with failed and skipped calls", () => {
+    const result = normalizedEvaluationRecordSchema.safeParse({
+      scenarioId: "scenario-risk-002",
+      runId: "run-risk-002",
+      agentFamily: "tool_chain",
+      taskFamily: "risk",
+      turnId: "turn-1",
+      inputTask: "Score the inherent risk and explain ambiguity-driven retries.",
+      finalResponse: "The customer maps to high inherent risk and the retry came from tool ambiguity.",
+      groundedEvidenceRefs: ["artifact-risk-002-matrix"],
+      toolSpecsCreated: [
+        {
+          toolName: "risk_score_lookup",
+          description: "Retrieves risk evidence needed for the current case.",
+          inputSchemaSummary: "recordId?: string, query?: string",
+          reusedExistingTool: true
+        },
+        {
+          toolName: "glossary_search",
+          description: "Retrieves risk evidence needed for the current case.",
+          inputSchemaSummary: "query: string",
+          reusedExistingTool: true
+        }
+      ],
+      toolCalls: [
+        {
+          callId: "tool-call-1",
+          toolName: "risk_score_lookup",
+          status: "succeeded",
+          latencyMs: 14,
+          inputSummary: "tool=risk_score_lookup",
+          outputSummary: "Mapped the exposure score to the inherent risk matrix.",
+          consumedBudget: 1,
+          contextTokensUsed: 110,
+          inputArtifactRefs: ["artifact-risk-002-matrix"],
+          outputArtifactRefs: ["artifact-risk-002-matrix"]
+        },
+        {
+          callId: "tool-call-2",
+          toolName: "glossary_search",
+          status: "failed",
+          latencyMs: 17,
+          inputSummary: "tool=glossary_search",
+          outputSummary: "Ambiguous tool framing caused a retry without introducing new facts.",
+          consumedBudget: 1,
+          contextTokensUsed: 125,
+          inputArtifactRefs: ["artifact-risk-002-matrix"],
+          outputArtifactRefs: []
+        },
+        {
+          callId: "tool-call-3",
+          toolName: "policy_search",
+          status: "skipped",
+          latencyMs: 0,
+          inputSummary: "tool=policy_search",
+          outputSummary: "Skipped because the tool-call budget was exhausted.",
+          consumedBudget: 0,
+          contextTokensUsed: 0,
+          inputArtifactRefs: ["artifact-risk-002-matrix"],
+          outputArtifactRefs: []
+        }
+      ],
+      budgetLedger: [
+        {
+          budgetName: "tool_calls",
+          scope: "run",
+          allocated: 2,
+          consumed: 2,
+          remaining: 0,
+          unit: "tools",
+          withinBudget: true
+        },
+        {
+          budgetName: "prompt_tokens",
+          scope: "run",
+          allocated: 2000,
+          consumed: 670,
+          remaining: 1330,
+          unit: "tokens",
+          withinBudget: true
+        }
+      ],
+      contextMetrics: {
+        contextWindowSizeTokens: 128000,
+        promptTokens: 670,
+        retrievedContextTokens: 235,
+        relevantContextTokens: 205,
+        unusedContextTokens: 30,
+        workspaceArtifactTokens: 0,
+        subagentCommunicationTokens: 0
+      },
+      memoryImpact: null,
+      tokenUsage: {
+        inputTokens: 905,
+        outputTokens: 92,
+        totalTokens: 997,
+        cachedInputTokens: 0
+      },
+      latencyMs: 88,
+      langfuseTraceId: "trace-risk-002"
+    });
+
+    expect(result.success).toBe(true);
+  });
 });

@@ -65,7 +65,41 @@ describe("HttpScenarioAgent", () => {
                 totalTokens: 500
               },
               metadata: {
-                provider: "vendor"
+                provider: "vendor",
+                graphPath: ["planToolWork", "executeTool", "composeFinalAnswer"],
+                toolSpecsCreated: [
+                  {
+                    toolName: "policy_search",
+                    description: "Searches policy context",
+                    inputSchemaSummary: "query: string",
+                    reusedExistingTool: true
+                  }
+                ],
+                toolCalls: [
+                  {
+                    callId: "tool-call-1",
+                    toolName: "policy_search",
+                    status: "succeeded",
+                    latencyMs: 14,
+                    inputSummary: "query=proof of address",
+                    outputSummary: "Returned the relevant policy section.",
+                    consumedBudget: 1,
+                    contextTokensUsed: 120,
+                    inputArtifactRefs: ["artifact-policy-kyc"],
+                    outputArtifactRefs: ["artifact-policy-kyc"]
+                  }
+                ],
+                budgetLedger: [
+                  {
+                    budgetName: "tool_calls",
+                    scope: "run",
+                    allocated: 3,
+                    consumed: 1,
+                    remaining: 2,
+                    unit: "tools",
+                    withinBudget: true
+                  }
+                ]
               },
               vendorTraceId: "vendor-trace-001"
             }),
@@ -95,6 +129,21 @@ describe("HttpScenarioAgent", () => {
     expect(fetchImplementation).toHaveBeenCalledOnce();
     expect(result.summary).toContain("external vendor");
     expect(result.outputArtifacts).toEqual(["reports/final.md"]);
+    expect(result.metadata).toMatchObject({
+      provider: "vendor",
+      graphPath: ["planToolWork", "executeTool", "composeFinalAnswer"],
+      toolSpecsCreated: [
+        expect.objectContaining({
+          toolName: "policy_search"
+        })
+      ],
+      budgetLedger: [
+        expect.objectContaining({
+          budgetName: "tool_calls",
+          remaining: 2
+        })
+      ]
+    });
     expect(result.vendorTraceId).toBe("vendor-trace-001");
   });
 
