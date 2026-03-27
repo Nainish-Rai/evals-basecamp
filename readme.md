@@ -33,10 +33,12 @@ the repo is early, but it already has the foundation for contributors to build o
 
 - typed scenario, pack, feedback, memory, and metric schemas with `zod`
 - fixture loaders that validate json files and fail fast on bad data
-- sample synthetic fixtures for a compliance scenario and pack
+- synthetic fixtures across compliance, governance, investigation, and risk tasks
 - environment validation for model and tracing configuration
-- a minimal scenario runner scaffold
-- unit tests for core contracts and loaders
+- a scenario runner that can materialize fixtures and execute initial + feedback rerun flows
+- a deterministic tool-chain agent that records graph path, tool specs, tool calls, budget data, memory events, and multimodal normalization metadata
+- an external HTTP agent boundary that preserves the harness-owned trace contract
+- unit and integration tests for contracts, loaders, runner behavior, and tool-chain execution metadata
 - design and implementation docs in `docs/plans`
 
 that matters because it gives contributors a stable place to extend the method instead of debating structure from scratch every time.
@@ -78,27 +80,39 @@ pnpm build
 
 the current environment contract lives in `src/infra/config/env.ts`.
 
-the tracing roadmap now includes an external agent boundary:
+the current runtime now supports two useful execution paths:
+
+- the built-in deterministic tool-chain agent for milestone development and contract testing
+- an external HTTP agent boundary for black-box vendor or company-provided agents
+
+the tracing boundary still works the same way:
 
 - the harness will call a company-provided http agent endpoint during eval runs
 - the harness owns the trace boundary, nested spans, and score writes
 - local runs still work with a no-op tracing path when langfuse is disabled
 - external agents stay black-boxed from the harness point of view
 
+to run a fixture through the current built-in stub path:
+
+```bash
+pnpm run run:scenario:stub
+```
+
 ## project map
 
 ```text
 src/
-  agents/         early agent architecture state and scaffolding
+  agents/         tool-chain agent state and execution logic
   domain/         scenario, feedback, pack, and model schemas
   evals/          normalized evaluation contracts
   infra/          environment configuration
-  runtime/        runner and tracing scaffolding
+  runtime/        materialization, runner, and tracing
 fixtures/
   scenarios/      versioned benchmark scenarios
   packs/          reusable synthetic domain packs
 tests/
-  unit/           schema and loader coverage
+  unit/           schema, loader, http boundary, and agent coverage
+  integration/    runner execution coverage
 docs/plans/       design and implementation direction
 ```
 
@@ -111,9 +125,9 @@ good first contribution paths:
 1. add new scenarios under `fixtures/scenarios`
 2. add reusable packs under `fixtures/packs`
 3. extend the schemas when the current contract is too weak
-4. improve the runner so scenarios can execute end to end
+4. extend the tool-chain and workspace agents against more scenarios
 5. add normalization and metric scoring logic
-6. tighten tests around fixture validation and evaluation behavior
+6. tighten tests around fixture validation, agent metadata, and evaluation behavior
 
 when you contribute, prefer changes that make eval behavior easier to inspect and compare later.
 
@@ -162,13 +176,23 @@ the intended shape is simple:
 - the outbound agent request is wrapped as a traced operation
 - score writes stay in the harness so local and remote agents are evaluated the same way
 
+milestone 6 now adds a local tool-chain agent path inside the repo for contract-first development.
+that agent records:
+
+- graph path and feedback-aware rerun state
+- tool specs and tool creation events
+- tool call ledgers including succeeded, failed, and skipped calls
+- explicit budget accounting
+- memory and multimodal normalization metadata
+
+the intent is to keep milestone 7 normalization simple: the runner should not need to infer these details after the fact if the agent can emit them directly.
+
 ## near-term roadmap
 
 the current plan points toward a few concrete milestones:
 
 - expand synthetic financial compliance coverage across compliance, governance, investigation, and risk tasks
-- materialize scenario environments from reusable packs
-- execute scenarios through shared runner contracts
+- extend the built-in tool-chain agent and add the workspace agent
 - normalize results into one evaluation record
 - score drift, context efficiency, and memory behavior
 - trace runs in a way that supports debugging and regression review
