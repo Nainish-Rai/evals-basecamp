@@ -134,8 +134,10 @@ Each scenario should include:
 - `availableTools`
 - `expectedOutcomes`
 - `trajectoryHints`
+- `driftEvaluationSpec`
 - `feedbackTurns`
 - `memoryTargets`
+- `memoryEvaluationSpec`
 - `evaluationRubric`
 - `failureModes`
 
@@ -147,6 +149,59 @@ Most scenarios should run in two phases:
 2. Feedback-informed execution
 
 This is required to test whether agents genuinely integrate reviewer feedback.
+
+### Drift Evaluation Spec
+
+Drift-sensitive scenarios should explicitly annotate:
+
+- `expectedOutcomeCriteria`
+  - correctness expectations
+  - required findings
+  - required evidence refs
+  - expected escalation or disposition
+- `trajectoryHints`
+  - expected nodes or phases
+  - required steps
+  - critical tools
+  - critical delegations
+- `allowedStepFlexibility`
+  - exact
+  - partial
+  - unordered
+- `driftCriticality`
+  - whether a change is:
+    - quality-preserving variation
+    - trajectory-only drift
+    - outcome-only drift
+    - combined drift
+- `baselineComparisonMode`
+  - absolute rubric scoring
+  - baseline-relative comparison
+
+### Memory Evaluation Spec
+
+Memory-sensitive scenarios should explicitly annotate:
+
+- `memorySources`
+  - `traceToolFile`
+  - `user`
+  - `pattern`
+- `memoryScope`
+  - `step`
+  - `case`
+  - `crossCase`
+- `memoryOpportunities`
+  - what was worth saving
+  - what was not worth saving
+  - what would be needed later
+- `memoryCheckpoints`
+  - where retrieval should or should not happen
+- `expectedMemoryState`
+  - which of the nine memory utilization states should be observed
+- `expectedMemoryImpact`
+  - `positive`
+  - `neutral`
+  - `negative`
 
 ## 8. Financial Compliance Task Families
 
@@ -343,8 +398,31 @@ Recommended fields:
 - `retrievalEvents`
 - `filesystemArtifacts`
 - `subagentEvents`
+- `outcomeScore`
+- `domainCorrectnessScore`
+- `feedbackIntegrationScore`
+- `evidenceGroundingScore`
+- `requiredFindingsCovered`
+- `evidenceRefsUsed`
+- `escalationDecision`
+- `memoryCandidatesObserved`
 - `memoryReads`
 - `memoryWrites`
+- `memoryWritesSkipped`
+- `memorySources`
+- `memoryScopes`
+- `memoryWorthKeeping`
+- `memoryRetrieved`
+- `memoryNeededNow`
+- `memoryUsedInDecision`
+- `memoryImpact`
+- `memoryFailureTypes`
+- `trajectoryObserved`
+- `requiredStepsCovered`
+- `unexpectedSteps`
+- `toolArgumentsObserved`
+- `delegationsObserved`
+- `loopCount`
 - `graphPath`
 - `latencyMs`
 - `tokenUsage`
@@ -389,15 +467,46 @@ Use deterministic checks first and LLM-as-judge second.
 
 #### Response Quality Drift
 
+Response quality drift is evaluated as:
+
+`meaningful degradation or change in final task outcome or execution path for the same benchmark scenario across versions, runs, or checkpoints`
+
+Drift has two primary layers:
+
+- `outcome drift`
+- `trajectory drift`
+
+Outcome drift is the primary signal.
+
 Measure:
 
-- task success
-- semantic stability
-- helpfulness
-- completeness
-- hallucination or unsupported-claim rate
-- policy alignment stability over time
-- trajectory changes where expected paths are known
+- `outcome_score_delta`
+- `domain_correctness_delta`
+- `feedback_integration_delta`
+- `evidence_grounding_delta`
+- `required_findings_recall_delta`
+- `escalation_decision_delta`
+- `task_success_drift`
+
+Methodology:
+
+- score each run against absolute rubrics
+- compare current run to approved baseline run on the same scenario
+- use deterministic checks first
+- use rubric-based judge scoring where exact matching is too brittle
+
+Count as drift when:
+
+- correctness gets worse
+- evidence grounding gets weaker
+- feedback is integrated worse
+- escalation or disposition quality degrades
+- required findings are missed more often
+
+Do not count as drift by itself when:
+
+- wording changes but quality is preserved
+- the path changes but the outcome quality is equivalent
 
 #### Context Efficiency
 
@@ -414,14 +523,60 @@ Measure:
 
 #### Memory Utilization
 
+Memory utilization is evaluated as `agentic write/read discipline`, not conversational recall.
+
+Primary evaluation horizons:
+
+- `within-case memory utilization`
+- `cross-case memory utilization`
+
+Primary memory sources:
+
+- `trace/tool/file memory`
+- `user memory`
+- `pattern memory`
+
+Use the following nine-state matrix as the scoring frame:
+
+1. `correct save, correct abstention from retrieval`
+2. `correct save, irrelevant retrieval`
+3. `missed save, no current harm yet`
+4. `correct save, failed needed retrieval`
+5. `correct save, correct needed retrieval`
+6. `missed save, later needed`
+7. `wasteful save, not used`
+8. `wasteful save, wrongly used`
+9. `correct abstention from saving`
+
 Measure:
 
-- feedback retention
-- corrected-fact retention
-- memory hit rate
-- cross-turn consistency
-- unnecessary re-retrieval after memory writes
-- checkpoint size versus successful task completion
+- `memory_write_precision`
+- `memory_write_recall`
+- `memory_abstention_precision`
+- `memory_read_precision`
+- `memory_read_recall`
+- `memory_impact_score`
+- `feedback retention`
+- `corrected-fact retention`
+- `repeat-error reduction across related cases`
+- `unnecessary re-retrieval after memory writes`
+
+Penalty categories:
+
+- `irrelevant_retrieval_penalty`
+- `missed_needed_retrieval_penalty`
+- `missed_needed_write_penalty`
+- `wasteful_save_penalty`
+- `harmful_memory_activation_penalty`
+
+Diagnostic outputs should also include:
+
+- `memory_hit_rate`
+- `artifact_reuse_rate`
+- `feedback_carryforward_rate`
+- `stale_memory_incidents`
+- `negative_transfer_incidents`
+- `memory_update_success_rate`
 
 #### Domain Correctness
 
@@ -443,6 +598,8 @@ Measure:
 
 ## 16. Trajectory Evaluation
 
+Trajectory drift is the secondary drift signal and should be evaluated explicitly, not treated as a side note.
+
 Use AgentEvals where stable trajectories are meaningful:
 
 - tool creation and tool calling flows for tool-chain scenarios
@@ -455,7 +612,28 @@ Evaluation modes can include:
 - subset or superset match
 - rubric-based trajectory judgment
 
-Trajectory scoring should be a supplement, not the only measure of success.
+Trajectory drift measures:
+
+- `required_step_coverage_delta`
+- `tool_selection_precision_delta`
+- `tool_argument_accuracy_delta`
+- `unnecessary_step_delta`
+- `looping_delta`
+- `delegation_alignment_delta`
+- `graph_efficiency_delta`
+
+Count as trajectory drift when:
+
+- required steps disappear
+- the wrong tools or subagents are selected
+- argument binding degrades
+- extra low-value steps appear
+- loops or repeated steps increase
+
+Do not count as trajectory drift by itself when:
+
+- the step order changes but remains valid
+- a shorter path preserves required coverage and outcome quality
 
 ## 17. Drift Detection Strategy
 
@@ -475,6 +653,33 @@ Use three benchmark groups:
 
 - stable, representative scenarios rerun regularly
 - intended for drift monitoring over time
+
+Drift should be computed in this order:
+
+1. `scenario-level absolute scoring`
+2. `scenario-level baseline-relative comparison`
+3. `cohort aggregation`
+4. `drift classification`
+
+Recommended drift classification:
+
+- `quality-preserving variation`
+- `outcome-only drift`
+- `trajectory-only drift`
+- `combined drift`
+
+Recommended weighting:
+
+- `60% outcome drift`
+- `40% trajectory drift`
+
+Aggregate by:
+
+- agent family
+- task family
+- difficulty
+- with feedback versus without feedback
+- scenario cohort
 
 Drift should be analyzed by:
 

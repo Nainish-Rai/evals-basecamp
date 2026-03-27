@@ -62,6 +62,8 @@ Deliverables:
 - synthetic pack schemas
 - feedback event schemas
 - expected outcome schemas
+- drift evaluation spec schemas
+- memory evaluation spec schemas
 - normalized evaluation record schema
 - metric result schema
 
@@ -69,6 +71,21 @@ Tasks:
 
 - create `zod` schemas under `src/evals/contracts` and `src/domain/scenarios`
 - create shared TypeScript inferred types
+- create schemas for:
+  - expected outcome criteria
+  - required findings
+  - required evidence refs
+  - expected escalation
+  - required steps
+  - critical tools
+  - critical delegations
+  - allowed step flexibility
+- create schemas for:
+  - memory sources
+  - memory scopes
+  - memory opportunities
+  - memory checkpoints
+  - expected memory states
 - add fixture loaders with validation
 
 Exit criteria:
@@ -100,6 +117,26 @@ Recommended minimum first batch:
 - both agent families represented
 - at least 6 cases with explicit feedback turns
 
+Drift requirement for first batch:
+
+- include at least:
+  - 2 outcome-drift-sensitive cases
+  - 2 trajectory-drift-sensitive cases
+  - 2 cases where variation should be treated as quality-preserving rather than drift
+
+Memory requirement for first batch:
+
+- cover the high-value memory states first:
+  - `4` correct save, failed needed retrieval
+  - `5` correct save, correct needed retrieval
+  - `6` missed save, later needed
+  - `8` wasteful save, wrongly used
+  - `9` correct abstention from saving
+- include at least one scenario for each memory source:
+  - trace/tool/file memory
+  - user memory
+  - pattern memory
+
 Exit criteria:
 
 - all first-batch scenarios validate
@@ -119,6 +156,8 @@ Tasks:
 - implement case loading
 - materialize case artifacts into temp directories
 - materialize synthetic data sources
+- surface annotated memory opportunities and memory checkpoints to the runner
+- surface drift annotations such as required findings, required steps, and critical tools to the runner
 - implement execution mode:
   - initial run
   - feedback-informed rerun
@@ -146,6 +185,13 @@ Tasks:
   - workspace writes
   - subagent calls
   - memory events
+- emit structured memory decision events for:
+  - observed candidate
+  - saved
+  - skipped save
+  - retrieved
+  - skipped retrieval
+  - used in decision
 - add safe fallbacks when Langfuse is disabled locally
 
 Exit criteria:
@@ -193,6 +239,7 @@ Tasks:
 
 - transform raw graph state plus runtime artifacts into canonical evaluation records
 - attach Langfuse trace identifiers
+- classify memory behavior into the annotated memory matrix where possible
 - validate normalized output with `zod`
 
 Exit criteria:
@@ -260,13 +307,51 @@ Deliverables:
 
 Tasks:
 
-- add semantic comparison and judged quality
-- add cross-turn memory retention checks
-- integrate AgentEvals for selected stable scenarios
+- add outcome drift scoring for:
+  - outcome score delta
+  - domain correctness delta
+  - feedback integration delta
+  - evidence grounding delta
+  - required findings recall delta
+  - escalation decision delta
+- add trajectory drift scoring for:
+  - required step coverage delta
+  - tool selection precision delta
+  - tool argument accuracy delta
+  - unnecessary step delta
+  - looping delta
+  - delegation alignment delta
+  - graph efficiency delta
+- classify changes as:
+  - quality-preserving variation
+  - outcome-only drift
+  - trajectory-only drift
+  - combined drift
+- add within-case and cross-case memory scoring
+- score the nine memory utilization states across:
+  - trace/tool/file memory
+  - user memory
+  - pattern memory
+- compute:
+  - memory write precision
+  - memory write recall
+  - memory abstention precision
+  - memory read precision
+  - memory read recall
+  - memory impact score
+- apply penalties for:
+  - irrelevant retrieval
+  - missed needed retrieval
+  - missed needed write
+  - wasteful save
+  - harmful memory activation
+- integrate AgentEvals for selected stable scenarios and trajectory hints
 
 Exit criteria:
 
 - all required score families exist
+- drift reports expose both outcome and trajectory deltas
+- memory utilization reports expose both aggregate score and per-state counts
 - baseline comparison is possible on a benchmark subset
 
 ### Milestone 11: Drift and Regression Pipeline
@@ -286,11 +371,22 @@ Tasks:
   - sentinel set
 - implement baseline snapshots
 - compare current runs against stored baselines
+- aggregate drift by:
+  - agent family
+  - task family
+  - difficulty
+  - feedback-aware versus non-feedback-aware scenarios
+- surface drift classifications:
+  - quality-preserving variation
+  - outcome-only drift
+  - trajectory-only drift
+  - combined drift
 - fail CI on configured regressions for smoke scenarios
 
 Exit criteria:
 
 - repeat benchmark run can report pass or fail against baseline
+- drift output explains whether the regression came from outcome quality or execution path
 
 ### Milestone 12: Reports and Hardening
 
