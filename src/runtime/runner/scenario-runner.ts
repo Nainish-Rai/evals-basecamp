@@ -46,6 +46,7 @@ export type ScenarioExecutionResult = {
 
 export type ScenarioRunResult = {
   scenarioId: string;
+  scenario: Scenario;
   environment: MaterializedCaseEnvironment;
   executions: ScenarioExecutionResult[];
   traceContext: LangfuseTraceContext;
@@ -122,6 +123,7 @@ export class ScenarioRunner {
 
       return {
         scenarioId: request.scenario.scenarioId,
+        scenario: request.scenario,
         environment,
         executions,
         traceContext: trace.finish()
