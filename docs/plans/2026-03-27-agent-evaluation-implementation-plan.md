@@ -1,0 +1,520 @@
+# Agent Evaluation Harness Implementation Plan
+
+Date: 2026-03-27
+Status: Ready for execution
+Depends on: `docs/plans/2026-03-27-agent-evaluation-design.md`
+
+## 1. Notes
+
+- This plan is written directly because the `writing-plans` skill referenced by the brainstorming workflow is not available in this session.
+- The implementation language is TypeScript/JavaScript.
+- Existing unrelated repo changes must remain untouched.
+
+## 2. Delivery Strategy
+
+Build the project in thin vertical slices.
+
+Priority order:
+
+1. contracts
+2. domain fixtures
+3. runner
+4. one agent
+5. normalization
+6. first metrics
+7. second agent
+8. regression and drift
+
+This keeps the benchmark executable early and avoids building a large amount of disconnected infrastructure.
+
+## 3. Milestones
+
+### Milestone 1: Foundation
+
+Deliverables:
+
+- `package.json`
+- `tsconfig.json`
+- `vitest.config.ts`
+- base source tree
+- env loading and config validation
+- formatting and linting scripts
+
+Tasks:
+
+- initialize `pnpm`
+- enable TypeScript strict mode
+- add runtime dependencies
+- add test and dev scripts
+- define environment schema for model providers and Langfuse
+
+Exit criteria:
+
+- `pnpm test` runs
+- `pnpm typecheck` runs
+- repo layout exists
+
+### Milestone 2: Core Contracts
+
+Deliverables:
+
+- scenario schemas
+- synthetic pack schemas
+- feedback event schemas
+- expected outcome schemas
+- normalized evaluation record schema
+- metric result schema
+
+Tasks:
+
+- create `zod` schemas under `src/evals/contracts` and `src/domain/scenarios`
+- create shared TypeScript inferred types
+- add fixture loaders with validation
+
+Exit criteria:
+
+- invalid benchmark files fail fast
+- sample benchmark cases can be loaded in tests
+
+### Milestone 3: Synthetic Financial Compliance Domain
+
+Deliverables:
+
+- first synthetic packs
+- first benchmark scenarios
+
+Tasks:
+
+- create packs for:
+  - compliance
+  - governance
+  - investigation
+  - risk
+- create reviewer feedback fixtures
+- hand-author initial cases before attempting generation at scale
+
+Recommended minimum first batch:
+
+- 12 scenarios total
+- 3 per task family
+- both agent families represented
+- at least 6 cases with explicit feedback turns
+
+Exit criteria:
+
+- all first-batch scenarios validate
+- each task family has at least one runnable case
+
+### Milestone 4: Scenario Runner and Environment Materializer
+
+Deliverables:
+
+- `ScenarioRunner`
+- `CaseEnvironmentMaterializer`
+- `ArtifactRegistry`
+- `FeedbackReplayEngine`
+
+Tasks:
+
+- implement case loading
+- materialize case artifacts into temp directories
+- materialize synthetic data sources
+- implement execution mode:
+  - initial run
+  - feedback-informed rerun
+- capture artifact paths and references
+
+Exit criteria:
+
+- one command runs a single case end to end with a stub agent
+
+### Milestone 5: Langfuse Tracing Layer
+
+Deliverables:
+
+- Langfuse client wrapper
+- trace and span helpers
+- score writing helpers
+
+Tasks:
+
+- wrap benchmark runs in top-level traces
+- add span helpers for:
+  - graph nodes
+  - tools
+  - retrieval
+  - workspace writes
+  - subagent calls
+  - memory events
+- add safe fallbacks when Langfuse is disabled locally
+
+Exit criteria:
+
+- local run produces a trace with nested spans
+- score helpers can attach numeric and categorical scores
+
+### Milestone 6: Tool-Chain Agent
+
+Deliverables:
+
+- tool-chain state model
+- tool creation path
+- tool calling path
+- multimodal normalization path
+- feedback integration path
+
+Tasks:
+
+- define graph state
+- implement explicit budget ledger
+- implement tool spec creation contract
+- normalize multimodal tool outputs before final response generation
+- store tool creation and tool calling events in state
+
+First scenario targets:
+
+- compliance
+- risk
+
+Exit criteria:
+
+- tool-chain agent completes at least 4 benchmark cases
+- normalized record contains tool and budget data
+
+### Milestone 7: Normalization Layer
+
+Deliverables:
+
+- `ToolChainAgentAdapter`
+- `WorkspaceAgentAdapter`
+- normalized record builder
+
+Tasks:
+
+- transform raw graph state plus runtime artifacts into canonical evaluation records
+- attach Langfuse trace identifiers
+- validate normalized output with `zod`
+
+Exit criteria:
+
+- evaluator layer can operate without knowing which agent family produced the record
+
+### Milestone 8: First Metric Engines
+
+Deliverables:
+
+- domain correctness scorer
+- feedback integration scorer
+- context efficiency scorer
+
+Why these first:
+
+- they provide immediate value on financial-compliance tasks
+- they exercise response, feedback, and retrieval behavior early
+
+Tasks:
+
+- deterministic checks for expected findings and artifact coverage
+- feedback delta scoring
+- retrieval and token efficiency scoring
+
+Exit criteria:
+
+- benchmark run produces machine-readable scores
+- at least one score is written back to Langfuse for each run
+
+### Milestone 9: Workspace Agent
+
+Deliverables:
+
+- workspace graph
+- retrieval and filesystem materialization path
+- smaller-model subagent delegation path
+- feedback propagation path
+
+Tasks:
+
+- define supervisor state
+- build synthetic data retrieval tools
+- materialize curated context to filesystem
+- enforce smaller-model subagent configuration
+- capture subagent metadata and outputs
+
+First scenario targets:
+
+- governance
+- investigation
+
+Exit criteria:
+
+- workspace agent completes at least 4 benchmark cases
+- normalized record contains retrieval, file, and subagent data
+
+### Milestone 10: Remaining Metric Engines
+
+Deliverables:
+
+- response quality drift scorer
+- memory utilization scorer
+- trajectory scoring integration
+
+Tasks:
+
+- add semantic comparison and judged quality
+- add cross-turn memory retention checks
+- integrate AgentEvals for selected stable scenarios
+
+Exit criteria:
+
+- all required score families exist
+- baseline comparison is possible on a benchmark subset
+
+### Milestone 11: Drift and Regression Pipeline
+
+Deliverables:
+
+- benchmark grouping
+- baseline storage
+- run comparison reports
+- regression thresholds
+
+Tasks:
+
+- define:
+  - smoke set
+  - release set
+  - sentinel set
+- implement baseline snapshots
+- compare current runs against stored baselines
+- fail CI on configured regressions for smoke scenarios
+
+Exit criteria:
+
+- repeat benchmark run can report pass or fail against baseline
+
+### Milestone 12: Reports and Hardening
+
+Deliverables:
+
+- JSONL and CSV summaries
+- markdown benchmark reports
+- improved failure diagnostics
+
+Tasks:
+
+- export aggregates
+- summarize by task family, difficulty, and agent family
+- link local reports to Langfuse trace IDs
+- improve logging, retries, and error messages
+
+Exit criteria:
+
+- benchmark results are usable without reading raw traces
+
+## 4. Initial File Plan
+
+Suggested first files:
+
+- `package.json`
+- `tsconfig.json`
+- `vitest.config.ts`
+- `src/domain/scenarios/scenario-schema.ts`
+- `src/domain/feedback/feedback-event-schema.ts`
+- `src/evals/contracts/normalized-evaluation-record.ts`
+- `src/runtime/runner/scenario-runner.ts`
+- `src/runtime/tracing/langfuse-tracer.ts`
+- `src/agents/tool-chain/tool-chain-state.ts`
+- `src/agents/tool-chain/create-tool-chain-agent.ts`
+- `tests/unit/scenario-schema.test.ts`
+- `tests/integration/scenario-runner.test.ts`
+
+## 5. Benchmark Authoring Plan
+
+### Phase A: Hand-Authored Cases
+
+Write the first 12 scenarios manually.
+
+Why:
+
+- forces schema quality early
+- avoids hiding design bugs inside generator output
+- gives a reliable seed corpus for later synthetic scaling
+
+### Phase B: Controlled Expansion
+
+Expand to:
+
+- 48 scenarios total
+
+Then expand to the full v1 target:
+
+- 192 scenarios total
+
+Expansion rules:
+
+- no scenario added without explicit rubric and expected outcomes
+- keep roughly half of cases feedback-aware
+- audit for redundancy every expansion cycle
+
+## 6. Testing Plan
+
+### Unit Tests
+
+Focus:
+
+- schemas
+- fixture loaders
+- metric functions
+- normalization helpers
+- drift comparison logic
+
+### Integration Tests
+
+Focus:
+
+- scenario runner
+- Langfuse trace emission
+- tool-chain graph execution
+- workspace graph execution
+- filesystem materialization
+- subagent model enforcement
+
+### Regression Tests
+
+Focus:
+
+- smoke benchmark subset
+- fixed golden scenarios
+- expected score thresholds
+
+## 7. CI and Run Modes
+
+### Local Developer Mode
+
+- run one case
+- run one benchmark group
+- optionally disable Langfuse writes
+
+### CI Smoke Mode
+
+- run smoke benchmark subset
+- low cost
+- deterministic scenarios only
+
+### Release Mode
+
+- run broader benchmark set
+- produce baseline comparison
+
+### Sentinel Mode
+
+- scheduled rerun of stable scenarios
+- detect drift over time
+
+## 8. Risks and Mitigations
+
+### Risk: Too much evaluator instability
+
+Mitigation:
+
+- prefer deterministic scoring first
+- isolate LLM judges behind narrow interfaces
+- keep judge prompts versioned
+
+### Risk: Benchmark scenarios become vague
+
+Mitigation:
+
+- require explicit expected outcomes
+- require explicit failure modes
+- keep reviewer notes for hard cases
+
+### Risk: Workspace agent becomes open-ended too early
+
+Mitigation:
+
+- start with tightly scoped artifact expectations
+- use file layout checks
+- avoid unconstrained delegation in first milestones
+
+### Risk: Tool-chain agent overfits trajectory matching
+
+Mitigation:
+
+- use trajectory checks only on selected scenarios
+- keep final quality and domain correctness as primary signals
+
+## 9. Ownership by Module
+
+### `domain/`
+
+Owner responsibility:
+
+- benchmark semantics
+- scenario validation
+- task family modeling
+
+### `agents/`
+
+Owner responsibility:
+
+- graph behavior
+- model and tool wiring
+- state evolution
+
+### `runtime/`
+
+Owner responsibility:
+
+- execution orchestration
+- environment materialization
+- adapters and artifact handling
+
+### `evals/`
+
+Owner responsibility:
+
+- scoring and drift logic
+- judged evaluation prompts
+- benchmark reporting
+
+### `infra/`
+
+Owner responsibility:
+
+- platform integrations
+- Langfuse wrappers
+- config and logging
+
+## 10. First Week Execution Checklist
+
+1. Initialize the TypeScript project.
+2. Add strict schemas and type tests.
+3. Create the first 12 benchmark scenarios.
+4. Implement the scenario runner with a stub agent.
+5. Add Langfuse tracing wrappers.
+6. Implement the tool-chain agent first.
+7. Build normalized record generation.
+8. Implement domain correctness, feedback integration, and context efficiency scorers.
+9. Implement the workspace agent.
+10. Add smoke benchmark execution and baseline comparison.
+
+## 11. Definition of Done for v1
+
+v1 is complete when:
+
+1. Both agent families can run benchmark scenarios.
+2. All four financial compliance task families are represented.
+3. Feedback-informed reruns are scored.
+4. The required metric families are implemented.
+5. Langfuse traces and scores are written for benchmark runs.
+6. A smoke benchmark can run in CI.
+7. A release benchmark can compare to baseline.
+
+## 12. Immediate Next Step
+
+After this plan is accepted, the next implementation action should be:
+
+1. scaffold the TypeScript project
+2. define benchmark and normalized-record contracts
+3. add the first hand-authored synthetic scenarios
