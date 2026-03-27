@@ -83,6 +83,8 @@ Tasks:
   - allowed step flexibility
 - create schemas for:
   - minimum correctness threshold
+  - system prompt profile
+  - tool surface profile
   - required context
   - optional context
   - distractor context
@@ -90,6 +92,8 @@ Tasks:
   - stale context
   - context scenario types
   - agent rendering notes
+  - multimodal optimization expectations
+  - file read cleanup expectations
 - create schemas for:
   - memory sources
   - memory scopes
@@ -147,6 +151,16 @@ Context requirement for first batch:
   - artifact reuse vs regeneration
   - budget-constrained prioritization
 
+Explicit context-overhead coverage in first batch:
+
+- at least one case should stress:
+  - system prompt overhead
+  - tool definition overhead
+  - duplicate or overlapping tools
+  - multimodal compression
+  - file read cleanup and redundancy
+  - retry attribution from prompt or tool ambiguity
+
 Memory requirement for first batch:
 
 - cover the high-value memory states first:
@@ -184,6 +198,10 @@ Tasks:
   - distractor injection
   - progressive context addition
   - budget-constrained reruns
+- materialize prompt and tool-surface variants needed for:
+  - prompt-overhead analysis
+  - duplicate-tool analysis
+  - tool-definition-size analysis
 - surface annotated memory opportunities and memory checkpoints to the runner
 - surface drift annotations such as required findings, required steps, and critical tools to the runner
 - surface context annotations such as required context, distractors, duplicates, stale context, and scenario type to the runner
@@ -297,12 +315,20 @@ Tasks:
 - add first static context metrics:
   - context precision
   - context recall
+  - system prompt token overhead
+  - tool definition token overhead
   - token-to-value ratio
   - context bloat index
   - duplicate context rate
 - add first structure metrics:
   - context partition efficiency
   - artifact reuse rate
+- add first overhead diagnostics:
+  - active tool surface area
+  - unused tool definition ratio
+  - duplicate tool definition rate
+  - tool overlap rate
+  - file read redundancy rate
 
 Exit criteria:
 
@@ -398,6 +424,14 @@ Tasks:
   - ordering effect score
   - context inheritance redundancy
   - artifact materialization efficiency
+  - multimodal context efficiency
+  - image to text compression quality
+  - table extraction compactness
+  - audio transcript token efficiency
+  - temporary artifact cleanup efficiency
+  - retry due to prompt ambiguity rate
+  - retry due to tool schema ambiguity rate
+  - retry due to missing context rate
 - integrate AgentEvals for selected stable scenarios and trajectory hints
 
 Exit criteria:
@@ -405,6 +439,7 @@ Exit criteria:
 - all required score families exist
 - drift reports expose both outcome and trajectory deltas
 - context efficiency reports expose both static and counterfactual metrics
+- context efficiency reports expose overhead and retry-attribution diagnostics
 - memory utilization reports expose both aggregate score and per-state counts
 - baseline comparison is possible on a benchmark subset
 

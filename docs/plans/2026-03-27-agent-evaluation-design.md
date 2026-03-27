@@ -157,6 +157,12 @@ Context-sensitive scenarios should explicitly annotate:
 
 - `minimumCorrectnessThreshold`
   - the run must meet this bar before earning a strong context-efficiency score
+- `systemPromptProfile`
+  - expected fixed prompt overhead
+  - expected dynamic prompt overhead
+- `toolSurfaceProfile`
+  - expected active tools
+  - expected duplicate or overlapping tool risk
 - `requiredContext`
   - evidence or policy sections that must be available
 - `optionalContext`
@@ -180,6 +186,11 @@ Context-sensitive scenarios should explicitly annotate:
   - budget-constrained prioritization
 - `agentRenderingNotes`
   - how the same context test should be rendered for tool-chain versus workspace agents
+- `multimodalOptimizationExpectations`
+  - where images, tables, audio, or mixed outputs should be compressed or summarized
+- `fileReadCleanupExpectations`
+  - where ephemeral file reads should remain ephemeral
+  - where repeated reads should be avoided
 
 ### Drift Evaluation Spec
 
@@ -429,6 +440,20 @@ Recommended fields:
 - `retrievalEvents`
 - `filesystemArtifacts`
 - `subagentEvents`
+- `systemPromptTokenOverhead`
+- `toolDefinitionTokenOverhead`
+- `activeToolSurfaceArea`
+- `unusedToolDefinitionRatio`
+- `toolOverlapRate`
+- `duplicateToolDefinitionRate`
+- `retryDueToPromptAmbiguity`
+- `retryDueToToolSchemaAmbiguity`
+- `retryDueToMissingContext`
+- `multimodalContextFootprint`
+- `multimodalCompressionEvents`
+- `fileReadEvents`
+- `fileReadRedundancyRate`
+- `temporaryArtifactCleanupEfficiency`
 - `outcomeScore`
 - `domainCorrectnessScore`
 - `feedbackIntegrationScore`
@@ -584,6 +609,13 @@ Measure:
 - `context_precision`
 - `context_recall`
 - `context_relevance_score`
+- `system_prompt_token_overhead`
+- `system_prompt_to_task_value_ratio`
+- `tool_definition_token_overhead`
+- `active_tool_surface_area`
+- `unused_tool_definition_ratio`
+- `tool_overlap_rate`
+- `duplicate_tool_definition_rate`
 - `token_to_value_ratio`
 - `context_bloat_index`
 - `chunk_utilization_rate`
@@ -596,6 +628,16 @@ Measure:
 - `context_partition_efficiency`
 - `context_inheritance_redundancy`
 - `artifact_materialization_efficiency`
+- `multimodal_context_efficiency`
+- `image_to_text_compression_quality`
+- `table_extraction_compactness`
+- `audio_transcript_token_efficiency`
+- `file_read_redundancy_rate`
+- `stale_file_context_retention`
+- `temporary_artifact_cleanup_efficiency`
+- `retry_due_to_prompt_ambiguity_rate`
+- `retry_due_to_tool_schema_ambiguity_rate`
+- `retry_due_to_missing_context_rate`
 - `budget_compliance`
 - `success_under_budget`
 - `budget_efficiency_score`
@@ -605,14 +647,40 @@ Measure:
 
 Primary failure modes:
 
+- `prompt-overhead`
+- `tool-definition-overhead`
 - `under-context`
 - `over-context`
 - `wrong-context`
 - `duplicate-context`
+- `duplicate-tools`
 - `misordered-context`
 - `mispartitioned-context`
 - `stale-context`
 - `unnecessary-context-regeneration`
+
+Context efficiency should be understood as the sum of:
+
+1. `static context overhead`
+   - system prompt size
+   - tool definition size
+   - inherited subagent context size
+   - multimodal payload size
+2. `retrieval and context quality`
+   - precision
+   - recall
+   - freshness
+   - ordering
+   - partitioning
+3. `reuse and cleanup`
+   - artifact reuse
+   - file read cleanup
+   - duplicate chunk avoidance
+   - duplicate tool avoidance
+4. `failure attribution`
+   - prompt vagueness retries
+   - tool schema ambiguity retries
+   - missing-context retries
 
 Recommended weighting after correctness gating:
 
