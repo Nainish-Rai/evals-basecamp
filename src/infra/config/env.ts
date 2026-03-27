@@ -28,6 +28,18 @@ const booleanFlagSchema = z.preprocess((value) => {
   return value;
 }, z.boolean());
 
+const positiveIntegerSchema = z.preprocess((value) => {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return Number(value);
+  }
+
+  return value;
+}, z.number().int().positive());
+
 export const environmentSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -38,6 +50,9 @@ export const environmentSchema = z
     LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
     LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
     LANGFUSE_BASE_URL: z.url().default("https://cloud.langfuse.com"),
+    EXTERNAL_AGENT_ENDPOINT: z.url().optional(),
+    EXTERNAL_AGENT_API_KEY: z.string().min(1).optional(),
+    EXTERNAL_AGENT_TIMEOUT_MS: positiveIntegerSchema.default(30_000),
     DEFAULT_MAIN_MODEL: z.string().min(1).default("openai:gpt-5.4"),
     DEFAULT_MAIN_MODEL_TIER: modelTierSchema.default("large"),
     DEFAULT_SUBAGENT_MODEL: z.string().min(1).default("openai:gpt-5.4-mini"),

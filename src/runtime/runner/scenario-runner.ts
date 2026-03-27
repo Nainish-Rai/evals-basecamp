@@ -4,20 +4,25 @@ import {
   loadScenarioFile,
   loadSyntheticPackDirectory
 } from "../../domain/scenarios/scenario-loader.js";
-import { LangfuseTracer } from "../tracing/langfuse-tracer.js";
+import {
+  LangfuseTracer,
+  type BenchmarkTrace
+} from "../tracing/langfuse-tracer.js";
 import {
   CaseEnvironmentMaterializer,
   type MaterializedCaseEnvironment
 } from "../materialization/case-environment-materializer.js";
 import {
   FeedbackReplayEngine,
-  type ScenarioExecutionMode
+  type ScenarioExecutionMode,
+  type ScenarioExecutionPlan
 } from "./feedback-replay-engine.js";
 import {
   StubScenarioAgent,
   type ScenarioAgent,
   type ScenarioAgentRunResult
 } from "./stub-scenario-agent.js";
+import type { LangfuseTraceContext } from "../tracing/langfuse-tracer.js";
 
 export type ScenarioRunRequest = {
   scenario: Scenario;
@@ -43,7 +48,7 @@ export type ScenarioRunResult = {
   scenarioId: string;
   environment: MaterializedCaseEnvironment;
   executions: ScenarioExecutionResult[];
-  traceContext: ReturnType<LangfuseTracer["createTraceContext"]>;
+  traceContext: LangfuseTraceContext;
 };
 
 export class ScenarioRunner {
@@ -55,46 +60,79 @@ export class ScenarioRunner {
 
   async run(request: ScenarioRunRequest): Promise<ScenarioRunResult> {
     const agent = request.agent ?? new StubScenarioAgent();
-    const syntheticPacksById = new Map(
-      request.syntheticPacks.map((syntheticPack) => [syntheticPack.packId, syntheticPack])
-    );
-    const materializerRequest = {
-      scenario: request.scenario,
-      syntheticPacksById
-    } satisfies Omit<
-      Parameters<CaseEnvironmentMaterializer["materialize"]>[0],
-      "outputRootPath"
-    >;
-    const environment = await this.materializer.materialize(
-      request.outputRootPath
-        ? {
-            ...materializerRequest,
-            outputRootPath: request.outputRootPath
+    const trace = this.tracer.startTrace({
+      name: "scenario_run",
+      metadata: {
+        scenarioId: request.scenario.scenarioId,
+        taskFamily: request.scenario.taskFamily,
+        agentFamily: request.scenario.agentFamily
+      }
+    });
+
+    try {
+      const syntheticPacksById = new Map(
+        request.syntheticPacks.map((syntheticPack) => [
+          syntheticPack.packId,
+          syntheticPack
+        ])
+      );
+      const materializerRequest = {
+        scenario: request.scenario,
+        syntheticPacksById
+      } satisfies Omit<
+        Parameters<CaseEnvironmentMaterializer["materialize"]>[0],
+        "outputRootPath"
+      >;
+      const environment = await trace.runInSpan(
+        {
+          name: "materialize_case_environment",
+          kind: "workspace_write",
+          metadata: {
+            outputRootPath: request.outputRootPath ?? null
           }
-        : materializerRequest
-    );
-    const executionPlans = this.feedbackReplayEngine.planExecutions(request.scenario);
-    const executions: ScenarioExecutionResult[] = [];
-
-    for (const executionPlan of executionPlans) {
-      const agentResult = await agent.run({
+        },
+        async () =>
+          this.materializer.materialize(
+            request.outputRootPath
+              ? {
+                  ...materializerRequest,
+                  outputRootPath: request.outputRootPath
+                }
+              : materializerRequest
+          )
+      );
+      const executionPlans = this.feedbackReplayEngine.planExecutions(request.scenario);
+      const executions = await this.executeScenarioPlans(
+        request.scenario,
         environment,
-        executionPlan
+        executionPlans,
+        agent,
+        trace
+      );
+
+      trace.recordScore({
+        name: "execution_count",
+        value: executions.length,
+        comment: "Number of scenario executions, including feedback reruns."
+      });
+      trace.annotate({
+        workspacePath: environment.workspacePath,
+        registryEntryCount: environment.registryEntries.length
       });
 
-      executions.push({
-        mode: executionPlan.mode,
-        feedbackIds: executionPlan.feedbackTurns.map((feedbackTurn) => feedbackTurn.feedbackId),
-        agentResult
+      return {
+        scenarioId: request.scenario.scenarioId,
+        environment,
+        executions,
+        traceContext: trace.finish()
+      };
+    } catch (error) {
+      trace.recordEvent("scenario_run_failed", {
+        errorMessage: error instanceof Error ? error.message : String(error)
       });
+
+      throw error;
     }
-
-    return {
-      scenarioId: request.scenario.scenarioId,
-      environment,
-      executions,
-      traceContext: this.tracer.createTraceContext()
-    };
   }
 
   async runFromFileSystem(
@@ -121,5 +159,48 @@ export class ScenarioRunner {
           }
         : runRequest
     );
+  }
+
+  private async executeScenarioPlans(
+    scenario: Scenario,
+    environment: MaterializedCaseEnvironment,
+    executionPlans: ScenarioExecutionPlan[],
+    agent: ScenarioAgent,
+    trace: BenchmarkTrace
+  ): Promise<ScenarioExecutionResult[]> {
+    const executions: ScenarioExecutionResult[] = [];
+
+    for (const executionPlan of executionPlans) {
+      const agentResult = await trace.runInSpan(
+        {
+          name: `execution.${executionPlan.mode}`,
+          kind: "runner",
+          metadata: {
+            feedbackCount: executionPlan.feedbackTurns.length
+          }
+        },
+        () =>
+          agent.run({
+            scenario,
+            environment,
+            executionPlan,
+            trace
+          })
+      );
+
+      if (agentResult.vendorTraceId) {
+        trace.attachVendorTraceId(agentResult.vendorTraceId);
+      }
+
+      executions.push({
+        mode: executionPlan.mode,
+        feedbackIds: executionPlan.feedbackTurns.map(
+          (feedbackTurn) => feedbackTurn.feedbackId
+        ),
+        agentResult
+      });
+    }
+
+    return executions;
   }
 }

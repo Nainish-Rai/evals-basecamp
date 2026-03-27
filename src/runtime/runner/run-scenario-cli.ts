@@ -1,8 +1,12 @@
 import path from "node:path";
 
+import { loadEnvironmentConfig } from "../../infra/config/env.js";
+import { HttpScenarioAgent } from "./http-scenario-agent.js";
 import { ScenarioRunner } from "./scenario-runner.js";
+import { LangfuseTracer } from "../tracing/langfuse-tracer.js";
 
 async function main(): Promise<void> {
+  const environmentConfig = loadEnvironmentConfig();
   const rawArguments = process.argv.slice(2);
   const argumentsMap = parseArguments(
     rawArguments[0] === "--" ? rawArguments.slice(1) : rawArguments
@@ -17,7 +21,11 @@ async function main(): Promise<void> {
     );
   }
 
-  const scenarioRunner = new ScenarioRunner();
+  const scenarioRunner = new ScenarioRunner(
+    undefined,
+    undefined,
+    new LangfuseTracer({ enabled: environmentConfig.LANGFUSE_ENABLED })
+  );
   const runRequest = {
     scenarioFilePath: path.resolve(process.cwd(), scenarioFilePath),
     syntheticPackDirectoryPath: path.resolve(
@@ -29,12 +37,27 @@ async function main(): Promise<void> {
     syntheticPackDirectoryPath: string;
   };
   const result = await scenarioRunner.runFromFileSystem(
-    outputRootPath
-      ? {
-          ...runRequest,
-          outputRootPath: path.resolve(process.cwd(), outputRootPath)
-        }
-      : runRequest
+    {
+      ...runRequest,
+      ...(outputRootPath
+        ? {
+            outputRootPath: path.resolve(process.cwd(), outputRootPath)
+          }
+        : {}),
+      ...(environmentConfig.EXTERNAL_AGENT_ENDPOINT
+        ? {
+            agent: new HttpScenarioAgent({
+              endpoint: environmentConfig.EXTERNAL_AGENT_ENDPOINT,
+              ...(environmentConfig.EXTERNAL_AGENT_API_KEY
+                ? {
+                    apiKey: environmentConfig.EXTERNAL_AGENT_API_KEY
+                  }
+                : {}),
+              timeoutMs: environmentConfig.EXTERNAL_AGENT_TIMEOUT_MS
+            })
+          }
+        : {})
+    }
   );
 
   console.log(
@@ -47,7 +70,8 @@ async function main(): Promise<void> {
         feedbackIdsByExecution: result.executions.map(
           (execution) => execution.feedbackIds
         ),
-        registryEntryCount: result.environment.registryEntries.length
+        registryEntryCount: result.environment.registryEntries.length,
+        traceContext: result.traceContext
       },
       null,
       2

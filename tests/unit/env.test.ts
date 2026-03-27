@@ -8,6 +8,7 @@ describe("loadEnvironmentConfig", () => {
 
     expect(config.NODE_ENV).toBe("development");
     expect(config.LANGFUSE_ENABLED).toBe(false);
+    expect(config.EXTERNAL_AGENT_TIMEOUT_MS).toBe(30_000);
     expect(config.DEFAULT_SUBAGENT_MODEL).toContain("mini");
     expect(config.DEFAULT_SUBAGENT_MODEL_TIER).toBe("small");
   });

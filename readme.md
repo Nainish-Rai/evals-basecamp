@@ -78,6 +78,13 @@ pnpm build
 
 the current environment contract lives in `src/infra/config/env.ts`.
 
+the tracing roadmap now includes an external agent boundary:
+
+- the harness will call a company-provided http agent endpoint during eval runs
+- the harness owns the trace boundary, nested spans, and score writes
+- local runs still work with a no-op tracing path when langfuse is disabled
+- external agents stay black-boxed from the harness point of view
+
 ## project map
 
 ```text
@@ -140,6 +147,20 @@ if you want a practical place to start, use this loop:
 6. run `pnpm test`, `pnpm lint`, and `pnpm typecheck`
 
 this repo should reward contributors who make the next scenario, the next contract, or the next evaluation step more legible than the last one.
+
+## tracing and agent boundary
+
+milestone 5 adds the tracing layer around the external http agent contract.
+the runner will trace the benchmark run itself, then record the outbound agent
+call, latency, errors, and harness-side scores without requiring the agent
+implementation to live in this repo.
+
+the intended shape is simple:
+
+- one scenario run maps to one top-level trace
+- each execution mode gets its own child span
+- the outbound agent request is wrapped as a traced operation
+- score writes stay in the harness so local and remote agents are evaluated the same way
 
 ## near-term roadmap
 

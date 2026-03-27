@@ -15,5 +15,7 @@ export * from "./evals/contracts/normalized-evaluation-record.js";
 export * from "./runtime/artifacts/artifact-registry.js";
 export * from "./runtime/materialization/case-environment-materializer.js";
 export * from "./runtime/runner/feedback-replay-engine.js";
+export * from "./runtime/runner/http-scenario-agent.js";
 export * from "./runtime/runner/scenario-runner.js";
 export * from "./runtime/runner/stub-scenario-agent.js";
+export * from "./runtime/tracing/langfuse-tracer.js";

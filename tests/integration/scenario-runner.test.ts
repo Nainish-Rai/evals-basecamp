@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import { LangfuseTracer } from "../../src/runtime/tracing/langfuse-tracer.js";
 import { ScenarioRunner } from "../../src/runtime/runner/scenario-runner.js";
 
 const fixtureRoot = path.resolve(process.cwd(), "fixtures");
@@ -53,5 +54,30 @@ describe("ScenarioRunner", () => {
     ).toBe(true);
     expect(result.traceContext.enabled).toBe(false);
     expect(result.traceContext.traceId).toBeNull();
+  });
+
+  it("captures nested tracing metadata when tracing is enabled", async () => {
+    const outputRootPath = await mkdtemp(
+      path.join(tmpdir(), "evals-basecamp-runner-trace-")
+    );
+    const runner = new ScenarioRunner(
+      undefined,
+      undefined,
+      new LangfuseTracer({ enabled: true })
+    );
+
+    cleanupPaths.push(outputRootPath);
+
+    const result = await runner.runFromFileSystem({
+      scenarioFilePath: path.join(fixtureRoot, "scenarios", "risk-001.json"),
+      syntheticPackDirectoryPath: path.join(fixtureRoot, "packs"),
+      outputRootPath
+    });
+
+    expect(result.traceContext.enabled).toBe(true);
+    expect(result.traceContext.traceId).toContain("trace-");
+    expect(result.traceContext.spanCount).toBe(3);
+    expect(result.traceContext.scoreCount).toBe(1);
+    expect(result.traceContext.status).toBe("completed");
   });
 });
