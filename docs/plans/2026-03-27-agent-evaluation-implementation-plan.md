@@ -63,6 +63,7 @@ Deliverables:
 - feedback event schemas
 - expected outcome schemas
 - drift evaluation spec schemas
+- context evaluation spec schemas
 - memory evaluation spec schemas
 - normalized evaluation record schema
 - metric result schema
@@ -80,6 +81,15 @@ Tasks:
   - critical tools
   - critical delegations
   - allowed step flexibility
+- create schemas for:
+  - minimum correctness threshold
+  - required context
+  - optional context
+  - distractor context
+  - duplicate context
+  - stale context
+  - context scenario types
+  - agent rendering notes
 - create schemas for:
   - memory sources
   - memory scopes
@@ -124,6 +134,19 @@ Drift requirement for first batch:
   - 2 trajectory-drift-sensitive cases
   - 2 cases where variation should be treated as quality-preserving rather than drift
 
+Context requirement for first batch:
+
+- include at least one case each for:
+  - minimal sufficient context
+  - under-context failure
+  - over-context bloat
+  - wrong-context retrieval
+  - duplicate-context waste
+  - mispartitioned context
+  - stale or superseded context
+  - artifact reuse vs regeneration
+  - budget-constrained prioritization
+
 Memory requirement for first batch:
 
 - cover the high-value memory states first:
@@ -156,8 +179,14 @@ Tasks:
 - implement case loading
 - materialize case artifacts into temp directories
 - materialize synthetic data sources
+- materialize context variants needed for:
+  - ablation
+  - distractor injection
+  - progressive context addition
+  - budget-constrained reruns
 - surface annotated memory opportunities and memory checkpoints to the runner
 - surface drift annotations such as required findings, required steps, and critical tools to the runner
+- surface context annotations such as required context, distractors, duplicates, stale context, and scenario type to the runner
 - implement execution mode:
   - initial run
   - feedback-informed rerun
@@ -264,10 +293,21 @@ Tasks:
 - deterministic checks for expected findings and artifact coverage
 - feedback delta scoring
 - retrieval and token efficiency scoring
+- add correctness-gated context scoring
+- add first static context metrics:
+  - context precision
+  - context recall
+  - token-to-value ratio
+  - context bloat index
+  - duplicate context rate
+- add first structure metrics:
+  - context partition efficiency
+  - artifact reuse rate
 
 Exit criteria:
 
 - benchmark run produces machine-readable scores
+- context efficiency score is gated by minimum correctness threshold
 - at least one score is written back to Langfuse for each run
 
 ### Milestone 9: Workspace Agent
@@ -303,6 +343,7 @@ Deliverables:
 
 - response quality drift scorer
 - memory utilization scorer
+- counterfactual context-efficiency scorer
 - trajectory scoring integration
 
 Tasks:
@@ -345,12 +386,25 @@ Tasks:
   - missed needed write
   - wasteful save
   - harmful memory activation
+- add counterfactual context methods:
+  - ablation scoring
+  - progressive context addition
+  - budget-constrained robustness scoring
+- compute advanced context metrics:
+  - minimal sufficient context size
+  - marginal context gain
+  - context saturation point
+  - ablation loss per artifact
+  - ordering effect score
+  - context inheritance redundancy
+  - artifact materialization efficiency
 - integrate AgentEvals for selected stable scenarios and trajectory hints
 
 Exit criteria:
 
 - all required score families exist
 - drift reports expose both outcome and trajectory deltas
+- context efficiency reports expose both static and counterfactual metrics
 - memory utilization reports expose both aggregate score and per-state counts
 - baseline comparison is possible on a benchmark subset
 

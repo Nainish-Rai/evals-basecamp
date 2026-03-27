@@ -135,6 +135,7 @@ Each scenario should include:
 - `expectedOutcomes`
 - `trajectoryHints`
 - `driftEvaluationSpec`
+- `contextEvaluationSpec`
 - `feedbackTurns`
 - `memoryTargets`
 - `memoryEvaluationSpec`
@@ -149,6 +150,36 @@ Most scenarios should run in two phases:
 2. Feedback-informed execution
 
 This is required to test whether agents genuinely integrate reviewer feedback.
+
+### Context Evaluation Spec
+
+Context-sensitive scenarios should explicitly annotate:
+
+- `minimumCorrectnessThreshold`
+  - the run must meet this bar before earning a strong context-efficiency score
+- `requiredContext`
+  - evidence or policy sections that must be available
+- `optionalContext`
+  - useful but non-essential context
+- `distractorContext`
+  - plausible but irrelevant context
+- `duplicateContext`
+  - repeated context elements across chunks, files, or tool outputs
+- `staleContext`
+  - superseded or outdated context that should not dominate
+- `contextScenarioType`
+  - minimal sufficient context
+  - under-context failure
+  - over-context bloat
+  - wrong-context retrieval
+  - duplicate-context waste
+  - misordered context
+  - mispartitioned context
+  - stale or superseded context
+  - artifact reuse vs regeneration
+  - budget-constrained prioritization
+- `agentRenderingNotes`
+  - how the same context test should be rendered for tool-chain versus workspace agents
 
 ### Drift Evaluation Spec
 
@@ -510,16 +541,86 @@ Do not count as drift by itself when:
 
 #### Context Efficiency
 
+Context efficiency is evaluated as:
+
+`how little context the agent needed to achieve an acceptable result, while avoiding irrelevant, duplicated, stale, or badly structured context`
+
+Correctness gating rule:
+
+- a run must clear the `minimumCorrectnessThreshold` before it can receive a strong context-efficiency score
+- a cheap but wrong run is not context-efficient
+
+Primary methodologies:
+
+- `static efficiency scoring`
+- `counterfactual efficiency scoring`
+  - ablation studies
+  - progressive context addition
+- `budget-constrained robustness scoring`
+
+Primary rubric dimensions:
+
+- `context sufficiency`
+- `context precision`
+- `context economy`
+- `context structure`
+- `context reuse`
+
+Scenario matrix:
+
+1. `minimal sufficient context`
+2. `under-context failure`
+3. `over-context bloat`
+4. `wrong-context retrieval`
+5. `duplicate-context waste`
+6. `misordered context`
+7. `mispartitioned context`
+8. `stale or superseded context`
+9. `artifact reuse vs regeneration`
+10. `budget-constrained prioritization`
+
 Measure:
 
-- context precision
-- context recall
-- context bloat index
-- token-to-value ratio
-- tool budget compliance
-- unnecessary retrievals
-- workspace materialization overhead
-- subagent communication overhead
+- `context_precision`
+- `context_recall`
+- `context_relevance_score`
+- `token_to_value_ratio`
+- `context_bloat_index`
+- `chunk_utilization_rate`
+- `minimal_sufficient_context_size`
+- `marginal_context_gain`
+- `context_saturation_point`
+- `critical_context_recall`
+- `ablation_loss_per_artifact`
+- `ordering_effect_score`
+- `context_partition_efficiency`
+- `context_inheritance_redundancy`
+- `artifact_materialization_efficiency`
+- `budget_compliance`
+- `success_under_budget`
+- `budget_efficiency_score`
+- `redundant_retrieval_avoidance`
+- `artifact_reuse_rate`
+- `duplicate_context_rate`
+
+Primary failure modes:
+
+- `under-context`
+- `over-context`
+- `wrong-context`
+- `duplicate-context`
+- `misordered-context`
+- `mispartitioned-context`
+- `stale-context`
+- `unnecessary-context-regeneration`
+
+Recommended weighting after correctness gating:
+
+- `30% context sufficiency`
+- `25% context precision`
+- `20% context economy`
+- `15% context structure`
+- `10% context reuse`
 
 #### Memory Utilization
 
