@@ -81,6 +81,84 @@
         "duplicateSnapshotCount": 3,
         "expectedDecision": "deduplicate_before_scoring"
       }
+    },
+    {
+      "entryId": "vendor-overview-case",
+      "title": "Vendor attestation over-context case",
+      "summary": "Vendor risk package with redundant historical assessments and a current attestation gap.",
+      "tags": ["over-context", "vendor", "attestation"],
+      "artifacts": [
+        {
+          "artifactId": "pack-risk-04-vendor",
+          "kind": "document",
+          "title": "Vendor attestation summary",
+          "path": "packs/risk/vendor-attestation-summary.md",
+          "mimeType": "text/markdown"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-risk-04-db",
+          "kind": "database",
+          "description": "Synthetic vendor assessment history and attestation status"
+        }
+      ],
+      "facts": {
+        "missingCurrentAttestation": true,
+        "redundantHistoricalAssessments": 3
+      }
+    },
+    {
+      "entryId": "multimodal-loss-case",
+      "title": "Operational loss multimodal reconciliation",
+      "summary": "Heatmap and incident table pair for multimodal operational loss review.",
+      "tags": ["multimodal", "feedback", "workspace"],
+      "artifacts": [
+        {
+          "artifactId": "pack-risk-05-heatmap",
+          "kind": "image",
+          "title": "Operational loss heatmap",
+          "path": "packs/risk/operational-loss-heatmap.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-risk-05-api",
+          "kind": "api",
+          "description": "Synthetic operational loss incident table API"
+        }
+      ],
+      "facts": {
+        "dominantLossTheme": "manual_override_failures",
+        "requiresMultimodalSummary": true
+      }
+    },
+    {
+      "entryId": "liquidity-ambiguity-case",
+      "title": "Liquidity ambiguity retry case",
+      "summary": "Liquidity ratio case with overlapping tool surfaces and terminology drift.",
+      "tags": ["ambiguity", "retry", "tool-overlap"],
+      "artifacts": [
+        {
+          "artifactId": "pack-risk-06-liquidity",
+          "kind": "dataset",
+          "title": "Liquidity ambiguity dataset",
+          "path": "packs/risk/liquidity-ambiguity-dataset.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-risk-06-db",
+          "kind": "database",
+          "description": "Synthetic liquidity coverage ratio history with ambiguous labels"
+        }
+      ],
+      "facts": {
+        "policyTerm": "liquidity_coverage_ratio",
+        "legacyLabel": "buffer"
+      }
     }
   ]
 }

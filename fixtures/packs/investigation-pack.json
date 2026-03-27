@@ -81,6 +81,84 @@
         "priorityCaseId": "CASE-77",
         "imageSummarizationNeeded": true
       }
+    },
+    {
+      "entryId": "alert-narrative-refresh",
+      "title": "Alert narrative refresh chronology",
+      "summary": "Updated chronology and archived memo set for stale-context investigation narrative refresh.",
+      "tags": ["stale-context", "feedback", "workspace"],
+      "artifacts": [
+        {
+          "artifactId": "pack-investigation-04-chronology",
+          "kind": "timeline",
+          "title": "Refreshed alert chronology",
+          "path": "packs/investigation/alert-narrative-refresh.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-investigation-04-db",
+          "kind": "database",
+          "description": "Synthetic chronology and memo archive for narrative refresh"
+        }
+      ],
+      "facts": {
+        "staleMemoDate": "2025-11-04",
+        "refreshedChronologyDate": "2026-01-18"
+      }
+    },
+    {
+      "entryId": "partitioned-evidence-case",
+      "title": "Partitioned beneficiary-device evidence",
+      "summary": "Evidence fragments that must be joined to establish the beneficiary-device link.",
+      "tags": ["mispartitioned", "tool-chain", "join-required"],
+      "artifacts": [
+        {
+          "artifactId": "pack-investigation-05-fragments",
+          "kind": "dataset",
+          "title": "Partitioned evidence fragments",
+          "path": "packs/investigation/partitioned-evidence-fragments.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-investigation-05-index",
+          "kind": "search_index",
+          "description": "Synthetic evidence fragment index for beneficiary-device joins"
+        }
+      ],
+      "facts": {
+        "beneficiaryMatchRequiresJoin": true,
+        "deviceEvidenceFragmented": true
+      }
+    },
+    {
+      "entryId": "budget-triage-case",
+      "title": "Budget-constrained payment triage",
+      "summary": "Payment evidence prioritization case for constrained read budgets.",
+      "tags": ["budget", "feedback", "workspace"],
+      "artifacts": [
+        {
+          "artifactId": "pack-investigation-06-triage",
+          "kind": "document",
+          "title": "Budget triage matrix",
+          "path": "packs/investigation/budget-triage-matrix.md",
+          "mimeType": "text/markdown"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-investigation-06-api",
+          "kind": "api",
+          "description": "Synthetic payment triage case API"
+        }
+      ],
+      "facts": {
+        "wireTransferPriorityThreshold": 50000,
+        "deferLowValueArtifacts": true
+      }
     }
   ]
 }

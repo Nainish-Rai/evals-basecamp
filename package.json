@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint src tests vitest.config.ts",
+    "run:scenario:stub": "pnpm build && node dist/src/runtime/runner/run-scenario-cli.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit --project tsconfig.json"

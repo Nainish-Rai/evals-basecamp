@@ -81,6 +81,32 @@
         "reportingCadence": "quarterly",
         "allowedSummaryVariation": true
       }
+    },
+    {
+      "entryId": "policy-refresh-archive",
+      "title": "Policy refresh archive workpaper",
+      "summary": "Approved archive artifact for a policy refresh case where reuse is better than regeneration.",
+      "tags": ["artifact-reuse", "archive", "workspace"],
+      "artifacts": [
+        {
+          "artifactId": "pack-governance-04-archive",
+          "kind": "document",
+          "title": "Approved policy refresh summary",
+          "path": "packs/governance/policy-refresh-archive-summary.md",
+          "mimeType": "text/markdown"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-governance-04-archive-files",
+          "kind": "filesystem",
+          "description": "Synthetic archive of prior approved policy refresh workpapers"
+        }
+      ],
+      "facts": {
+        "reuseRecommended": true,
+        "underlyingEvidenceChanged": false
+      }
     }
   ]
 }

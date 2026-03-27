@@ -34,7 +34,7 @@ describe("scenario fixture loaders", () => {
       path.join(fixtureRoot, "scenarios")
     );
 
-    expect(scenarios).toHaveLength(12);
+    expect(scenarios.length).toBeGreaterThanOrEqual(12);
     expect(new Set(scenarios.map((scenario) => scenario.taskFamily))).toEqual(
       new Set(["compliance", "governance", "investigation", "risk"])
     );

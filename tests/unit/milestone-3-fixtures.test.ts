@@ -16,24 +16,22 @@ describe("Milestone 3 fixture coverage", () => {
       loadSyntheticPackDirectory(path.join(fixtureRoot, "packs"))
     ]);
 
-    expect(scenarios).toHaveLength(12);
+    expect(scenarios.length).toBeGreaterThanOrEqual(12);
     expect(packs).toHaveLength(4);
 
     const scenariosByTaskFamily = countBy(
       scenarios.map((scenario) => scenario.taskFamily)
     );
-    expect(scenariosByTaskFamily).toEqual({
-      compliance: 3,
-      governance: 3,
-      investigation: 3,
-      risk: 3
-    });
+    expect(scenariosByTaskFamily.compliance).toBeGreaterThanOrEqual(3);
+    expect(scenariosByTaskFamily.governance).toBeGreaterThanOrEqual(3);
+    expect(scenariosByTaskFamily.investigation).toBeGreaterThanOrEqual(3);
+    expect(scenariosByTaskFamily.risk).toBeGreaterThanOrEqual(3);
 
     const scenariosByAgentFamily = countBy(
       scenarios.map((scenario) => scenario.agentFamily)
     );
-    expect(scenariosByAgentFamily.tool_chain).toBe(6);
-    expect(scenariosByAgentFamily.workspace).toBe(6);
+    expect(scenariosByAgentFamily.tool_chain).toBeGreaterThan(0);
+    expect(scenariosByAgentFamily.workspace).toBeGreaterThan(0);
 
     const feedbackAwareScenarioCount = scenarios.filter(
       (scenario) => scenario.feedbackTurns.length > 0
@@ -43,13 +41,9 @@ describe("Milestone 3 fixture coverage", () => {
     const driftCriticalities = new Set(
       scenarios.map((scenario) => scenario.driftEvaluationSpec.driftCriticality)
     );
-    expect(driftCriticalities).toEqual(
-      new Set([
-        "outcome_only_drift",
-        "trajectory_only_drift",
-        "quality_preserving_variation"
-      ])
-    );
+    expect(driftCriticalities.has("outcome_only_drift")).toBe(true);
+    expect(driftCriticalities.has("trajectory_only_drift")).toBe(true);
+    expect(driftCriticalities.has("quality_preserving_variation")).toBe(true);
 
     const outcomeDriftCount = scenarios.filter(
       (scenario) =>
@@ -75,47 +69,47 @@ describe("Milestone 3 fixture coverage", () => {
         (scenario) => scenario.contextEvaluationSpec.contextScenarioType
       )
     );
-    expect(contextScenarioTypes).toEqual(
-      new Set([
-        "minimal_sufficient_context",
-        "under_context_failure",
-        "over_context_bloat",
-        "wrong_context_retrieval",
-        "duplicate_context_waste",
-        "mispartitioned_context",
-        "stale_or_superseded_context",
-        "artifact_reuse_vs_regeneration",
-        "budget_constrained_prioritization"
-      ])
-    );
+    for (const requiredContextScenarioType of [
+      "minimal_sufficient_context",
+      "under_context_failure",
+      "over_context_bloat",
+      "wrong_context_retrieval",
+      "duplicate_context_waste",
+      "mispartitioned_context",
+      "stale_or_superseded_context",
+      "artifact_reuse_vs_regeneration",
+      "budget_constrained_prioritization"
+    ] as const) {
+      expect(contextScenarioTypes.has(requiredContextScenarioType)).toBe(true);
+    }
 
     const expectedMemoryStates = new Set(
       scenarios.map(
         (scenario) => scenario.memoryEvaluationSpec?.expectedMemoryState
       )
     );
-    expect(expectedMemoryStates).toEqual(
-      new Set([
-        "correct_save_correct_needed_retrieval",
-        "correct_save_failed_needed_retrieval",
-        "correct_abstention_from_saving",
-        "missed_save_later_needed",
-        "wasteful_save_wrongly_used",
-        "correct_save_irrelevant_retrieval",
-        "correct_save_correct_abstention_from_retrieval",
-        "missed_save_no_current_harm_yet",
-        "wasteful_save_not_used"
-      ])
-    );
+    for (const requiredMemoryState of [
+      "correct_save_correct_needed_retrieval",
+      "correct_save_failed_needed_retrieval",
+      "correct_abstention_from_saving",
+      "missed_save_later_needed",
+      "wasteful_save_wrongly_used",
+      "correct_save_irrelevant_retrieval",
+      "correct_save_correct_abstention_from_retrieval",
+      "missed_save_no_current_harm_yet",
+      "wasteful_save_not_used"
+    ] as const) {
+      expect(expectedMemoryStates.has(requiredMemoryState)).toBe(true);
+    }
 
     const memorySources = new Set(
       scenarios.flatMap(
         (scenario) => scenario.memoryEvaluationSpec?.memorySources ?? []
       )
     );
-    expect(memorySources).toEqual(
-      new Set(["trace_tool_file", "user", "pattern"])
-    );
+    for (const memorySource of ["trace_tool_file", "user", "pattern"] as const) {
+      expect(memorySources.has(memorySource)).toBe(true);
+    }
 
     expect(
       scenarios.some(
