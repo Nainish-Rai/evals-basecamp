@@ -1,0 +1,157 @@
+{
+  "scenarioId": "scenario-investigation-001",
+  "title": "Stale memo narrative correction",
+  "agentFamily": "workspace",
+  "taskFamily": "investigation",
+  "difficulty": "hard",
+  "modalityProfile": ["text", "pdf"],
+  "caseBrief": "Refresh the investigation narrative and determine whether the old memo should still shape the conclusion.",
+  "environmentSeed": "seed-investigation-001",
+  "artifacts": [
+    {
+      "artifactId": "artifact-investigation-narrative-standard",
+      "kind": "policy",
+      "title": "Investigation narrative standard",
+      "path": "policies/investigation-narrative-standard.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "investigation-alert-db",
+      "kind": "database",
+      "description": "Synthetic investigation alert event store"
+    }
+  ],
+  "availableTools": ["workspace_search", "timeline_reader", "memo_lookup"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-investigation-alert",
+      "packId": "pack-investigation-core",
+      "entryIds": ["alert-narrative-refresh"],
+      "purpose": "Mount the current chronology and archived memo for narrative refresh.",
+      "materializationTargets": ["artifacts", "workspace"],
+      "destinationPath": "workspace/reference/investigation-alert"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-investigation-alert"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-current-evidence-supersedes-stale-memo",
+      "summary": "The refreshed chronology supersedes the stale memo and changes the investigation narrative.",
+      "severity": "critical",
+      "requiredEvidenceRefs": ["artifact-investigation-narrative-standard"],
+      "requiredPolicyRefs": ["investigation.section.6"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.85,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 240,
+      "dynamicTokenOverhead": 100
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["workspace_search", "timeline_reader", "memo_lookup"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 30,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "Refreshed chronology dated 2026-01-18",
+      "Investigation narrative standard section 6"
+    ],
+    "optionalContext": ["Analyst handoff note"],
+    "distractorContext": ["Archived memo dated 2025-11-04"],
+    "duplicateContext": [],
+    "staleContext": ["Archived memo dated 2025-11-04"],
+    "contextScenarioType": "stale_or_superseded_context",
+    "agentRenderingNotes": {
+      "toolChain": "A tool-chain variant would read the chronology first, then use the memo only as historical context.",
+      "workspace": "The workspace agent should isolate superseded evidence in an archive folder so it cannot dominate the narrative."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "The answer must update the narrative in light of the refreshed chronology and explicitly demote the stale memo.",
+      "requiredFindings": ["finding-current-evidence-supersedes-stale-memo"],
+      "requiredEvidenceRefs": ["artifact-investigation-narrative-standard"],
+      "expectedDisposition": "Re-open the narrative and file an amended investigation summary."
+    },
+    "trajectory": {
+      "requiredSteps": ["compare_new_chronology_to_old_memo", "apply_feedback_correction"],
+      "criticalTools": ["workspace_search", "timeline_reader"],
+      "criticalDelegations": ["subagent_narrative_diff"]
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "combined_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": ["curateWorkspace", "delegateSubagent", "applyFeedback", "composeFinalAnswer"],
+    "requiredSteps": ["compare_new_chronology_to_old_memo", "apply_feedback_correction"],
+    "expectedTools": ["workspace_search", "timeline_reader", "memo_lookup"],
+    "criticalDelegations": ["subagent_narrative_diff"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-investigation-stale-memo",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The draft narrative still sounds anchored on the stale memo.",
+      "instructions": [
+        "Rewrite the narrative so the refreshed chronology controls the conclusion.",
+        "Call out that the November memo is superseded."
+      ],
+      "correctedFacts": ["The 2026 chronology changes the conclusion and supersedes the 2025 memo."],
+      "priority": "high",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "retain-chronology-overrides-memo",
+      "description": "Retain that the refreshed chronology overrides the stale memo after feedback.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["user"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-chronology-overrides-memo",
+        "summary": "The refreshed chronology should control the investigation narrative over the stale memo.",
+        "source": "user",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-2"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-investigation-rerun",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-chronology-overrides-memo"],
+        "rationale": "The rerun must retrieve the reviewer correction and apply it to the narrative."
+      }
+    ],
+    "expectedMemoryState": "correct_save_correct_needed_retrieval",
+    "expectedMemoryImpact": "positive"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["demote_stale_memo", "promote_refreshed_chronology"],
+    "optionalChecks": ["recommend_amended_case_note"],
+    "prohibitedFailures": ["preserve_original_stale_conclusion"]
+  },
+  "failureModes": ["stale_context_anchor", "feedback_not_integrated"]
+}

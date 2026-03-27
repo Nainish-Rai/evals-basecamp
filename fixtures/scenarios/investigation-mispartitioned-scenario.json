@@ -1,0 +1,144 @@
+{
+  "scenarioId": "scenario-investigation-002",
+  "title": "Partitioned evidence join review",
+  "agentFamily": "tool_chain",
+  "taskFamily": "investigation",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "table"],
+  "caseBrief": "Join the fragmented evidence set and decide whether the beneficiary-device match is strong enough to support escalation.",
+  "environmentSeed": "seed-investigation-002",
+  "artifacts": [
+    {
+      "artifactId": "artifact-investigation-escalation-policy",
+      "kind": "policy",
+      "title": "Investigation escalation policy",
+      "path": "policies/investigation-escalation-policy.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "investigation-search",
+      "kind": "search_index",
+      "description": "Synthetic search index over partitioned evidence fragments"
+    }
+  ],
+  "availableTools": ["fragment_search", "chat_log_reader", "ledger_joiner"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-investigation-partitioned",
+      "packId": "pack-investigation-core",
+      "entryIds": ["partitioned-evidence-case"],
+      "purpose": "Load partitioned evidence fragments for tool-based joining.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference/investigation-partitioned"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-investigation-partitioned"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-beneficiary-device-match-supported",
+      "summary": "The escalation is supported only after the beneficiary identifier is joined to the device evidence across fragments.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-investigation-escalation-policy"],
+      "requiredPolicyRefs": ["investigation.section.4.4"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.8,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 170,
+      "dynamicTokenOverhead": 80
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["fragment_search", "chat_log_reader", "ledger_joiner"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 40,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "Beneficiary identifier fragment",
+      "Device evidence fragment",
+      "Escalation policy section 4.4"
+    ],
+    "optionalContext": ["Analyst notes about prior similar cases"],
+    "distractorContext": ["Unrelated call-log excerpt"],
+    "duplicateContext": [],
+    "staleContext": [],
+    "contextScenarioType": "mispartitioned_context",
+    "agentRenderingNotes": {
+      "toolChain": "The agent must deliberately join separate fragments instead of treating the first hit as sufficient.",
+      "workspace": "A workspace variant would materialize linked fragment summaries into a single joined file."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "The answer must show that the escalation depends on correctly joining evidence across fragments.",
+      "requiredFindings": ["finding-beneficiary-device-match-supported"],
+      "requiredEvidenceRefs": ["artifact-investigation-escalation-policy"],
+      "expectedDisposition": "Escalate after joining the beneficiary and device evidence."
+    },
+    "trajectory": {
+      "requiredSteps": ["search_fragments", "join_evidence", "evaluate_escalation_threshold"],
+      "criticalTools": ["fragment_search", "ledger_joiner"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "exact",
+    "driftCriticality": "trajectory_only_drift",
+    "baselineComparisonMode": "absolute_rubric_scoring"
+  },
+  "trajectoryHints": {
+    "expectedNodes": ["planToolWork", "executeTool", "composeFinalAnswer"],
+    "requiredSteps": ["search_fragments", "join_evidence", "evaluate_escalation_threshold"],
+    "expectedTools": ["fragment_search", "chat_log_reader", "ledger_joiner"],
+    "criticalDelegations": [],
+    "allowAdditionalSteps": false
+  },
+  "feedbackTurns": [],
+  "memoryTargets": [
+    {
+      "targetId": "retain-joined-fragment-map",
+      "description": "The joined fragment map would help later, but this scenario models a failed retrieval from a correct save.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["trace_tool_file"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-joined-fragment-map",
+        "summary": "The joined fragment map linking beneficiary identifiers to device evidence should be saved.",
+        "source": "trace_tool_file",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-partitioned-join",
+        "turnId": "turn-1",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-joined-fragment-map"],
+        "rationale": "The later step should retrieve the joined fragment map, but the modeled outcome misses it."
+      }
+    ],
+    "expectedMemoryState": "correct_save_failed_needed_retrieval",
+    "expectedMemoryImpact": "negative"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["join_fragmented_evidence", "justify_escalation_threshold"],
+    "optionalChecks": ["explain_fragment_join_strategy"],
+    "prohibitedFailures": ["escalate_without_joining_fragments"]
+  },
+  "failureModes": ["mispartitioned_context", "missed_needed_retrieval"]
+}

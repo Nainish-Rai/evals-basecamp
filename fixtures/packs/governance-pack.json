@@ -1,0 +1,86 @@
+{
+  "packId": "pack-governance-core-v1",
+  "taskFamily": "governance",
+  "version": "1.0.0",
+  "description": "Synthetic governance records for policy mapping, control ownership, and obligation summarization cases.",
+  "entries": [
+    {
+      "entryId": "governance-entry-01",
+      "title": "Policy-to-control mapping gap",
+      "summary": "Governance mapping exercise with a critical ownership note surfaced only after reviewer feedback.",
+      "tags": ["controls", "feedback", "wrong-context"],
+      "artifacts": [
+        {
+          "artifactId": "pack-governance-01-policy",
+          "kind": "policy",
+          "title": "Vendor due diligence policy",
+          "path": "packs/governance/vendor-due-diligence-policy.pdf",
+          "mimeType": "application/pdf"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-governance-01-db",
+          "kind": "database",
+          "description": "Synthetic control inventory with ownership metadata"
+        }
+      ],
+      "facts": {
+        "missingOwner": "third_party_risk_committee",
+        "controlGap": "annual_review_evidence"
+      }
+    },
+    {
+      "entryId": "governance-entry-02",
+      "title": "Duplicate control library review",
+      "summary": "Case designed to detect duplicate or overlapping tools against repeated control text.",
+      "tags": ["duplicate-tools", "duplicate-context", "outcome-drift"],
+      "artifacts": [
+        {
+          "artifactId": "pack-governance-02-library",
+          "kind": "document",
+          "title": "Control library excerpts",
+          "path": "packs/governance/control-library-excerpts.md",
+          "mimeType": "text/markdown"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-governance-02-files",
+          "kind": "filesystem",
+          "description": "Synthetic folder with overlapping control descriptions"
+        }
+      ],
+      "facts": {
+        "duplicateControlIds": ["CTRL-17", "CTRL-17A"],
+        "obligation": "quarterly_certification"
+      }
+    },
+    {
+      "entryId": "governance-entry-03",
+      "title": "Board reporting obligation summary",
+      "summary": "Obligation summarization case with evidence split across multiple files that can still allow valid variation.",
+      "tags": ["mispartitioned", "quality-preserving", "pattern-memory"],
+      "artifacts": [
+        {
+          "artifactId": "pack-governance-03-memo",
+          "kind": "document",
+          "title": "Board reporting memo fragments",
+          "path": "packs/governance/board-reporting-memo-fragments.md",
+          "mimeType": "text/markdown"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-governance-03-index",
+          "kind": "search_index",
+          "description": "Synthetic governance memo fragment index"
+        }
+      ],
+      "facts": {
+        "reportingCadence": "quarterly",
+        "allowedSummaryVariation": true
+      }
+    }
+  ]
+}

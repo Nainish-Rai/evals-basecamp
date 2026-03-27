@@ -1,0 +1,157 @@
+{
+  "scenarioId": "scenario-investigation-003",
+  "title": "Budget-constrained payment triage",
+  "agentFamily": "workspace",
+  "taskFamily": "investigation",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "table"],
+  "caseBrief": "Prioritize the evidence reads under a tight budget and explain which payment artifacts must be reviewed first.",
+  "environmentSeed": "seed-investigation-003",
+  "artifacts": [
+    {
+      "artifactId": "artifact-investigation-budget-policy",
+      "kind": "policy",
+      "title": "Budget-aware investigation triage policy",
+      "path": "policies/budget-aware-investigation-triage.md",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "payment-case-api",
+      "kind": "api",
+      "description": "Synthetic case API for payment-triage evidence"
+    }
+  ],
+  "availableTools": ["workspace_search", "triage_matrix_reader", "case_priority_ranker"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-investigation-budget",
+      "packId": "pack-investigation-core",
+      "entryIds": ["budget-triage-case"],
+      "purpose": "Mount the triage matrix and candidate artifact list for budgeted prioritization.",
+      "materializationTargets": ["artifacts", "workspace"],
+      "destinationPath": "workspace/reference/investigation-budget"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-investigation-budget"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-budget-priority-wire-transfers-first",
+      "summary": "The agent should prioritize the highest-value wire-transfer evidence first under the tight read budget.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-investigation-budget-policy"],
+      "requiredPolicyRefs": ["triage.section.2"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.8,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 200,
+      "dynamicTokenOverhead": 70
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["workspace_search", "triage_matrix_reader", "case_priority_ranker"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 35,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "Budget-aware triage policy section 2",
+      "Priority threshold for wire transfers over 50000"
+    ],
+    "optionalContext": ["Secondary customer profile notes"],
+    "distractorContext": ["Low-value domestic transfer bundle"],
+    "duplicateContext": [],
+    "staleContext": [],
+    "contextScenarioType": "budget_constrained_prioritization",
+    "agentRenderingNotes": {
+      "toolChain": "A tool-chain agent should spend tool budget on the triage matrix before reading low-value artifacts.",
+      "workspace": "The workspace agent should curate a reduced working set rather than mounting every candidate artifact."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Different explanations are acceptable so long as the prioritized evidence order remains correct.",
+      "requiredFindings": ["finding-budget-priority-wire-transfers-first"],
+      "requiredEvidenceRefs": ["artifact-investigation-budget-policy"],
+      "expectedDisposition": "Review the highest-value wire-transfer evidence first and defer low-value artifacts."
+    },
+    "trajectory": {
+      "requiredSteps": ["rank_candidate_artifacts", "select_budget_fit_set", "apply_feedback_correction"],
+      "criticalTools": ["triage_matrix_reader", "case_priority_ranker"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "unordered",
+    "driftCriticality": "quality_preserving_variation",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": ["curateWorkspace", "applyFeedback", "composeFinalAnswer"],
+    "requiredSteps": ["rank_candidate_artifacts", "select_budget_fit_set", "apply_feedback_correction"],
+    "expectedTools": ["workspace_search", "triage_matrix_reader", "case_priority_ranker"],
+    "criticalDelegations": [],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-investigation-budget",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The first pass spent too much attention on low-value artifacts.",
+      "instructions": [
+        "Re-prioritize the evidence list around the highest-value wire transfers.",
+        "Explain what should be deferred."
+      ],
+      "correctedFacts": ["Wire transfers over 50000 are the first-priority reads under the constrained budget."],
+      "priority": "high",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "retain-wire-priority-threshold",
+      "description": "The wire-transfer priority threshold should have been saved for later reuse, but this scenario models a miss.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["pattern"],
+    "memoryScope": "cross_case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-wire-priority-threshold",
+        "summary": "Wire transfers over 50000 should be prioritized first in budget-constrained investigations.",
+        "source": "pattern",
+        "scope": "cross_case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-1", "turn-2"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-budget-priority",
+        "turnId": "turn-2",
+        "expectedAction": "skip_retrieval",
+        "relatedOpportunityIds": ["memory-opportunity-wire-priority-threshold"],
+        "rationale": "The rerun reflects a missed save of a reusable prioritization pattern."
+      }
+    ],
+    "expectedMemoryState": "missed_save_later_needed",
+    "expectedMemoryImpact": "negative"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["prioritize_high_value_evidence", "defer_low_value_artifacts"],
+    "optionalChecks": ["quantify_budget_tradeoff"],
+    "prohibitedFailures": ["treat_low_value_artifacts_as_first_priority"]
+  },
+  "failureModes": ["budget_misprioritization"]
+}

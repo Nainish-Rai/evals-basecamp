@@ -1,0 +1,164 @@
+{
+  "scenarioId": "scenario-compliance-001",
+  "title": "Missing KYC evidence review",
+  "agentFamily": "tool_chain",
+  "taskFamily": "compliance",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "pdf"],
+  "caseBrief": "Review the onboarding package and identify the missing KYC evidence before the customer can proceed.",
+  "environmentSeed": "seed-compliance-001",
+  "artifacts": [
+    {
+      "artifactId": "artifact-compliance-001-policy",
+      "kind": "policy",
+      "title": "KYC onboarding policy",
+      "path": "policies/kyc-onboarding-policy.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "customer-db",
+      "kind": "database",
+      "description": "Synthetic customer onboarding records"
+    }
+  ],
+  "availableTools": ["policy_search", "customer_lookup"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-compliance-001",
+      "packId": "pack-compliance-core-v2",
+      "entryIds": ["compliance-entry-01"],
+      "purpose": "Mount shared onboarding context for Orchid Holdings.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-compliance-001"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-compliance-001",
+      "summary": "The customer file is missing valid proof of address.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-compliance-001-policy"],
+      "requiredPolicyRefs": ["kyc.section.4"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.8,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 180,
+      "dynamicTokenOverhead": 80
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["policy_search", "customer_lookup"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 120,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": ["kyc.section.4", "customer address checklist"],
+    "optionalContext": ["customer risk tier summary"],
+    "distractorContext": ["industry screening note"],
+    "duplicateContext": ["duplicated checklist extract"],
+    "staleContext": [],
+    "contextScenarioType": "minimal_sufficient_context",
+    "agentRenderingNotes": {
+      "toolChain": "Use direct policy search and customer lookup with minimal prompt overhead.",
+      "workspace": "If rendered for the workspace agent later, curate only the onboarding checklist and policy section into the workspace."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Identify the missing proof-of-address requirement and block progression until it is supplied.",
+      "requiredFindings": ["finding-compliance-001"],
+      "requiredEvidenceRefs": ["artifact-compliance-001-policy"],
+      "expectedDisposition": "hold_for_document_collection"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planToolWork",
+        "executeTool",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["policy_search", "customer_lookup"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "outcome_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planToolWork",
+      "executeTool",
+      "applyFeedback",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["policy_search", "customer_lookup"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-compliance-001",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The first draft missed the proof-of-address requirement.",
+      "instructions": [
+        "Re-check the onboarding checklist.",
+        "Update the final finding to include the missing document."
+      ],
+      "correctedFacts": [
+        "Proof of address is mandatory for this customer type."
+      ],
+      "priority": "high",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-compliance-001",
+      "description": "Retain the corrected proof-of-address requirement after reviewer feedback.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["user"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-compliance-001",
+        "summary": "Store the reviewer correction about proof of address.",
+        "source": "user",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-2"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-compliance-001",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-compliance-001"],
+        "rationale": "The rerun should retrieve and apply the reviewer correction."
+      }
+    ],
+    "expectedMemoryState": "correct_save_correct_needed_retrieval",
+    "expectedMemoryImpact": "positive"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["identify_missing_document", "cite_policy_source"],
+    "optionalChecks": ["recommend_case_escalation"],
+    "prohibitedFailures": ["hallucinated_document"]
+  },
+  "failureModes": ["missed_required_document"]
+}

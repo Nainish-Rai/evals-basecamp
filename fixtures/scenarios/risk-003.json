@@ -1,0 +1,142 @@
+{
+  "scenarioId": "scenario-risk-003",
+  "title": "Duplicate register consolidation without unnecessary memory",
+  "agentFamily": "workspace",
+  "taskFamily": "risk",
+  "difficulty": "easy",
+  "modalityProfile": ["text", "table"],
+  "caseBrief": "Consolidate duplicate risk register snapshots and avoid saving repeated low-value state.",
+  "environmentSeed": "seed-risk-003",
+  "artifacts": [
+    {
+      "artifactId": "artifact-risk-003-registers",
+      "kind": "dataset",
+      "title": "Duplicate risk register snapshots",
+      "path": "risk/duplicate-risk-registers.json",
+      "mimeType": "application/json"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "risk-register-files",
+      "kind": "filesystem",
+      "description": "Synthetic duplicate risk register extracts"
+    }
+  ],
+  "availableTools": ["workspace_write", "register_lookup"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-risk-003",
+      "packId": "pack-risk-core-v1",
+      "entryIds": ["risk-entry-03"],
+      "purpose": "Load the duplicate register snapshots for deduplication.",
+      "materializationTargets": ["artifacts", "data_sources", "workspace"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-risk-003"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-risk-003",
+      "summary": "The duplicate snapshots should be consolidated before scoring and the resulting decision can vary in phrasing without being drift.",
+      "severity": "low",
+      "requiredEvidenceRefs": ["artifact-risk-003-registers"],
+      "requiredPolicyRefs": ["risk.section.3"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.7,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 190,
+      "dynamicTokenOverhead": 85
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["register_lookup", "workspace_write"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "medium",
+      "toolDefinitionTokenOverhead": 90,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": ["deduplicate register snapshots before scoring"],
+    "optionalContext": ["snapshot timestamps"],
+    "distractorContext": ["archived closed-risk note"],
+    "duplicateContext": ["three repeated register snapshots"],
+    "staleContext": [],
+    "contextScenarioType": "duplicate_context_waste",
+    "agentRenderingNotes": {
+      "toolChain": "If adapted later, permit different phrasing as long as deduplication happens before scoring.",
+      "workspace": "Write only the consolidated register into the workspace, not each repeated snapshot."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Deduplicate the snapshots before scoring and allow variation in the wording of the final explanation.",
+      "requiredFindings": ["finding-risk-003"],
+      "requiredEvidenceRefs": ["artifact-risk-003-registers"],
+      "expectedDisposition": "deduplicate_then_score"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planCaseWork",
+        "curateWorkspace",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["register_lookup", "workspace_write"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "unordered",
+    "driftCriticality": "quality_preserving_variation",
+    "baselineComparisonMode": "absolute_rubric_scoring"
+  },
+  "trajectoryHints": {
+    "expectedNodes": ["planCaseWork", "curateWorkspace", "composeFinalAnswer"],
+    "expectedTools": ["register_lookup", "workspace_write"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [],
+  "memoryTargets": [
+    {
+      "targetId": "memory-risk-003",
+      "description": "Repeated register snapshots are not worth saving for reuse.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["pattern"],
+    "memoryScope": "step",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-risk-003",
+        "summary": "The repeated snapshots are obviously duplicated and not worth storing.",
+        "source": "pattern",
+        "scope": "step",
+        "worthKeeping": false,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-risk-003",
+        "turnId": "turn-2",
+        "expectedAction": "skip_retrieval",
+        "relatedOpportunityIds": ["memory-opportunity-risk-003"],
+        "rationale": "A good implementation should abstain from both saving and retrieving the duplicated snapshots."
+      }
+    ],
+    "expectedMemoryState": "correct_abstention_from_saving",
+    "expectedMemoryImpact": "positive"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["deduplicate_registers", "score_after_consolidation"],
+    "optionalChecks": ["mention_snapshot_duplication"],
+    "prohibitedFailures": ["score_each_duplicate_snapshot_separately"]
+  },
+  "failureModes": ["duplicate_context_waste", "wasteful_state_persistence"]
+}

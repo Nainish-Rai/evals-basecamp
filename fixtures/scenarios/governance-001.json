@@ -1,0 +1,176 @@
+{
+  "scenarioId": "scenario-governance-001",
+  "title": "Control ownership gap after reviewer correction",
+  "agentFamily": "workspace",
+  "taskFamily": "governance",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "pdf"],
+  "caseBrief": "Map the policy obligation to the correct control owner and incorporate reviewer feedback that identifies the missing governance committee.",
+  "environmentSeed": "seed-governance-001",
+  "artifacts": [
+    {
+      "artifactId": "artifact-governance-001-policy",
+      "kind": "policy",
+      "title": "Vendor due diligence governance policy",
+      "path": "policies/vendor-due-diligence-governance.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "controls-db",
+      "kind": "database",
+      "description": "Synthetic governance control ownership records"
+    }
+  ],
+  "availableTools": ["workspace_write", "control_lookup", "policy_search"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-governance-001",
+      "packId": "pack-governance-core-v1",
+      "entryIds": ["governance-entry-01"],
+      "purpose": "Load the policy and control ownership gap evidence.",
+      "materializationTargets": ["artifacts", "data_sources", "workspace"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-governance-001"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-governance-001",
+      "summary": "The third-party risk committee is the missing control owner for the annual review obligation.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-governance-001-policy"],
+      "requiredPolicyRefs": ["governance.section.6"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.8,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 220,
+      "dynamicTokenOverhead": 120
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": [
+        "control_lookup",
+        "policy_search",
+        "workspace_write"
+      ],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 160,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "governance.section.6",
+      "annual review control ownership"
+    ],
+    "optionalContext": ["governance summary template"],
+    "distractorContext": ["unrelated procurement control excerpt"],
+    "duplicateContext": [],
+    "staleContext": [],
+    "contextScenarioType": "wrong_context_retrieval",
+    "agentRenderingNotes": {
+      "toolChain": "If adapted later, the tool-chain version should be penalized for selecting the procurement control instead of the governance control.",
+      "workspace": "Curate only the relevant control ownership note into the workspace before delegating."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Name the third-party risk committee as the missing owner and connect it to the annual review control.",
+      "requiredFindings": ["finding-governance-001"],
+      "requiredEvidenceRefs": ["artifact-governance-001-policy"],
+      "expectedDisposition": "assign_control_owner"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planCaseWork",
+        "curateWorkspace",
+        "delegateSubagent",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["control_lookup", "workspace_write"],
+      "criticalDelegations": ["owner-mapping-subagent"]
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "trajectory_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planCaseWork",
+      "curateWorkspace",
+      "delegateSubagent",
+      "applyFeedback",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["control_lookup", "workspace_write"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-governance-001",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The first draft omitted the third-party risk committee owner.",
+      "instructions": [
+        "Update the ownership mapping.",
+        "Tie the owner to the annual review control."
+      ],
+      "correctedFacts": [
+        "The third-party risk committee owns the annual review control."
+      ],
+      "priority": "high",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-governance-001",
+      "description": "Retain the reviewer-corrected owner for the feedback rerun.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["user"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-governance-001",
+        "summary": "Store the reviewer-corrected control owner for the annual review obligation.",
+        "source": "user",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-2"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-governance-001",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-governance-001"],
+        "rationale": "The rerun needs the corrected owner but may miss it if the agent never writes it down."
+      }
+    ],
+    "expectedMemoryState": "missed_save_later_needed",
+    "expectedMemoryImpact": "negative"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["identify_missing_owner", "map_obligation_to_control"],
+    "optionalChecks": ["recommend_governance_follow_up"],
+    "prohibitedFailures": ["assign_wrong_committee"]
+  },
+  "failureModes": [
+    "wrong_context_control_selection",
+    "missed_owner_memory_write"
+  ]
+}

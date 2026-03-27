@@ -8,11 +8,24 @@ export const taskFamilySchema = z.enum([
   "risk"
 ]);
 export const difficultySchema = z.enum(["easy", "medium", "hard"]);
-export const modalitySchema = z.enum(["text", "image", "pdf", "table", "audio"]);
+export const modalitySchema = z.enum([
+  "text",
+  "image",
+  "pdf",
+  "table",
+  "audio"
+]);
 
 export const artifactSchema = z.object({
   artifactId: z.string().min(1),
-  kind: z.enum(["document", "image", "spreadsheet", "timeline", "policy", "dataset"]),
+  kind: z.enum([
+    "document",
+    "image",
+    "spreadsheet",
+    "timeline",
+    "policy",
+    "dataset"
+  ]),
   title: z.string().min(1),
   path: z.string().min(1),
   mimeType: z.string().min(1).optional()
@@ -26,7 +39,9 @@ export const dataSourceSchema = z.object({
 
 export const trajectoryHintSchema = z.object({
   expectedNodes: z.array(z.string().min(1)).default([]),
+  requiredSteps: z.array(z.string().min(1)).default([]),
   expectedTools: z.array(z.string().min(1)).default([]),
+  criticalDelegations: z.array(z.string().min(1)).default([]),
   allowAdditionalSteps: z.boolean().default(true)
 });
 

@@ -1,0 +1,86 @@
+{
+  "packId": "pack-risk-core-v1",
+  "taskFamily": "risk",
+  "version": "1.0.0",
+  "description": "Synthetic risk records for control scoring, residual risk, and ambiguity-sensitive benchmark cases.",
+  "entries": [
+    {
+      "entryId": "risk-entry-01",
+      "title": "Residual risk register update",
+      "summary": "Risk scoring case with clear minimum context and reviewer feedback about residual impact.",
+      "tags": ["minimal-context", "feedback", "risk-register"],
+      "artifacts": [
+        {
+          "artifactId": "pack-risk-01-register",
+          "kind": "spreadsheet",
+          "title": "Residual risk register",
+          "path": "packs/risk/residual-risk-register.xlsx",
+          "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-risk-01-db",
+          "kind": "database",
+          "description": "Synthetic residual risk score history"
+        }
+      ],
+      "facts": {
+        "riskTheme": "vendor_access",
+        "residualRiskBand": "high"
+      }
+    },
+    {
+      "entryId": "risk-entry-02",
+      "title": "Inherent risk scoring challenge",
+      "summary": "Trajectory-sensitive case with prompt and tool ambiguity that can trigger avoidable retries.",
+      "tags": ["trajectory", "ambiguity", "over-context"],
+      "artifacts": [
+        {
+          "artifactId": "pack-risk-02-matrix",
+          "kind": "document",
+          "title": "Risk scoring matrix excerpts",
+          "path": "packs/risk/risk-scoring-matrix.md",
+          "mimeType": "text/markdown"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-risk-02-search",
+          "kind": "search_index",
+          "description": "Synthetic risk scoring glossary and examples"
+        }
+      ],
+      "facts": {
+        "ambiguousMetric": "customer_exposure_score",
+        "retryRisk": "prompt_tool_mismatch"
+      }
+    },
+    {
+      "entryId": "risk-entry-03",
+      "title": "Duplicate register consolidation",
+      "summary": "Duplicate-context risk case where the agent should avoid saving low-value repeated state.",
+      "tags": ["duplicate-context", "quality-preserving", "pattern-memory"],
+      "artifacts": [
+        {
+          "artifactId": "pack-risk-03-registers",
+          "kind": "dataset",
+          "title": "Duplicate risk register extracts",
+          "path": "packs/risk/duplicate-register-extracts.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-risk-03-files",
+          "kind": "filesystem",
+          "description": "Synthetic folder with duplicated risk register snapshots"
+        }
+      ],
+      "facts": {
+        "duplicateSnapshotCount": 3,
+        "expectedDecision": "deduplicate_before_scoring"
+      }
+    }
+  ]
+}

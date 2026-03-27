@@ -1,0 +1,173 @@
+{
+  "scenarioId": "scenario-risk-002",
+  "title": "Inherent risk scoring with prompt and tool ambiguity",
+  "agentFamily": "tool_chain",
+  "taskFamily": "risk",
+  "difficulty": "hard",
+  "modalityProfile": ["text"],
+  "caseBrief": "Score the inherent risk while avoiding avoidable retries caused by prompt and tool ambiguity around the customer exposure metric.",
+  "environmentSeed": "seed-risk-002",
+  "artifacts": [
+    {
+      "artifactId": "artifact-risk-002-matrix",
+      "kind": "document",
+      "title": "Inherent risk scoring matrix",
+      "path": "risk/inherent-risk-scoring-matrix.md",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "risk-glossary-index",
+      "kind": "search_index",
+      "description": "Synthetic glossary for risk scoring dimensions and examples"
+    }
+  ],
+  "availableTools": ["risk_score_lookup", "glossary_search", "policy_search"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-risk-002",
+      "packId": "pack-risk-core-v1",
+      "entryIds": ["risk-entry-02"],
+      "purpose": "Load the scoring matrix and ambiguity-sensitive glossary context.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-risk-002"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-risk-002",
+      "summary": "Customer exposure score should map to high inherent risk and retries should be attributed to ambiguity, not to new facts.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-risk-002-matrix"],
+      "requiredPolicyRefs": ["risk.section.7"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.84,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 280,
+      "dynamicTokenOverhead": 150
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": [
+        "risk_score_lookup",
+        "glossary_search",
+        "policy_search"
+      ],
+      "overlappingToolNames": ["risk_score_lookup", "glossary_search"],
+      "duplicateToolRisk": "high",
+      "toolDefinitionTokenOverhead": 240,
+      "ambiguityHotspots": [
+        "customer exposure score can map to glossary or scoring matrix, causing avoidable retries"
+      ]
+    },
+    "requiredContext": ["customer exposure score definition", "risk.section.7"],
+    "optionalContext": ["example scoring worksheet"],
+    "distractorContext": ["customer onboarding note unrelated to risk scoring"],
+    "duplicateContext": ["score definition repeated in glossary and matrix"],
+    "staleContext": [],
+    "contextScenarioType": "over_context_bloat",
+    "agentRenderingNotes": {
+      "toolChain": "The primary stress here is retry attribution from prompt and tool ambiguity.",
+      "workspace": "If adapted later, resolve the ambiguity once and write a single canonical definition into the workspace."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Map the exposure score to high inherent risk and explain retry attribution correctly.",
+      "requiredFindings": ["finding-risk-002"],
+      "requiredEvidenceRefs": ["artifact-risk-002-matrix"],
+      "expectedDisposition": "classify_high_inherent_risk"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planToolWork",
+        "checkBudget",
+        "selectTool",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["risk_score_lookup", "glossary_search"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "exact",
+    "driftCriticality": "trajectory_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planToolWork",
+      "checkBudget",
+      "selectTool",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["risk_score_lookup", "glossary_search"],
+    "allowAdditionalSteps": false
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-risk-002",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The retry came from ambiguous tool framing, not new evidence.",
+      "instructions": [
+        "Clarify the customer exposure score definition.",
+        "Do not treat the retry as a separate fact source."
+      ],
+      "correctedFacts": [
+        "The glossary and score matrix describe the same metric."
+      ],
+      "priority": "medium",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-risk-002",
+      "description": "Retain the canonical metric definition and reuse it after the retry.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["trace_tool_file"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-risk-002",
+        "summary": "The canonical exposure-score definition appears in the first tool response.",
+        "source": "trace_tool_file",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-risk-002",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-risk-002"],
+        "rationale": "The final answer needs the earlier definition, but a weak implementation may fail to retrieve it after the retry."
+      }
+    ],
+    "expectedMemoryState": "correct_save_failed_needed_retrieval",
+    "expectedMemoryImpact": "negative"
+  },
+  "evaluationRubric": {
+    "requiredChecks": [
+      "score_high_inherent_risk",
+      "attribute_retry_to_ambiguity"
+    ],
+    "optionalChecks": ["note_duplicate_definition_sources"],
+    "prohibitedFailures": ["treat_retry_as_new_evidence"]
+  },
+  "failureModes": ["prompt_tool_ambiguity", "missed_needed_retrieval"]
+}

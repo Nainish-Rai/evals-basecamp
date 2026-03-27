@@ -1,0 +1,143 @@
+{
+  "scenarioId": "scenario-risk-001",
+  "title": "Vendor over-context review",
+  "agentFamily": "tool_chain",
+  "taskFamily": "risk",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "pdf"],
+  "caseBrief": "Review the vendor risk package and determine whether the missing business continuity attestation changes the final rating.",
+  "environmentSeed": "seed-risk-001",
+  "artifacts": [
+    {
+      "artifactId": "artifact-vendor-risk-standard",
+      "kind": "policy",
+      "title": "Vendor risk review standard",
+      "path": "policies/vendor-risk-review-standard.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "vendor-risk-db",
+      "kind": "database",
+      "description": "Synthetic vendor risk assessment history"
+    }
+  ],
+  "availableTools": ["vendor_profile_lookup", "attestation_reader"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-risk-vendor",
+      "packId": "pack-risk-core",
+      "entryIds": ["vendor-overview-case"],
+      "purpose": "Load the vendor assessment history and current attestation gap.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference/risk-vendor"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-risk-vendor"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-missing-business-continuity-attestation",
+      "summary": "The vendor cannot retain a satisfactory rating without the current business continuity attestation.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-vendor-risk-standard"],
+      "requiredPolicyRefs": ["vendor.section.8"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.8,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 200,
+      "dynamicTokenOverhead": 60
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["vendor_profile_lookup", "attestation_reader"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "medium",
+      "toolDefinitionTokenOverhead": 20,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "Current business continuity attestation status",
+      "Vendor risk review standard section 8"
+    ],
+    "optionalContext": ["Prior two vendor assessments"],
+    "distractorContext": ["Historic low-risk questionnaire attachments"],
+    "duplicateContext": ["Repeated copies of prior annual vendor assessments"],
+    "staleContext": ["Closed remediation notes from an earlier cycle"],
+    "contextScenarioType": "over_context_bloat",
+    "agentRenderingNotes": {
+      "toolChain": "The agent should focus on the current attestation gap rather than replaying the full assessment history.",
+      "workspace": "A workspace rendering would prune historic assessments down to a single summary file."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "The answer must identify the current attestation gap even if it summarizes the redundant history differently.",
+      "requiredFindings": ["finding-missing-business-continuity-attestation"],
+      "requiredEvidenceRefs": ["artifact-vendor-risk-standard"],
+      "expectedDisposition": "Lower the rating or hold approval until the current attestation is provided."
+    },
+    "trajectory": {
+      "requiredSteps": ["inspect_current_attestation", "discount_redundant_history"],
+      "criticalTools": ["vendor_profile_lookup", "attestation_reader"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "outcome_only_drift",
+    "baselineComparisonMode": "absolute_rubric_scoring"
+  },
+  "trajectoryHints": {
+    "expectedNodes": ["planToolWork", "executeTool", "composeFinalAnswer"],
+    "requiredSteps": ["inspect_current_attestation", "discount_redundant_history"],
+    "expectedTools": ["vendor_profile_lookup", "attestation_reader"],
+    "criticalDelegations": [],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [],
+  "memoryTargets": [
+    {
+      "targetId": "avoid-saving-redundant-history",
+      "description": "The redundant vendor history should not be persisted as useful memory.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["trace_tool_file"],
+    "memoryScope": "step",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-redundant-vendor-history",
+        "summary": "Historic vendor assessments repeat information that should not be saved as useful memory for this decision.",
+        "source": "trace_tool_file",
+        "scope": "step",
+        "worthKeeping": false,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-vendor-over-context",
+        "turnId": "turn-1",
+        "expectedAction": "skip_retrieval",
+        "relatedOpportunityIds": ["memory-opportunity-redundant-vendor-history"],
+        "rationale": "The agent should abstain from saving redundant assessment history."
+      }
+    ],
+    "expectedMemoryState": "correct_abstention_from_saving",
+    "expectedMemoryImpact": "neutral"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["focus_on_current_attestation_gap", "avoid_history_bloat"],
+    "optionalChecks": ["recommend_vendor_follow_up"],
+    "prohibitedFailures": ["treat_historic_assessments_as_current_evidence"]
+  },
+  "failureModes": ["over_context_bloat"]
+}

@@ -1,0 +1,163 @@
+{
+  "scenarioId": "scenario-investigation-002",
+  "title": "Linked entity analysis should reuse prior summary",
+  "agentFamily": "workspace",
+  "taskFamily": "investigation",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "image"],
+  "caseBrief": "Compare linked-entity evidence, reuse an existing analyst summary where possible, and delegate the chart review to a smaller subagent.",
+  "environmentSeed": "seed-investigation-002",
+  "artifacts": [
+    {
+      "artifactId": "artifact-investigation-002-chart",
+      "kind": "image",
+      "title": "Linked entity chart reference",
+      "path": "investigation/linked-entity-chart.png",
+      "mimeType": "image/png"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "evidence-files",
+      "kind": "filesystem",
+      "description": "Synthetic linked-entity evidence folder with prior analyst notes"
+    }
+  ],
+  "availableTools": ["workspace_write", "image_summary", "evidence_lookup"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-investigation-002",
+      "packId": "pack-investigation-core-v1",
+      "entryIds": ["investigation-entry-02"],
+      "purpose": "Load the link chart and prior analyst summary for reuse testing.",
+      "materializationTargets": ["artifacts", "data_sources", "workspace"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-investigation-002"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-investigation-002",
+      "summary": "The prior linked-entity summary should be reused and extended with the nominee-director relationship.",
+      "severity": "medium",
+      "requiredEvidenceRefs": ["artifact-investigation-002-chart"],
+      "requiredPolicyRefs": ["investigation.section.8"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.79,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 230,
+      "dynamicTokenOverhead": 100
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": [
+        "evidence_lookup",
+        "image_summary",
+        "workspace_write"
+      ],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "medium",
+      "toolDefinitionTokenOverhead": 180,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "existing linked-entity summary",
+      "nominee-director relationship"
+    ],
+    "optionalContext": ["older ownership annotations"],
+    "distractorContext": ["unrelated beneficial owner note"],
+    "duplicateContext": [],
+    "staleContext": [],
+    "contextScenarioType": "artifact_reuse_vs_regeneration",
+    "agentRenderingNotes": {
+      "toolChain": "If adapted later, the tool-chain version should explicitly decide between reusing and regenerating the summary.",
+      "workspace": "Curate the prior analyst summary into the workspace and delegate only the chart review."
+    },
+    "multimodalOptimizationExpectations": [
+      {
+        "modality": "image",
+        "expectation": "Summarize the linked-entity chart before handing it to the main synthesis step."
+      }
+    ],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Reuse the existing summary and extend it with the nominee-director relationship instead of regenerating everything from scratch.",
+      "requiredFindings": ["finding-investigation-002"],
+      "requiredEvidenceRefs": ["artifact-investigation-002-chart"],
+      "expectedDisposition": "reuse_existing_artifact"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planCaseWork",
+        "curateWorkspace",
+        "delegateSubagent",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["workspace_write", "image_summary"],
+      "criticalDelegations": ["chart-review-subagent"]
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "trajectory_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planCaseWork",
+      "curateWorkspace",
+      "delegateSubagent",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["workspace_write", "image_summary"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [],
+  "memoryTargets": [
+    {
+      "targetId": "memory-investigation-002",
+      "description": "The existing summary is worth saving for reuse patterns, but missing the save causes no immediate harm in this run.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["trace_tool_file"],
+    "memoryScope": "cross_case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-investigation-002",
+        "summary": "The prior analyst summary is a good candidate for reuse in future linked-entity cases.",
+        "source": "trace_tool_file",
+        "scope": "cross_case",
+        "worthKeeping": true,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-investigation-002",
+        "turnId": "turn-2",
+        "expectedAction": "skip_retrieval",
+        "relatedOpportunityIds": ["memory-opportunity-investigation-002"],
+        "rationale": "The current case can still succeed if the agent misses the save, so no immediate harm occurs."
+      }
+    ],
+    "expectedMemoryState": "missed_save_no_current_harm_yet",
+    "expectedMemoryImpact": "neutral"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["reuse_prior_summary", "identify_nominee_relationship"],
+    "optionalChecks": ["note_subagent_reuse_decision"],
+    "prohibitedFailures": ["regenerate_summary_without_using_existing_artifact"]
+  },
+  "failureModes": [
+    "unnecessary_regeneration",
+    "trajectory_drift_without_delegation"
+  ]
+}

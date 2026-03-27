@@ -1,0 +1,180 @@
+{
+  "scenarioId": "scenario-compliance-003",
+  "title": "Alert disposition with duplicated policy context",
+  "agentFamily": "tool_chain",
+  "taskFamily": "compliance",
+  "difficulty": "easy",
+  "modalityProfile": ["text", "table"],
+  "caseBrief": "Disposition a transaction monitoring alert while avoiding duplicated policy context and unnecessary memory writes.",
+  "environmentSeed": "seed-compliance-003",
+  "artifacts": [
+    {
+      "artifactId": "artifact-compliance-003-policy",
+      "kind": "policy",
+      "title": "Alert triage policy",
+      "path": "policies/alert-triage-policy.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "alerts-api",
+      "kind": "api",
+      "description": "Synthetic alert records for transaction monitoring"
+    }
+  ],
+  "availableTools": ["alert_lookup", "policy_search", "narrative_writer"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-compliance-003",
+      "packId": "pack-compliance-core-v2",
+      "entryIds": ["compliance-entry-03"],
+      "purpose": "Load the alert cluster and duplicated policy extracts.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-compliance-003"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-compliance-003",
+      "summary": "The alert should remain open for analyst review because the structuring pattern is unresolved.",
+      "severity": "medium",
+      "requiredEvidenceRefs": ["artifact-compliance-003-policy"],
+      "requiredPolicyRefs": ["alerts.section.3"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.75,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 170,
+      "dynamicTokenOverhead": 90
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": [
+        "alert_lookup",
+        "policy_search",
+        "narrative_writer"
+      ],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "medium",
+      "toolDefinitionTokenOverhead": 150,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": ["alerts.section.3", "structuring alert summary"],
+    "optionalContext": ["customer risk tier"],
+    "distractorContext": ["old closed alert notes"],
+    "duplicateContext": [
+      "duplicate alert triage paragraph",
+      "duplicate policy excerpt"
+    ],
+    "staleContext": [],
+    "contextScenarioType": "over_context_bloat",
+    "agentRenderingNotes": {
+      "toolChain": "The runner should expose repeated policy text through multiple tool outputs and expect the agent to avoid re-reading it.",
+      "workspace": "If adapted later, write a single deduplicated policy note into the workspace."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": [
+      {
+        "pathPattern": "workspace/reference/policies/*",
+        "expectation": "avoid_repeat_read",
+        "rationale": "Repeated reads of the same policy excerpt add cost without new value."
+      },
+      {
+        "pathPattern": "workspace/tmp/*",
+        "expectation": "ephemeral_read",
+        "rationale": "Temporary alert extracts should not persist after the disposition step."
+      }
+    ]
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Keep the alert open for analyst review and support the decision with the unresolved pattern evidence.",
+      "requiredFindings": ["finding-compliance-003"],
+      "requiredEvidenceRefs": ["artifact-compliance-003-policy"],
+      "expectedDisposition": "keep_open_for_review"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planToolWork",
+        "checkBudget",
+        "executeTool",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["alert_lookup", "policy_search"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "unordered",
+    "driftCriticality": "quality_preserving_variation",
+    "baselineComparisonMode": "absolute_rubric_scoring"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planToolWork",
+      "checkBudget",
+      "executeTool",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["alert_lookup", "policy_search"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-compliance-003",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "Keep the disposition concise and do not repeat the policy paragraph twice.",
+      "instructions": [
+        "Shorten the alert narrative.",
+        "Avoid duplicating policy text in the final response."
+      ],
+      "correctedFacts": [],
+      "priority": "medium",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-compliance-003",
+      "description": "Recognize that repeated policy paragraphs are not worth storing for reuse.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["pattern"],
+    "memoryScope": "step",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-compliance-003",
+        "summary": "The duplicated policy paragraph adds no new value.",
+        "source": "pattern",
+        "scope": "step",
+        "worthKeeping": false,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-compliance-003",
+        "turnId": "turn-2",
+        "expectedAction": "skip_retrieval",
+        "relatedOpportunityIds": ["memory-opportunity-compliance-003"],
+        "rationale": "The repeated policy text should not be saved or retrieved."
+      }
+    ],
+    "expectedMemoryState": "correct_abstention_from_saving",
+    "expectedMemoryImpact": "positive"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["keep_alert_open", "cite_triage_policy"],
+    "optionalChecks": ["produce_concise_narrative"],
+    "prohibitedFailures": ["duplicate_policy_paragraph_in_final_answer"]
+  },
+  "failureModes": ["over_context_bloat", "wasteful_policy_repetition"]
+}

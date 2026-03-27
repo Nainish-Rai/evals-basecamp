@@ -1,0 +1,170 @@
+{
+  "scenarioId": "scenario-investigation-003",
+  "title": "Queue triage under budget with multimodal evidence",
+  "agentFamily": "tool_chain",
+  "taskFamily": "investigation",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "image", "table"],
+  "caseBrief": "Prioritize the investigation queue under a tight budget and compress the image and table evidence before composing the final recommendation.",
+  "environmentSeed": "seed-investigation-003",
+  "artifacts": [
+    {
+      "artifactId": "artifact-investigation-003-queue",
+      "kind": "spreadsheet",
+      "title": "Queue triage guide",
+      "path": "investigation/queue-triage-guide.csv",
+      "mimeType": "text/csv"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "triage-api",
+      "kind": "api",
+      "description": "Synthetic triage API with screenshot references and queue metadata"
+    }
+  ],
+  "availableTools": ["queue_lookup", "image_summary", "table_summary"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-investigation-003",
+      "packId": "pack-investigation-core-v1",
+      "entryIds": ["investigation-entry-03"],
+      "purpose": "Mount the queue data and multimodal evidence for budget-aware prioritization.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-investigation-003"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-investigation-003",
+      "summary": "CASE-77 should be prioritized first, with compressed evidence supporting the decision.",
+      "severity": "medium",
+      "requiredEvidenceRefs": ["artifact-investigation-003-queue"],
+      "requiredPolicyRefs": ["investigation.section.10"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.77,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 210,
+      "dynamicTokenOverhead": 105
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["queue_lookup", "image_summary", "table_summary"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "medium",
+      "toolDefinitionTokenOverhead": 190,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": ["CASE-77 priority flag", "investigation.section.10"],
+    "optionalContext": ["secondary case backlog notes"],
+    "distractorContext": ["stale screenshot caption"],
+    "duplicateContext": [],
+    "staleContext": [],
+    "contextScenarioType": "budget_constrained_prioritization",
+    "agentRenderingNotes": {
+      "toolChain": "The agent should summarize the image and table outputs before the final answer to reduce context cost.",
+      "workspace": "If adapted later, the workspace version should store only the compressed summaries."
+    },
+    "multimodalOptimizationExpectations": [
+      {
+        "modality": "image",
+        "expectation": "Compress screenshot findings into a short textual summary before reuse."
+      },
+      {
+        "modality": "table",
+        "expectation": "Summarize the queue table to the top priority rows instead of replaying the full table."
+      }
+    ],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Prioritize CASE-77 first and justify the decision with compressed multimodal evidence.",
+      "requiredFindings": ["finding-investigation-003"],
+      "requiredEvidenceRefs": ["artifact-investigation-003-queue"],
+      "expectedDisposition": "prioritize_case_77"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planToolWork",
+        "checkBudget",
+        "normalizeMultimodalOutput",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["queue_lookup", "image_summary", "table_summary"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "unordered",
+    "driftCriticality": "quality_preserving_variation",
+    "baselineComparisonMode": "absolute_rubric_scoring"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planToolWork",
+      "checkBudget",
+      "normalizeMultimodalOutput",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["queue_lookup", "image_summary", "table_summary"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-investigation-003",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "Do not restate the full table in the final answer.",
+      "instructions": [
+        "Keep only the top priority case and the compressed evidence summary."
+      ],
+      "correctedFacts": [],
+      "priority": "medium",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-investigation-003",
+      "description": "Avoid storing the full queue when only a compressed top-case summary is useful.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["pattern"],
+    "memoryScope": "step",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-investigation-003",
+        "summary": "The full queue table is an attractive but low-value memory candidate.",
+        "source": "pattern",
+        "scope": "step",
+        "worthKeeping": false,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-investigation-003",
+        "turnId": "turn-2",
+        "expectedAction": "skip_retrieval",
+        "relatedOpportunityIds": ["memory-opportunity-investigation-003"],
+        "rationale": "The low-value full queue should not be reused after the compressed summary is available."
+      }
+    ],
+    "expectedMemoryState": "wasteful_save_not_used",
+    "expectedMemoryImpact": "neutral"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["prioritize_case_77", "compress_multimodal_evidence"],
+    "optionalChecks": ["mention_budget_tradeoff"],
+    "prohibitedFailures": ["replay_full_queue_table"]
+  },
+  "failureModes": ["budget_constrained_context_overrun", "multimodal_bloat"]
+}

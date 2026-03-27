@@ -1,0 +1,166 @@
+{
+  "scenarioId": "scenario-risk-001",
+  "title": "Residual risk register update with reviewer feedback",
+  "agentFamily": "workspace",
+  "taskFamily": "risk",
+  "difficulty": "medium",
+  "modalityProfile": ["text", "table"],
+  "caseBrief": "Update the residual risk register, incorporate reviewer feedback about the residual impact, and keep the case context minimal.",
+  "environmentSeed": "seed-risk-001",
+  "artifacts": [
+    {
+      "artifactId": "artifact-risk-001-register",
+      "kind": "spreadsheet",
+      "title": "Residual risk update worksheet",
+      "path": "risk/residual-risk-update.xlsx",
+      "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "risk-history-db",
+      "kind": "database",
+      "description": "Synthetic residual risk score history"
+    }
+  ],
+  "availableTools": ["workspace_write", "risk_lookup", "risk_score_search"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-risk-001",
+      "packId": "pack-risk-core-v1",
+      "entryIds": ["risk-entry-01"],
+      "purpose": "Load the residual risk register and prior scoring evidence.",
+      "materializationTargets": ["artifacts", "data_sources", "workspace"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-risk-001"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-risk-001",
+      "summary": "Residual risk remains high because vendor access controls are still incomplete.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-risk-001-register"],
+      "requiredPolicyRefs": ["risk.section.4"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.8,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 320,
+      "dynamicTokenOverhead": 140
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": [
+        "risk_lookup",
+        "risk_score_search",
+        "workspace_write"
+      ],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 150,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": ["vendor access control gap", "residual risk band high"],
+    "optionalContext": ["prior mitigation plan"],
+    "distractorContext": ["older medium-risk score"],
+    "duplicateContext": [],
+    "staleContext": [],
+    "contextScenarioType": "minimal_sufficient_context",
+    "agentRenderingNotes": {
+      "toolChain": "If adapted later, use only the latest score and the control gap evidence.",
+      "workspace": "Keep the workspace small and focused on the current register row plus the feedback note."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Keep the residual risk rating high and tie it to the incomplete vendor access control remediation.",
+      "requiredFindings": ["finding-risk-001"],
+      "requiredEvidenceRefs": ["artifact-risk-001-register"],
+      "expectedDisposition": "maintain_high_residual_risk"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planCaseWork",
+        "curateWorkspace",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["risk_lookup", "workspace_write"],
+      "criticalDelegations": ["risk-register-subagent"]
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "outcome_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planCaseWork",
+      "curateWorkspace",
+      "applyFeedback",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["risk_lookup", "workspace_write"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-risk-001",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The residual impact is still high because access remediation is incomplete.",
+      "instructions": [
+        "Keep the residual risk at high.",
+        "Explain which control gap keeps the score elevated."
+      ],
+      "correctedFacts": ["Vendor access remediation remains incomplete."],
+      "priority": "high",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-risk-001",
+      "description": "Retain the reviewer correction that residual risk stays high until remediation closes.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["user"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-risk-001",
+        "summary": "The reviewer clarified that residual impact remains high until remediation is complete.",
+        "source": "user",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-2"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-risk-001",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-risk-001"],
+        "rationale": "The rerun should retrieve the reviewer correction when updating the residual score."
+      }
+    ],
+    "expectedMemoryState": "correct_save_correct_needed_retrieval",
+    "expectedMemoryImpact": "positive"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["maintain_high_risk", "cite_control_gap"],
+    "optionalChecks": ["recommend_follow_up_review"],
+    "prohibitedFailures": ["lower_risk_without_closed_remediation"]
+  },
+  "failureModes": ["wrong_residual_risk_score"]
+}

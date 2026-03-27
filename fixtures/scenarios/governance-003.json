@@ -1,0 +1,156 @@
+{
+  "scenarioId": "scenario-governance-003",
+  "title": "Board reporting obligation summary across fragmented notes",
+  "agentFamily": "workspace",
+  "taskFamily": "governance",
+  "difficulty": "easy",
+  "modalityProfile": ["text"],
+  "caseBrief": "Assemble a governance summary from fragmented notes and produce a valid obligation summary even if the exact traversal varies.",
+  "environmentSeed": "seed-governance-003",
+  "artifacts": [
+    {
+      "artifactId": "artifact-governance-003-memo",
+      "kind": "document",
+      "title": "Board reporting fragment guide",
+      "path": "governance/board-reporting-fragment-guide.md",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "board-memo-index",
+      "kind": "search_index",
+      "description": "Synthetic search index for fragmented board reporting notes"
+    }
+  ],
+  "availableTools": ["workspace_write", "memo_search"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-governance-003",
+      "packId": "pack-governance-core-v1",
+      "entryIds": ["governance-entry-03"],
+      "purpose": "Load fragmented reporting memo evidence.",
+      "materializationTargets": ["artifacts", "data_sources", "workspace"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-governance-003"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-governance-003",
+      "summary": "The obligation summary must state that board reporting occurs quarterly.",
+      "severity": "low",
+      "requiredEvidenceRefs": ["artifact-governance-003-memo"],
+      "requiredPolicyRefs": ["governance.section.11"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.72,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 200,
+      "dynamicTokenOverhead": 90
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["memo_search", "workspace_write"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 100,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": ["quarterly board reporting cadence"],
+    "optionalContext": ["board packet format"],
+    "distractorContext": ["monthly operating committee memo"],
+    "duplicateContext": [],
+    "staleContext": [],
+    "contextScenarioType": "mispartitioned_context",
+    "agentRenderingNotes": {
+      "toolChain": "If adapted later, allow different retrieval orders as long as the final summary is right.",
+      "workspace": "Curate fragmented memo snippets into one workspace note before summarizing."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Produce a correct quarterly reporting summary even if the intermediate file traversal differs.",
+      "requiredFindings": ["finding-governance-003"],
+      "requiredEvidenceRefs": ["artifact-governance-003-memo"],
+      "expectedDisposition": "document_reporting_obligation"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planCaseWork",
+        "curateWorkspace",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["memo_search", "workspace_write"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "unordered",
+    "driftCriticality": "quality_preserving_variation",
+    "baselineComparisonMode": "absolute_rubric_scoring"
+  },
+  "trajectoryHints": {
+    "expectedNodes": ["planCaseWork", "curateWorkspace", "composeFinalAnswer"],
+    "expectedTools": ["memo_search", "workspace_write"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-governance-003",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "Keep the summary focused on cadence and owner, not memo formatting.",
+      "instructions": [
+        "Prioritize the reporting cadence.",
+        "Do not over-explain the board packet format."
+      ],
+      "correctedFacts": [],
+      "priority": "medium",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-governance-003",
+      "description": "The fragmented memo pattern can be stored, but retrieval later is not required.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["pattern"],
+    "memoryScope": "cross_case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-governance-003",
+        "summary": "The fragmentation pattern may help later summarization tasks but is not needed in this case rerun.",
+        "source": "pattern",
+        "scope": "cross_case",
+        "worthKeeping": true,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-governance-003",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-governance-003"],
+        "rationale": "A low-quality implementation may retrieve the pattern even though it is not needed for this case."
+      }
+    ],
+    "expectedMemoryState": "correct_save_irrelevant_retrieval",
+    "expectedMemoryImpact": "neutral"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["state_quarterly_cadence", "cite_reporting_source"],
+    "optionalChecks": ["name_board_owner"],
+    "prohibitedFailures": ["state_monthly_cadence"]
+  },
+  "failureModes": ["mispartitioned_context", "irrelevant_retrieval"]
+}

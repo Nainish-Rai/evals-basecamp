@@ -1,33 +1,85 @@
 {
-  "packId": "pack-compliance-core",
+  "packId": "pack-compliance-core-v2",
   "taskFamily": "compliance",
-  "version": "1.0.0",
-  "description": "Core synthetic records for compliance-oriented benchmark cases.",
+  "version": "2.0.0",
+  "description": "Synthetic compliance records for KYC, sanctions, and alert-disposition benchmark cases.",
   "entries": [
     {
-      "entryId": "customer-alpha",
-      "title": "Customer Alpha onboarding file",
-      "summary": "Synthetic onboarding material with one missing KYC requirement.",
-      "tags": ["kyc", "missing-document"],
+      "entryId": "compliance-entry-01",
+      "title": "Orchid Holdings onboarding file",
+      "summary": "KYC onboarding package with an address-proof gap and a duplicated checklist extract.",
+      "tags": ["kyc", "feedback", "minimal-context"],
       "artifacts": [
         {
-          "artifactId": "artifact-policy-kyc",
-          "kind": "policy",
-          "title": "KYC onboarding policy",
-          "path": "policies/kyc-onboarding-policy.pdf",
-          "mimeType": "application/pdf"
+          "artifactId": "pack-compliance-01-brief",
+          "kind": "document",
+          "title": "Orchid Holdings onboarding brief",
+          "path": "packs/compliance/orchid-holdings-brief.md",
+          "mimeType": "text/markdown"
         }
       ],
       "dataSources": [
         {
-          "sourceId": "customer-db",
+          "sourceId": "pack-compliance-01-db",
           "kind": "database",
-          "description": "Synthetic customer onboarding records"
+          "description": "Synthetic onboarding checklist records for Orchid Holdings"
         }
       ],
       "facts": {
         "customerRiskTier": "medium",
-        "missingRequirement": "proof_of_address"
+        "requiredMissingEvidence": "proof_of_address"
+      }
+    },
+    {
+      "entryId": "compliance-entry-02",
+      "title": "Northstar Trading sanctions review",
+      "summary": "Sanctions screening case where prior tool output must be revisited during the rerun.",
+      "tags": ["sanctions", "under-context", "trace-memory"],
+      "artifacts": [
+        {
+          "artifactId": "pack-compliance-02-screening",
+          "kind": "dataset",
+          "title": "Sanctions screening result snapshot",
+          "path": "packs/compliance/northstar-screening.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-compliance-02-search",
+          "kind": "search_index",
+          "description": "Synthetic sanctions and PEP screening index"
+        }
+      ],
+      "facts": {
+        "watchlistHit": true,
+        "secondaryAlias": "Northstar Trade FZE"
+      }
+    },
+    {
+      "entryId": "compliance-entry-03",
+      "title": "Cedar Payments alert disposition",
+      "summary": "Transaction monitoring case with redundant policy excerpts and low-value memory candidates.",
+      "tags": ["alerts", "over-context", "pattern-memory"],
+      "artifacts": [
+        {
+          "artifactId": "pack-compliance-03-alert",
+          "kind": "spreadsheet",
+          "title": "Cedar Payments alert ledger",
+          "path": "packs/compliance/cedar-alert-ledger.csv",
+          "mimeType": "text/csv"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-compliance-03-api",
+          "kind": "api",
+          "description": "Synthetic transaction monitoring alert API"
+        }
+      ],
+      "facts": {
+        "alertCluster": "structuring",
+        "duplicatePolicyExcerpt": true
       }
     }
   ]

@@ -1,0 +1,164 @@
+{
+  "scenarioId": "scenario-investigation-001",
+  "title": "Dormant account reactivation timeline with superseded note",
+  "agentFamily": "tool_chain",
+  "taskFamily": "investigation",
+  "difficulty": "hard",
+  "modalityProfile": ["text", "table"],
+  "caseBrief": "Reconstruct the account reactivation timeline and avoid letting a superseded note override the final beneficiary-change finding.",
+  "environmentSeed": "seed-investigation-001",
+  "artifacts": [
+    {
+      "artifactId": "artifact-investigation-001-timeline",
+      "kind": "timeline",
+      "title": "Dormant account review timeline",
+      "path": "investigation/dormant-account-review-timeline.json",
+      "mimeType": "application/json"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "event-log-db",
+      "kind": "database",
+      "description": "Synthetic investigation event log and note history"
+    }
+  ],
+  "availableTools": ["timeline_lookup", "case_note_search"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-investigation-001",
+      "packId": "pack-investigation-core-v1",
+      "entryIds": ["investigation-entry-01"],
+      "purpose": "Load the superseded note and final timeline driver evidence.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-investigation-001"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-investigation-001",
+      "summary": "The beneficiary change, not the superseded note, explains the account reactivation.",
+      "severity": "high",
+      "requiredEvidenceRefs": ["artifact-investigation-001-timeline"],
+      "requiredPolicyRefs": ["investigation.section.5"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.82,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 210,
+      "dynamicTokenOverhead": 95
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": ["timeline_lookup", "case_note_search"],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "low",
+      "toolDefinitionTokenOverhead": 110,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": ["beneficiary change event", "investigation.section.5"],
+    "optionalContext": ["account dormancy profile"],
+    "distractorContext": ["initial analyst guess that was later corrected"],
+    "duplicateContext": [],
+    "staleContext": ["superseded note-201"],
+    "contextScenarioType": "stale_or_superseded_context",
+    "agentRenderingNotes": {
+      "toolChain": "The tool-chain path should retrieve both note history and timeline events, then suppress the stale note in the final answer.",
+      "workspace": "If adapted later, the workspace version should mark stale notes clearly before synthesis."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Attribute the reactivation to the beneficiary change and explicitly reject the superseded note as decisive evidence.",
+      "requiredFindings": ["finding-investigation-001"],
+      "requiredEvidenceRefs": ["artifact-investigation-001-timeline"],
+      "expectedDisposition": "continue_investigation_with_beneficiary_focus"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planToolWork",
+        "executeTool",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["timeline_lookup", "case_note_search"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "outcome_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planToolWork",
+      "executeTool",
+      "applyFeedback",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["timeline_lookup", "case_note_search"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [
+    {
+      "feedbackId": "feedback-investigation-001",
+      "turnId": "turn-2",
+      "source": "reviewer",
+      "summary": "The stale note should not dominate the final finding.",
+      "instructions": [
+        "Prioritize the beneficiary-change event.",
+        "Explain why the old note is superseded."
+      ],
+      "correctedFacts": [
+        "note-201 was superseded by the beneficiary-change verification."
+      ],
+      "priority": "high",
+      "resolution": "pending"
+    }
+  ],
+  "memoryTargets": [
+    {
+      "targetId": "memory-investigation-001",
+      "description": "Retain that the stale note is superseded, but avoid needless retrieval if the final evidence already resolves the case.",
+      "mustRetainAfterFeedback": true
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["user"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-investigation-001",
+        "summary": "The reviewer clarified that note-201 is superseded.",
+        "source": "user",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-2"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-investigation-001",
+        "turnId": "turn-2",
+        "expectedAction": "skip_retrieval",
+        "relatedOpportunityIds": ["memory-opportunity-investigation-001"],
+        "rationale": "The rerun can succeed from the fresh timeline evidence without explicitly retrieving the saved correction."
+      }
+    ],
+    "expectedMemoryState": "correct_save_correct_abstention_from_retrieval",
+    "expectedMemoryImpact": "positive"
+  },
+  "evaluationRubric": {
+    "requiredChecks": ["identify_beneficiary_change", "reject_stale_note"],
+    "optionalChecks": ["recommend_next_investigative_step"],
+    "prohibitedFailures": ["treat_stale_note_as_final_cause"]
+  },
+  "failureModes": ["stale_context_dominates", "wrong_outcome_attribution"]
+}

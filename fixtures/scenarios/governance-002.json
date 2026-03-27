@@ -1,0 +1,158 @@
+{
+  "scenarioId": "scenario-governance-002",
+  "title": "Duplicate control library obligation review",
+  "agentFamily": "tool_chain",
+  "taskFamily": "governance",
+  "difficulty": "medium",
+  "modalityProfile": ["text"],
+  "caseBrief": "Review overlapping control library text, avoid duplicate tool usage, and identify the quarterly certification obligation.",
+  "environmentSeed": "seed-governance-002",
+  "artifacts": [
+    {
+      "artifactId": "artifact-governance-002-library",
+      "kind": "document",
+      "title": "Control library overlap memo",
+      "path": "governance/control-library-overlap-memo.md",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "control-library-files",
+      "kind": "filesystem",
+      "description": "Synthetic control library excerpts with overlapping language"
+    }
+  ],
+  "availableTools": ["control_search", "obligation_search", "policy_search"],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-governance-002",
+      "packId": "pack-governance-core-v1",
+      "entryIds": ["governance-entry-02"],
+      "purpose": "Mount duplicated control text and overlapping obligation evidence.",
+      "materializationTargets": ["artifacts", "data_sources"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-governance-002"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-governance-002",
+      "summary": "Quarterly certification is the required obligation and the duplicated control IDs should be consolidated.",
+      "severity": "medium",
+      "requiredEvidenceRefs": ["artifact-governance-002-library"],
+      "requiredPolicyRefs": ["governance.section.9"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.78,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 260,
+      "dynamicTokenOverhead": 130
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": [
+        "control_search",
+        "obligation_search",
+        "policy_search"
+      ],
+      "overlappingToolNames": ["control_search", "obligation_search"],
+      "duplicateToolRisk": "high",
+      "toolDefinitionTokenOverhead": 260,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "quarterly certification obligation",
+      "duplicate control IDs CTRL-17 and CTRL-17A"
+    ],
+    "optionalContext": ["control certification template"],
+    "distractorContext": ["old annual certification note"],
+    "duplicateContext": ["control definition repeated across two files"],
+    "staleContext": [],
+    "contextScenarioType": "duplicate_context_waste",
+    "agentRenderingNotes": {
+      "toolChain": "This case should stress tool definition overhead and overlapping tool surfaces.",
+      "workspace": "If adapted later, the workspace version should deduplicate control text before downstream use."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Name quarterly certification as the obligation and consolidate the duplicate control IDs.",
+      "requiredFindings": ["finding-governance-002"],
+      "requiredEvidenceRefs": ["artifact-governance-002-library"],
+      "expectedDisposition": "consolidate_control_library"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planToolWork",
+        "createToolSpec",
+        "selectTool",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["control_search", "obligation_search"],
+      "criticalDelegations": []
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "outcome_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planToolWork",
+      "createToolSpec",
+      "selectTool",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["control_search", "obligation_search"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [],
+  "memoryTargets": [
+    {
+      "targetId": "memory-governance-002",
+      "description": "Avoid saving low-value duplicate control text that can later pollute the answer.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["trace_tool_file"],
+    "memoryScope": "step",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-governance-002",
+        "summary": "The duplicate control text looks important but adds no new value.",
+        "source": "trace_tool_file",
+        "scope": "step",
+        "worthKeeping": false,
+        "neededLater": false,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-governance-002",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-governance-002"],
+        "rationale": "A bad implementation may wrongly reuse the saved duplicate text in the final answer."
+      }
+    ],
+    "expectedMemoryState": "wasteful_save_wrongly_used",
+    "expectedMemoryImpact": "negative"
+  },
+  "evaluationRubric": {
+    "requiredChecks": [
+      "identify_quarterly_obligation",
+      "deduplicate_control_ids"
+    ],
+    "optionalChecks": ["note_tool_overlap_risk"],
+    "prohibitedFailures": ["treat_duplicate_control_as_separate_obligation"]
+  },
+  "failureModes": ["duplicate_context_waste", "harmful_memory_activation"]
+}

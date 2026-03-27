@@ -2,6 +2,8 @@ export * from "./domain/agents/model-tier-schema.js";
 export * from "./infra/config/env.js";
 export * from "./domain/feedback/feedback-event-schema.js";
 export * from "./domain/scenarios/expected-outcome-schema.js";
+export * from "./domain/scenarios/context-evaluation-schema.js";
+export * from "./domain/scenarios/drift-evaluation-schema.js";
 export * from "./domain/scenarios/memory-evaluation-schema.js";
 export * from "./domain/scenarios/scenario-loader.js";
 export * from "./domain/scenarios/scenario-materialization-schema.js";

@@ -1,0 +1,166 @@
+{
+  "scenarioId": "scenario-compliance-002",
+  "title": "Sanctions screening rerun with missing alias context",
+  "agentFamily": "workspace",
+  "taskFamily": "compliance",
+  "difficulty": "hard",
+  "modalityProfile": ["text", "table"],
+  "caseBrief": "Review a sanctions screening alert, preserve the prior screening evidence, and determine whether the case must be escalated.",
+  "environmentSeed": "seed-compliance-002",
+  "artifacts": [
+    {
+      "artifactId": "artifact-compliance-002-policy",
+      "kind": "policy",
+      "title": "Sanctions escalation procedure",
+      "path": "policies/sanctions-escalation-procedure.pdf",
+      "mimeType": "application/pdf"
+    }
+  ],
+  "availableDataSources": [
+    {
+      "sourceId": "sanctions-index",
+      "kind": "search_index",
+      "description": "Synthetic sanctions and PEP screening records"
+    }
+  ],
+  "availableTools": [
+    "workspace_write",
+    "screening_search",
+    "case_notes_lookup"
+  ],
+  "syntheticPackReferences": [
+    {
+      "referenceId": "pack-ref-compliance-002",
+      "packId": "pack-compliance-core-v2",
+      "entryIds": ["compliance-entry-02"],
+      "purpose": "Mount the sanctions review record and related screening output.",
+      "materializationTargets": ["artifacts", "data_sources", "workspace"],
+      "destinationPath": "workspace/reference"
+    }
+  ],
+  "materialization": {
+    "workspaceRoot": "workspace/case",
+    "includeScenarioArtifacts": true,
+    "syntheticPackReferenceOrder": ["pack-ref-compliance-002"]
+  },
+  "expectedOutcomes": [
+    {
+      "findingId": "finding-compliance-002",
+      "summary": "The secondary alias requires escalation because it appears on the sanctions list.",
+      "severity": "critical",
+      "requiredEvidenceRefs": ["artifact-compliance-002-policy"],
+      "requiredPolicyRefs": ["sanctions.section.7"]
+    }
+  ],
+  "contextEvaluationSpec": {
+    "minimumCorrectnessThreshold": 0.85,
+    "systemPromptProfile": {
+      "fixedTokenOverhead": 240,
+      "dynamicTokenOverhead": 110
+    },
+    "toolSurfaceProfile": {
+      "expectedActiveTools": [
+        "screening_search",
+        "case_notes_lookup",
+        "workspace_write"
+      ],
+      "overlappingToolNames": [],
+      "duplicateToolRisk": "medium",
+      "toolDefinitionTokenOverhead": 170,
+      "ambiguityHotspots": []
+    },
+    "requiredContext": [
+      "secondary alias Northstar Trade FZE",
+      "sanctions.section.7"
+    ],
+    "optionalContext": ["customer industry profile"],
+    "distractorContext": ["historic false positive memo"],
+    "duplicateContext": [],
+    "staleContext": [
+      "superseded screening snapshot without the secondary alias"
+    ],
+    "contextScenarioType": "under_context_failure",
+    "agentRenderingNotes": {
+      "toolChain": "If adapted later, the tool-chain version should force explicit recall of the prior screening artifact before finalizing.",
+      "workspace": "Write the prior screening output into the workspace, then revisit it after retrieving the alias note."
+    },
+    "multimodalOptimizationExpectations": [],
+    "fileReadCleanupExpectations": []
+  },
+  "driftEvaluationSpec": {
+    "expectedOutcomeCriteria": {
+      "correctnessExpectation": "Escalate the case when the secondary alias matches the sanctions list.",
+      "requiredFindings": ["finding-compliance-002"],
+      "requiredEvidenceRefs": ["artifact-compliance-002-policy"],
+      "expectedDisposition": "escalate_to_compliance_officer"
+    },
+    "trajectory": {
+      "requiredSteps": [
+        "planCaseWork",
+        "curateWorkspace",
+        "delegateSubagent",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ],
+      "criticalTools": ["screening_search", "workspace_write"],
+      "criticalDelegations": ["alias-review-subagent"]
+    },
+    "allowedStepFlexibility": "partial",
+    "driftCriticality": "trajectory_only_drift",
+    "baselineComparisonMode": "baseline_relative_comparison"
+  },
+  "trajectoryHints": {
+    "expectedNodes": [
+      "planCaseWork",
+      "curateWorkspace",
+      "delegateSubagent",
+      "composeFinalAnswer"
+    ],
+    "expectedTools": ["screening_search", "workspace_write"],
+    "allowAdditionalSteps": true
+  },
+  "feedbackTurns": [],
+  "memoryTargets": [
+    {
+      "targetId": "memory-compliance-002",
+      "description": "Retain the prior screening alias evidence for the later rerun step.",
+      "mustRetainAfterFeedback": false
+    }
+  ],
+  "memoryEvaluationSpec": {
+    "memorySources": ["trace_tool_file"],
+    "memoryScope": "case",
+    "memoryOpportunities": [
+      {
+        "opportunityId": "memory-opportunity-compliance-002",
+        "summary": "The screening tool output contains the alias that matters later in the case.",
+        "source": "trace_tool_file",
+        "scope": "case",
+        "worthKeeping": true,
+        "neededLater": true,
+        "relatedTurnIds": ["turn-1"]
+      }
+    ],
+    "memoryCheckpoints": [
+      {
+        "checkpointId": "memory-checkpoint-compliance-002",
+        "turnId": "turn-2",
+        "expectedAction": "retrieve",
+        "relatedOpportunityIds": ["memory-opportunity-compliance-002"],
+        "rationale": "The workspace rerun needs the prior screening evidence but can fail if it does not retrieve it."
+      }
+    ],
+    "expectedMemoryState": "correct_save_failed_needed_retrieval",
+    "expectedMemoryImpact": "negative"
+  },
+  "evaluationRubric": {
+    "requiredChecks": [
+      "identify_alias_match",
+      "escalate_case",
+      "cite_escalation_policy"
+    ],
+    "optionalChecks": ["summarize_alias_evidence"],
+    "prohibitedFailures": ["clear_case_without_alias_review"]
+  },
+  "failureModes": ["under_context_alias_miss", "missed_needed_retrieval"]
+}

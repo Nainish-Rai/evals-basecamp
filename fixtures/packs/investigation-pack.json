@@ -1,0 +1,86 @@
+{
+  "packId": "pack-investigation-core-v1",
+  "taskFamily": "investigation",
+  "version": "1.0.0",
+  "description": "Synthetic investigation records for timeline, linked-entity, and prioritization benchmark cases.",
+  "entries": [
+    {
+      "entryId": "investigation-entry-01",
+      "title": "Dormant account reactivation timeline",
+      "summary": "Timeline reconstruction case with a superseded note that should not dominate the final finding.",
+      "tags": ["stale-context", "feedback", "outcome-drift"],
+      "artifacts": [
+        {
+          "artifactId": "pack-investigation-01-timeline",
+          "kind": "timeline",
+          "title": "Dormant account event timeline",
+          "path": "packs/investigation/dormant-account-timeline.json",
+          "mimeType": "application/json"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-investigation-01-db",
+          "kind": "database",
+          "description": "Synthetic event log and case notes for the dormant account review"
+        }
+      ],
+      "facts": {
+        "supersededNoteId": "note-201",
+        "finalDriver": "beneficiary_change"
+      }
+    },
+    {
+      "entryId": "investigation-entry-02",
+      "title": "Linked-entity evidence comparison",
+      "summary": "Artifact reuse case where a prior generated summary should be reused instead of recreated.",
+      "tags": ["artifact-reuse", "trajectory-drift", "trace-memory"],
+      "artifacts": [
+        {
+          "artifactId": "pack-investigation-02-link-chart",
+          "kind": "image",
+          "title": "Linked entity chart",
+          "path": "packs/investigation/linked-entity-chart.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-investigation-02-files",
+          "kind": "filesystem",
+          "description": "Synthetic evidence folder with prior analyst notes"
+        }
+      ],
+      "facts": {
+        "recommendedReuseArtifact": "linked-entity-summary.md",
+        "requiresDelegation": true
+      }
+    },
+    {
+      "entryId": "investigation-entry-03",
+      "title": "Queue triage with multimodal evidence",
+      "summary": "Budget-constrained case with table and image evidence that should be compressed before reuse.",
+      "tags": ["budget", "multimodal", "pattern-memory"],
+      "artifacts": [
+        {
+          "artifactId": "pack-investigation-03-queue",
+          "kind": "spreadsheet",
+          "title": "Investigation queue triage sheet",
+          "path": "packs/investigation/triage-queue.csv",
+          "mimeType": "text/csv"
+        }
+      ],
+      "dataSources": [
+        {
+          "sourceId": "pack-investigation-03-api",
+          "kind": "api",
+          "description": "Synthetic case triage API with screenshot references"
+        }
+      ],
+      "facts": {
+        "priorityCaseId": "CASE-77",
+        "imageSummarizationNeeded": true
+      }
+    }
+  ]
+}
