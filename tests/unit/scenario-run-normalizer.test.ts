@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createToolChainScenarioAgent } from "../../src/agents/tool-chain/create-tool-chain-agent.js";
+import { createWorkspaceScenarioAgent } from "../../src/agents/workspace/create-workspace-agent.js";
 import { ScenarioRunNormalizer } from "../../src/evals/normalization/scenario-run-normalizer.js";
 import { ScenarioRunner } from "../../src/runtime/runner/scenario-runner.js";
 
@@ -82,28 +83,55 @@ describe("ScenarioRunNormalizer", () => {
     expect(records[1]?.turnId).toBe("turn-2");
   });
 
-  it("normalizes sparse workspace runs without agent-specific evaluator knowledge", async () => {
-    const runResult = await runScenario("risk-001.json");
+  it("normalizes real workspace runs with retrieval, subagent, and memory data", async () => {
+    const runResult = await runScenario(
+      "governance-001.json",
+      createWorkspaceScenarioAgent()
+    );
     const records = new ScenarioRunNormalizer().normalize(runResult);
 
     expect(records).toHaveLength(2);
     expect(records[0]).toMatchObject({
       agentFamily: "workspace",
-      taskFamily: "risk",
+      taskFamily: "governance",
       toolCalls: [],
       budgetLedger: [],
-      graphPath: ["planCaseWork", "curateWorkspace", "applyFeedback", "composeFinalAnswer"]
+      graphPath: [
+        "planCaseWork",
+        "curateWorkspace",
+        "delegateSubagent",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ]
     });
+    expect(records[0]?.retrievalEvents).toEqual([
+      expect.objectContaining({
+        selectedCount: expect.any(Number)
+      })
+    ]);
+    expect(records[0]?.subagentEvents).toEqual([
+      expect.objectContaining({
+        modelTier: "medium"
+      })
+    ]);
     expect(records[0]?.filesystemArtifacts.length).toBeGreaterThan(0);
-    expect(records[0]?.contextMetrics.workspaceArtifactTokens).toBeGreaterThanOrEqual(0);
+    expect(records[0]?.contextMetrics.workspaceArtifactTokens).toBeGreaterThan(0);
     expect(records[0]?.memoryFailureTypes).toEqual([]);
+    expect(records[0]?.filesystemArtifacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "workspace/case/notes/governance-curated-note.md",
+          kind: "workspace"
+        })
+      ])
+    );
     expect(records[1]).toMatchObject({
       turnId: "turn-2",
-      feedbackInputs: ["feedback-risk-001"]
+      feedbackInputs: ["feedback-governance-001"]
     });
-    expect(records[1]?.memoryFailureTypes).toEqual([
-      "missed_needed_write",
-      "missed_needed_retrieval"
+    expect(records[1]?.memoryFailureTypes).toEqual([]);
+    expect(records[1]?.memoryRetrieved).toEqual([
+      "memory-opportunity-governance-001"
     ]);
   });
 });

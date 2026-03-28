@@ -112,31 +112,61 @@ function createFilesystemArtifacts(
   kind: "input" | "generated" | "workspace";
   tokenCount: number;
 }> {
+  const normalizedOutputArtifacts = outputArtifacts.map((outputArtifactPath) =>
+    normalizeOutputArtifactPath(environment.rootPath, outputArtifactPath)
+  );
   const registryArtifacts = environment.registryEntries.map((entry) => ({
     artifactId: entry.sourceId,
     path: path.relative(environment.rootPath, entry.path),
     kind: classifyFilesystemArtifact(
       entry.path,
       environment.workspacePath,
-      new Set(outputArtifacts)
+      new Set(normalizedOutputArtifacts.map((artifact) => artifact.absolutePath ?? artifact.path))
     ),
     tokenCount: estimateTokenCount(entry.path)
   }));
   const existingPaths = new Set(registryArtifacts.map((artifact) => artifact.path));
-  const generatedArtifacts = outputArtifacts
-    .filter((outputArtifactPath) => !existingPaths.has(outputArtifactPath))
+  const generatedArtifacts = normalizedOutputArtifacts
+    .filter((outputArtifactPath) => !existingPaths.has(outputArtifactPath.path))
     .map((outputArtifactPath, index) => ({
       artifactId: `generated-artifact-${index + 1}`,
-      path: outputArtifactPath,
+      path: outputArtifactPath.path,
       kind: classifyFilesystemArtifact(
-        outputArtifactPath,
+        outputArtifactPath.absolutePath ?? outputArtifactPath.path,
         environment.workspacePath,
-        new Set(outputArtifacts)
+        new Set(normalizedOutputArtifacts.map((artifact) => artifact.absolutePath ?? artifact.path))
       ),
-      tokenCount: estimateTokenCount(outputArtifactPath)
+      tokenCount: estimateTokenCount(outputArtifactPath.path)
     }));
 
   return [...registryArtifacts, ...generatedArtifacts];
+}
+
+function normalizeOutputArtifactPath(
+  rootPath: string,
+  outputArtifactPath: string
+): {
+  absolutePath: string | null;
+  path: string;
+} {
+  if (path.isAbsolute(outputArtifactPath)) {
+    return {
+      absolutePath: outputArtifactPath,
+      path: path.relative(rootPath, outputArtifactPath)
+    };
+  }
+
+  if (outputArtifactPath.includes(path.sep) || outputArtifactPath.startsWith(".")) {
+    return {
+      absolutePath: path.resolve(rootPath, outputArtifactPath),
+      path: outputArtifactPath
+    };
+  }
+
+  return {
+    absolutePath: null,
+    path: outputArtifactPath
+  };
 }
 
 function classifyFilesystemArtifact(
