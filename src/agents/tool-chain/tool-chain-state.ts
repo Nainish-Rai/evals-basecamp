@@ -72,6 +72,7 @@ export type ToolChainMultimodalNormalizationEvent = {
   modality: string;
   strategy: "inline_summary" | "structured_summary";
   sourceArtifactRefs: string[];
+  sourceTokenCount: number;
   normalizedTokenCount: number;
 };
 

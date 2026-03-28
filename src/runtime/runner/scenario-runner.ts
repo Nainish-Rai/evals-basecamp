@@ -6,7 +6,8 @@ import {
 } from "../../domain/scenarios/scenario-loader.js";
 import {
   LangfuseTracer,
-  type BenchmarkTrace
+  type BenchmarkTrace,
+  type TraceExport
 } from "../tracing/langfuse-tracer.js";
 import {
   CaseEnvironmentMaterializer,
@@ -39,6 +40,7 @@ export type ScenarioRunFromFileSystemRequest = {
 };
 
 export type ScenarioExecutionResult = {
+  runId: string;
   mode: ScenarioExecutionMode;
   feedbackIds: string[];
   agentResult: ScenarioAgentRunResult;
@@ -50,6 +52,7 @@ export type ScenarioRunResult = {
   environment: MaterializedCaseEnvironment;
   executions: ScenarioExecutionResult[];
   traceContext: LangfuseTraceContext;
+  traceExport: TraceExport | null;
 };
 
 export class ScenarioRunner {
@@ -126,7 +129,8 @@ export class ScenarioRunner {
         scenario: request.scenario,
         environment,
         executions,
-        traceContext: trace.finish()
+        traceContext: trace.finish(),
+        traceExport: trace.export()
       };
     } catch (error) {
       trace.recordEvent("scenario_run_failed", {
@@ -171,18 +175,30 @@ export class ScenarioRunner {
     trace: BenchmarkTrace
   ): Promise<ScenarioExecutionResult[]> {
     const executions: ScenarioExecutionResult[] = [];
+    const runSeed =
+      trace.snapshot().traceId ??
+      `run-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-    for (const executionPlan of executionPlans) {
+    for (const [executionIndex, executionPlan] of executionPlans.entries()) {
+      const runId = buildRunId({
+        scenarioId: scenario.scenarioId,
+        runSeed,
+        mode: executionPlan.mode,
+        feedbackIds: executionPlan.feedbackTurns.map((feedbackTurn) => feedbackTurn.feedbackId),
+        executionIndex
+      });
       const agentResult = await trace.runInSpan(
         {
           name: `execution.${executionPlan.mode}`,
           kind: "runner",
           metadata: {
-            feedbackCount: executionPlan.feedbackTurns.length
+            feedbackCount: executionPlan.feedbackTurns.length,
+            runId
           }
         },
         () =>
           agent.run({
+            runId,
             scenario,
             environment,
             executionPlan,
@@ -195,6 +211,7 @@ export class ScenarioRunner {
       }
 
       executions.push({
+        runId,
         mode: executionPlan.mode,
         feedbackIds: executionPlan.feedbackTurns.map(
           (feedbackTurn) => feedbackTurn.feedbackId
@@ -205,4 +222,29 @@ export class ScenarioRunner {
 
     return executions;
   }
+}
+
+function buildRunId(options: {
+  scenarioId: string;
+  runSeed: string;
+  mode: ScenarioExecutionMode;
+  feedbackIds: string[];
+  executionIndex: number;
+}): string {
+  const feedbackPart =
+    options.feedbackIds.length > 0 ? options.feedbackIds.join("-") : "no-feedback";
+
+  return [
+    options.scenarioId,
+    options.runSeed,
+    options.mode,
+    feedbackPart,
+    `attempt-${options.executionIndex + 1}`
+  ]
+    .map((part) => sanitizeRunIdPart(part))
+    .join("__");
+}
+
+function sanitizeRunIdPart(value: string): string {
+  return value.replace(/[^a-zA-Z0-9._-]+/g, "-");
 }

@@ -29,4 +29,28 @@ describe("loadEnvironmentConfig", () => {
       })
     ).toThrow(/DEFAULT_SUBAGENT_MODEL_TIER/);
   });
+
+  it("requires an OpenAI API key when the evaluator agent is enabled", () => {
+    expect(() =>
+      loadEnvironmentConfig({
+        EVALUATOR_AGENT_ENABLED: "true"
+      })
+    ).toThrow(/OPENAI_API_KEY/);
+  });
+
+  it("accepts a custom OpenAI-compatible base URL", () => {
+    const config = loadEnvironmentConfig({
+      OPENAI_BASE_URL: "http://127.0.0.1:4000/v1"
+    });
+
+    expect(config.OPENAI_BASE_URL).toBe("http://127.0.0.1:4000/v1");
+  });
+
+  it("accepts a custom API-key header name for OpenAI-compatible gateways", () => {
+    const config = loadEnvironmentConfig({
+      OPENAI_API_KEY_HEADER_NAME: "x-api-key"
+    });
+
+    expect(config.OPENAI_API_KEY_HEADER_NAME).toBe("x-api-key");
+  });
 });

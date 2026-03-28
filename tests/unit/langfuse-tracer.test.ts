@@ -9,10 +9,12 @@ describe("LangfuseTracer", () => {
     });
 
     const context = trace.finish();
+    const traceExport = trace.export();
 
     expect(context.enabled).toBe(false);
     expect(context.traceId).toBeNull();
     expect(context.spanCount).toBe(0);
+    expect(traceExport).toBeNull();
   });
 
   it("tracks nested spans, scores, events, and vendor trace identifiers", async () => {
@@ -57,6 +59,7 @@ describe("LangfuseTracer", () => {
     );
 
     const context = trace.finish();
+    const traceExport = trace.export();
 
     expect(context.enabled).toBe(true);
     expect(context.traceId).toContain("trace-");
@@ -65,5 +68,7 @@ describe("LangfuseTracer", () => {
     expect(context.eventCount).toBe(2);
     expect(context.vendorTraceIds).toEqual(["vendor-trace-123"]);
     expect(context.status).toBe("completed");
+    expect(traceExport?.spans).toHaveLength(2);
+    expect(traceExport?.events).toHaveLength(2);
   });
 });

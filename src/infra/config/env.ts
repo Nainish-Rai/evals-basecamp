@@ -45,6 +45,8 @@ export const environmentSchema = z
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     OPENAI_API_KEY: z.string().min(1).optional(),
+    OPENAI_BASE_URL: z.url().optional(),
+    OPENAI_API_KEY_HEADER_NAME: z.string().min(1).optional(),
     ANTHROPIC_API_KEY: z.string().min(1).optional(),
     LANGFUSE_ENABLED: booleanFlagSchema.default(false),
     LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
@@ -53,6 +55,9 @@ export const environmentSchema = z
     EXTERNAL_AGENT_ENDPOINT: z.url().optional(),
     EXTERNAL_AGENT_API_KEY: z.string().min(1).optional(),
     EXTERNAL_AGENT_TIMEOUT_MS: positiveIntegerSchema.default(30_000),
+    EVALUATOR_AGENT_ENABLED: booleanFlagSchema.default(false),
+    EVALUATOR_AGENT_MODEL: z.string().min(1).default("gpt-5"),
+    EVALUATOR_AGENT_MAX_STEPS: positiveIntegerSchema.default(3),
     DEFAULT_MAIN_MODEL: z.string().min(1).default("openai:gpt-5.4"),
     DEFAULT_MAIN_MODEL_TIER: modelTierSchema.default("large"),
     DEFAULT_SUBAGENT_MODEL: z.string().min(1).default("openai:gpt-5.4-mini"),
@@ -88,6 +93,14 @@ export const environmentSchema = z
         message:
           "DEFAULT_SUBAGENT_MODEL_TIER must be strictly smaller than DEFAULT_MAIN_MODEL_TIER",
         path: ["DEFAULT_SUBAGENT_MODEL_TIER"]
+      });
+    }
+
+    if (value.EVALUATOR_AGENT_ENABLED && !value.OPENAI_API_KEY) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "OPENAI_API_KEY is required when EVALUATOR_AGENT_ENABLED is true",
+        path: ["OPENAI_API_KEY"]
       });
     }
   });

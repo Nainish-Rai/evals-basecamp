@@ -57,6 +57,7 @@ describe("tool-chain agent", () => {
     const agent = createToolChainScenarioAgent();
 
     const result = await agent.run({
+      runId: "run-compliance-initial",
       scenario: runtimeFixture.scenario,
       environment: runtimeFixture.environment,
       executionPlan: getExecutionPlan(runtimeFixture.executionPlans, 0),
@@ -97,6 +98,7 @@ describe("tool-chain agent", () => {
     const agent = createToolChainScenarioAgent({ toolCallBudget: 2 });
 
     const result = await agent.run({
+      runId: "run-risk-initial",
       scenario: runtimeFixture.scenario,
       environment: runtimeFixture.environment,
       executionPlan: getExecutionPlan(runtimeFixture.executionPlans, 0),
@@ -138,6 +140,7 @@ describe("tool-chain agent", () => {
     const agent = createToolChainScenarioAgent();
 
     const result = await agent.run({
+      runId: "run-compliance-rerun",
       scenario: runtimeFixture.scenario,
       environment: runtimeFixture.environment,
       executionPlan: getExecutionPlan(runtimeFixture.executionPlans, 1),
@@ -227,7 +230,8 @@ function createTraceStub() {
       scoreCount: 0,
       eventCount: 0,
       vendorTraceIds: []
-    })
+    }),
+    export: () => null
   };
 }
 
