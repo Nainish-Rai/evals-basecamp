@@ -98,8 +98,8 @@ export class TrajectoryCoverageScorer {
     );
 
     return metricResultSchema.parse({
-      metricId: `trajectory:${bundle.bundleId}`,
-      metricFamily: "trajectory",
+      metricId: `trajectory-coverage:${bundle.bundleId}`,
+      metricFamily: "trajectory_coverage",
       score: graphEfficiency,
       passed: graphEfficiency >= 0.75,
       summary: buildSummary(

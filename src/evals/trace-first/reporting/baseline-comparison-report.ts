@@ -1,8 +1,8 @@
 import type { RunBundle } from "../contracts/run-bundle-schema.js";
 import type { EvaluatedExample } from "../contracts/evaluated-example-schema.js";
 import {
-  baselineComparisonRecordSchema,
-  type BaselineComparisonRecord
+  feedbackRerunComparisonRecordSchema,
+  type FeedbackRerunComparisonRecord
 } from "../../contracts/baseline-comparison-record.js";
 
 type ComparisonPair = {
@@ -12,7 +12,7 @@ type ComparisonPair = {
   baselineExample: EvaluatedExample;
 };
 
-export type BaselineComparisonReportSummary = {
+export type FeedbackRerunComparisonReportSummary = {
   comparisonCount: number;
   benchmarkSubsetCount: number;
   stableCount: number;
@@ -28,17 +28,17 @@ export type BaselineComparisonReportSummary = {
   averageResponseQualityDelta: number | null;
 };
 
-export function buildBaselineComparisonReport(
+export function buildFeedbackRerunComparisonReport(
   bundles: RunBundle[],
   examples: EvaluatedExample[]
-): BaselineComparisonRecord[] {
+): FeedbackRerunComparisonRecord[] {
   const examplesByRunId = new Map(examples.map((example) => [example.runId, example]));
   const pairs = collectComparisonPairs(bundles, examplesByRunId);
 
   return pairs.map((pair) => {
     const deltas = buildMetricDeltas(pair.currentExample, pair.baselineExample);
 
-    return baselineComparisonRecordSchema.parse({
+    return feedbackRerunComparisonRecordSchema.parse({
       comparisonId: `${pair.current.runId}::${pair.baseline.runId}`,
       benchmarkSubset: pair.current.example.variantGroupId,
       baselineComparisonMode:
@@ -57,9 +57,9 @@ export function buildBaselineComparisonReport(
   });
 }
 
-export function summarizeBaselineComparisonReport(
-  records: BaselineComparisonRecord[]
-): BaselineComparisonReportSummary {
+export function summarizeFeedbackRerunComparisonReport(
+  records: FeedbackRerunComparisonRecord[]
+): FeedbackRerunComparisonReportSummary {
   return {
     comparisonCount: records.length,
     benchmarkSubsetCount: new Set(records.map((record) => record.benchmarkSubset)).size,
@@ -178,7 +178,9 @@ function buildMetricDeltas(
   };
 }
 
-function readDriftClassification(example: EvaluatedExample): BaselineComparisonRecord["driftClassification"] {
+function readDriftClassification(
+  example: EvaluatedExample
+): FeedbackRerunComparisonRecord["driftClassification"] {
   const metric = example.metricResults.find(
     (metricResult) => metricResult.metricFamily === "response_quality_drift"
   );
@@ -226,7 +228,7 @@ function collectEvidenceRefs(
 
 function classifyComparison(
   deltas: ReturnType<typeof buildMetricDeltas>
-): BaselineComparisonRecord["comparisonStatus"] {
+): FeedbackRerunComparisonRecord["comparisonStatus"] {
   const values = [
     deltas.accuracyScoreDelta,
     deltas.domainCorrectnessScoreDelta,

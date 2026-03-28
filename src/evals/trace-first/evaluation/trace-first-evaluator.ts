@@ -81,10 +81,11 @@ export class TraceFirstEvaluator {
             ? this.feedbackIntegrationScorer.score(baselineBundle, null)
             : null;
           const memory = await this.memoryScorer.score(runBundle);
-          const trajectory = this.trajectoryCoverageScorer.score(runBundle);
           const agentEvalsTrajectory = await this.agentEvalsTrajectoryScorer.score(
             runBundle
           );
+          const trajectoryCoverage = this.trajectoryCoverageScorer.score(runBundle);
+          const canonicalTrajectory = agentEvalsTrajectory ?? trajectoryCoverage;
           const context = await this.contextScorer.score(
             runBundle,
             accuracy.score
@@ -120,8 +121,8 @@ export class TraceFirstEvaluator {
             memoryScore: memory.score,
             memoryState: memory.state,
             memoryPassed: memory.passed,
-            trajectoryScore: trajectory.score,
-            trajectoryPassed: trajectory.passed,
+            trajectoryScore: canonicalTrajectory.score,
+            trajectoryPassed: canonicalTrajectory.passed,
             contextScore: context.score,
             contextPassed: context.passed,
             retryAttribution: context.retryAttribution,
@@ -132,8 +133,8 @@ export class TraceFirstEvaluator {
               domainCorrectness,
               feedbackIntegration,
               memory.metricResult,
-              trajectory,
               agentEvalsTrajectory,
+              trajectoryCoverage,
               counterfactualContext,
               responseQualityDrift,
               {

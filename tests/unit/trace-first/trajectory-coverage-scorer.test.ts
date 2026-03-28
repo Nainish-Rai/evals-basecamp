@@ -78,7 +78,7 @@ describe("TrajectoryCoverageScorer", () => {
 
     const metric = new TrajectoryCoverageScorer().score(bundle);
 
-    expect(metric.metricFamily).toBe("trajectory");
+    expect(metric.metricFamily).toBe("trajectory_coverage");
     expect(metric.score).toBeGreaterThan(0.7);
     expect(metric.details).toMatchObject({
       requiredStepCoverage: 1,

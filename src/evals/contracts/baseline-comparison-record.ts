@@ -26,7 +26,7 @@ const metricDeltaSchema = z.object({
   responseQualityScoreDelta: z.number().min(-1).max(1).nullable()
 });
 
-export const baselineComparisonRecordSchema = z.object({
+export const feedbackRerunComparisonRecordSchema = z.object({
   comparisonId: z.string().min(1),
   benchmarkSubset: z.string().min(1),
   baselineComparisonMode: baselineComparisonModeSchema,
@@ -48,6 +48,6 @@ export const baselineComparisonRecordSchema = z.object({
   evidenceRefs: z.array(z.string().min(1)).default([])
 });
 
-export type BaselineComparisonRecord = z.infer<
-  typeof baselineComparisonRecordSchema
+export type FeedbackRerunComparisonRecord = z.infer<
+  typeof feedbackRerunComparisonRecordSchema
 >;

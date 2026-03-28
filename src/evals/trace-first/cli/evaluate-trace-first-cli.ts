@@ -8,8 +8,8 @@ import type { RunBundle } from "../contracts/run-bundle-schema.js";
 import { createEvaluationJudge } from "../evaluation/create-evaluation-judge.js";
 import { TraceFirstEvaluator } from "../evaluation/trace-first-evaluator.js";
 import {
-  buildBaselineComparisonReport,
-  summarizeBaselineComparisonReport
+  buildFeedbackRerunComparisonReport,
+  summarizeFeedbackRerunComparisonReport
 } from "../reporting/baseline-comparison-report.js";
 
 async function main(): Promise<void> {
@@ -30,10 +30,12 @@ async function main(): Promise<void> {
   const evaluator = new TraceFirstEvaluator(createEvaluationJudge());
   const evaluation = await evaluator.evaluate(bundles);
   const driftSummaries = evaluator.summarizeDrift(evaluation.examples);
-  const baselineComparisons = buildBaselineComparisonReport(bundles, evaluation.examples);
-  const baselineComparisonSummary = summarizeBaselineComparisonReport(
-    baselineComparisons
+  const feedbackRerunComparisons = buildFeedbackRerunComparisonReport(
+    bundles,
+    evaluation.examples
   );
+  const feedbackRerunComparisonSummary =
+    summarizeFeedbackRerunComparisonReport(feedbackRerunComparisons);
   const scoredRunBundles = attachMetricResultsToBundles(bundles, evaluation.examples);
   const resolvedOutputDirectoryPath = path.resolve(
     process.cwd(),
@@ -79,12 +81,12 @@ async function main(): Promise<void> {
     JSON.stringify(driftSummaries, null, 2)
   );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "baseline-comparisons.jsonl"),
-    `${baselineComparisons.map((comparison) => JSON.stringify(comparison)).join("\n")}\n`
+    path.join(resolvedOutputDirectoryPath, "feedback-rerun-comparisons.jsonl"),
+    `${feedbackRerunComparisons.map((comparison) => JSON.stringify(comparison)).join("\n")}\n`
   );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "baseline-comparison-summary.json"),
-    JSON.stringify(baselineComparisonSummary, null, 2)
+    path.join(resolvedOutputDirectoryPath, "feedback-rerun-comparison-summary.json"),
+    JSON.stringify(feedbackRerunComparisonSummary, null, 2)
   );
   await writeFile(
     path.join(resolvedOutputDirectoryPath, "evaluation-summary.json"),
@@ -98,8 +100,9 @@ async function main(): Promise<void> {
         scoredRunBundleCount: scoredRunBundles.length,
         peerGroupCount: evaluation.peerEfficiency.length,
         driftGroupCount: driftSummaries.length,
-        baselineComparisonCount: baselineComparisons.length,
-        baselineSubsetCount: baselineComparisonSummary.benchmarkSubsetCount
+        feedbackRerunComparisonCount: feedbackRerunComparisons.length,
+        feedbackRerunSubsetCount:
+          feedbackRerunComparisonSummary.benchmarkSubsetCount
       },
       null,
       2

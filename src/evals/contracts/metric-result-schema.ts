@@ -7,7 +7,8 @@ export const metricFamilySchema = z.enum([
   "memory_utilization",
   "domain_correctness",
   "feedback_integration",
-  "trajectory"
+  "trajectory",
+  "trajectory_coverage"
 ]);
 
 export const metricResultSchema = z.object({

@@ -107,7 +107,15 @@ function createEvaluatedExample(
       unusedToolDefinitionRatio: 0,
       duplicateToolDefinitionRate: 0,
       toolOverlapRate: 0,
-      fileReadRedundancyRate: 0
+      fileReadRedundancyRate: 0,
+      minimalSufficientContextTokens: 250,
+      currentContextTokens: 300,
+      removableContextTokens: 50,
+      ablationLossPerArtifact: 0.1,
+      progressiveContextGain: 0.2,
+      contextSaturationPointTokens: 275,
+      budgetConstrainedRobustness: 0.9,
+      contextInheritanceRedundancy: 0
     },
     metricResults: responseQualityDrift
       ? [

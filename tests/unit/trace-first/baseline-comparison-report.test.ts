@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { runBundleSchema } from "../../../src/evals/trace-first/contracts/run-bundle-schema.js";
 import { evaluatedExampleSchema } from "../../../src/evals/trace-first/contracts/evaluated-example-schema.js";
 import {
-  buildBaselineComparisonReport,
-  summarizeBaselineComparisonReport
+  buildFeedbackRerunComparisonReport,
+  summarizeFeedbackRerunComparisonReport
 } from "../../../src/evals/trace-first/reporting/baseline-comparison-report.js";
 
 describe("baseline-comparison-report", () => {
@@ -147,7 +147,7 @@ describe("baseline-comparison-report", () => {
 
     const bundles = [baselineBundle, currentBundle, excludedBundle];
     const examples = [baselineExample, currentExample];
-    const records = buildBaselineComparisonReport(bundles, examples);
+    const records = buildFeedbackRerunComparisonReport(bundles, examples);
 
     expect(records).toHaveLength(1);
     const record = records[0];
@@ -167,7 +167,7 @@ describe("baseline-comparison-report", () => {
     expect(record.current.responseQualityScore).toBe(0.94);
     expect(record.baseline.responseQualityScore).toBeNull();
 
-    expect(summarizeBaselineComparisonReport(records)).toMatchObject({
+    expect(summarizeFeedbackRerunComparisonReport(records)).toMatchObject({
       comparisonCount: 1,
       benchmarkSubsetCount: 1,
       improvedCount: 1,
