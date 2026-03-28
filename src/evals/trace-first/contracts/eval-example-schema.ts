@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { feedbackEventSchema } from "../../../domain/feedback/feedback-event-schema.js";
 import { trajectoryContractSchema } from "../../contracts/trajectory-contract.js";
+import { baselineComparisonModeSchema } from "../../../domain/scenarios/drift-evaluation-schema.js";
 
 export const evalSkillSchema = z.object({
   skillId: z.string().min(1),
@@ -31,6 +32,9 @@ export const evalStaticOverheadSchema = z.object({
 export const evalExampleSpecSchema = z.object({
   instruction: z.string().min(1),
   minimumCorrectnessThreshold: z.number().min(0).max(1).default(0.75),
+  baselineComparisonMode: baselineComparisonModeSchema.default(
+    "baseline_relative_comparison"
+  ),
   trajectory: trajectoryContractSchema.default({
     requiredSteps: [],
     criticalTools: [],

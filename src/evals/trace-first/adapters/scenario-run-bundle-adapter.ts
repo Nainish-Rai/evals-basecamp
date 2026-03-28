@@ -35,6 +35,8 @@ export class ScenarioRunBundleAdapter {
             minimumCorrectnessThreshold:
               runResult.scenario.contextEvaluationSpec
                 .minimumCorrectnessThreshold,
+            baselineComparisonMode:
+              runResult.scenario.driftEvaluationSpec.baselineComparisonMode,
             trajectory: buildTrajectoryContract(
               {
                 ...runResult.scenario.driftEvaluationSpec,
