@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: workspace-excel-batch
+  labels:
+    app.kubernetes.io/name: workspace-excel-batch
+    app.kubernetes.io/part-of: workspace-agent
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: workspace-excel-batch
+        app.kubernetes.io/part-of: workspace-agent
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: runner
+          image: 598515435126.dkr.ecr.ap-south-1.amazonaws.com/iifl-batch-job-agent-executor:iifl-dr
+          imagePullPolicy: Always
+          command:
+            - python
+            - /workspace-excel-batch/runner.py
+          envFrom:
+            - configMapRef:
+                name: shared-config
+            - configMapRef:
+                name: workspace-excel-batch-config
+            - secretRef:
+                name: agent-executor-secrets
+          volumeMounts:
+            - name: runner-script
+              mountPath: /workspace-excel-batch
+              readOnly: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+      volumes:
+        - name: runner-script
+          configMap:
+            name: workspace-excel-batch-script
+            defaultMode: 0555

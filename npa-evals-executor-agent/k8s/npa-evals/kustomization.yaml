@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: npa-evals
+generatorOptions:
+  disableNameSuffixHash: true
+resources:
+  - namespace.yaml
+  - configmaps.yaml
+  - pvc.yaml
+  - serviceaccount.yaml
+  - agent-executor.yaml
+  - services.yaml
+  - ingress.yaml
+  - vpa.yaml
+secretGenerator:
+  - name: agent-executor-secrets
+    envs:
+      - agent-executor-secrets.env

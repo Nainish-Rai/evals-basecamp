@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-config
+  labels:
+    app.kubernetes.io/part-of: workspace-agent
+data:
+  AWS_REGION: ap-south-1
+  MINIO_ENDPOINT: "http://minio.onfinance-data.svc.cluster.local:9000"
+  MINIO_PUBLIC_ENDPOINT: "https://minio.onfinance.ai"
+  S3_BUCKET_NAME: "research-platform-bucket"
+  LLM_BASE_URL: "http://llm-gateway.onfinance-llm.svc.cluster.local"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-executor-config
+  labels:
+    app.kubernetes.io/name: agent-executor
+    app.kubernetes.io/part-of: workspace-agent
+data:
+  AGENT_EXECUTOR_PORT: "8010"
+  AGENT_ARTIFACTS_BUCKET: "research-platform-bucket"
+  AGENT_TRACE_BUCKET: "workspace-agent-traces-private"
+  TRACE_ROOT: "/traces"
+  WORKSPACE_ROOT: "/workspace"
+  WORKSPACE_AGENT_MAX_STEPS: "32"
+  WORKSPACE_AGENT_REQUEST_TIMEOUT: "180"
+  OPENAI_BASE_URL: "http://llm-gateway.onfinance-llm.svc.cluster.local"
+  OPENAI_MODEL: "anthropic/claude-sonnet-4-5-20250929"

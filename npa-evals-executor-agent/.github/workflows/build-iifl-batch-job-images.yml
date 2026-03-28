@@ -1,0 +1,69 @@
+name: Build Agent Executor Image
+
+on:
+  push:
+    branches:
+      - IIFL-DR
+    paths:
+      - agent-executor/**
+      - .github/workflows/build-iifl-batch-job-images.yml
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REGISTRY: 598515435126.dkr.ecr.ap-south-1.amazonaws.com
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: agent-executor
+            repository: iifl-batch-job-agent-executor
+            context: ./agent-executor
+            dockerfile: ./agent-executor/Dockerfile
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Derive image tags
+        id: meta
+        shell: bash
+        run: |
+          branch_tag="$(echo "${GITHUB_REF_NAME}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')"
+          echo "branch_tag=${branch_tag}" >> "$GITHUB_OUTPUT"
+          echo "sha_tag=sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure ECR repository exists
+        shell: bash
+        run: |
+          aws ecr describe-repositories --repository-names "${{ matrix.repository }}" >/dev/null 2>&1 || \
+          aws ecr create-repository --repository-name "${{ matrix.repository }}" --image-scanning-configuration scanOnPush=true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ matrix.repository }}:${{ steps.meta.outputs.branch_tag }}
+            ${{ env.ECR_REGISTRY }}/${{ matrix.repository }}:${{ steps.meta.outputs.sha_tag }}

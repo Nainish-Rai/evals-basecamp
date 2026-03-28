@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-executor
+  labels:
+    app.kubernetes.io/name: agent-executor
+    app.kubernetes.io/part-of: npa-evals
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-executor
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agent-executor
+        app.kubernetes.io/part-of: npa-evals
+    spec:
+      terminationGracePeriodSeconds: 30
+      serviceAccountName: npa-evals-agent-executor
+      containers:
+        - name: agent-executor
+          image: 598515435126.dkr.ecr.ap-south-1.amazonaws.com/iifl-batch-job-agent-executor:07841ce-20260328-205820-amd64
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8010
+              name: http-agent
+          envFrom:
+            - configMapRef:
+                name: shared-config
+            - configMapRef:
+                name: agent-executor-config
+            - secretRef:
+                name: agent-executor-secrets
+          livenessProbe:
+            tcpSocket:
+              port: http-agent
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: http-agent
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+            - name: traces
+              mountPath: /traces
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: agent-executor-workspace-pvc
+        - name: traces
+          persistentVolumeClaim:
+            claimName: agent-executor-traces-pvc

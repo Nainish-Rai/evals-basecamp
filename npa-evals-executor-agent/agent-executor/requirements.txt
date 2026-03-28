@@ -1,0 +1,61 @@
+# === Server ===
+fastapi
+uvicorn[standard]
+httpx
+python-multipart
+openai>=1.40.0
+python-dotenv
+boto3
+pydantic>=2.0
+
+# === Data & Tabular ===
+pandas
+numpy
+openpyxl
+xlsxwriter
+xlrd
+pyarrow
+python-dateutil
+tabulate
+
+# === Visualization ===
+matplotlib
+seaborn
+plotly
+kaleido
+
+# === Statistics & ML ===
+scipy
+statsmodels
+scikit-learn
+
+# === PDF Processing ===
+pdfplumber
+PyMuPDF
+pdfminer.six
+pikepdf
+
+# === NLP & Text ===
+nltk
+regex
+beautifulsoup4
+lxml
+html5lib
+chardet
+
+# === Reporting & Documents ===
+Jinja2
+python-pptx
+python-docx
+markdown
+
+# === Imaging ===
+Pillow
+
+# === Utilities ===
+requests
+pyyaml
+jsonschema
+rich
+tqdm
+sympy

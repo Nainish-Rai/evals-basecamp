@@ -1,0 +1,594 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workspace-excel-batch-config
+  labels:
+    app.kubernetes.io/name: workspace-excel-batch
+    app.kubernetes.io/part-of: workspace-agent
+data:
+  EXECUTOR_BASE_URL: "http://agent-executor.iifl-batch-job.svc.cluster.local:8010"
+  BATCH_API_PATH: "/batches"
+  BATCH_POLL_INTERVAL_SECONDS: "5"
+  BATCH_MAX_CONCURRENCY: "15"
+  BATCH_ID_PREFIX: "workspace-excel-batch"
+  THREAD_ID_PREFIX: "workspace-excel-batch"
+  AGENT_USER_ID: "workspace-excel-batch"
+  INPUT_XLSX_PATH: ""
+  INPUT_XLSX_URL: ""
+  INPUT_XLSX_S3_URI: "s3://research-platform-bucket/workspace-batch-inputs/obligation-register-without-risk-20260316-sheet1-2.xlsx"
+  INPUT_XLSX_SHEET_NAME: ""
+  QUESTION_COLUMN: ""
+  ROW_ID_COLUMN: "Sr. No."
+  SELECTED_FILE_ID: "workspace-iifl-artifacts"
+  SELECTED_FILE_NAME: "IIFL-artifacts"
+  SELECTED_FILE_TYPE: "workspace_folder"
+  SELECTED_FILE_RELATIVE_PATH: "IIFL-artifacts"
+  SELECTED_FILE_WORKSPACE_STAGED_PATH: "IIFL-artifacts"
+  SELECTED_FILE_PREPROCESSING_SKIPPED: "true"
+  MODEL: "anthropic/claude-sonnet-4-5-20250929"
+  OUTPUT_XLSX_PATH: "/tmp/workspace-batch-results.xlsx"
+  OUTPUT_S3_URI: "s3://research-platform-bucket/workspace-batch-results/obligation-register-without-risk-20260316-sheet1-2-results.xlsx"
+  OUTPUT_SHEET_PREFIX: "results"
+  REQUEST_TIMEOUT_SECONDS: "1800"
+  PROMPT_TEMPLATE: |
+    Please read the instructions present in IIFL-artifacts/instructions.txt for the following task.
+
+
+    As the final deliverable of your Deepresearch please generate me an artifact(JSON) of the following schema, always review the final deliverable before concluding.
+    Citation rules — every citation object must follow this exact structure:
+    * document_name: The exact filename of the cited source and nothing else. Do not paraphrase, shorten, normalize, or invent a document title. For local workspace files, use the precise basename exactly as it appears in the workspace (for example "instructions.txt" or "20260316_135848_Compliance_Testing_Results_Q2-FY25-26.txt"). For web sources, use the exact filename from the URL path when one exists.
+    * page_or_section: The most precise location available from the source, such as paragraph, section, page, heading, line range, or search position. Do not use vague values like "N/A", "Multiple documents searched", or "Various sources reviewed".
+    * excerpt: A short verbatim extract (2–5 sentences max) from that document that directly supports the value assigned — must be meaningful and specific, not generic
+    * url: Full URL of the source, or the exact relative workspace file path if the source is a local document (for example "IIFL-artifacts/instructions.txt" or "IIFL-artifacts/extracted_text_from_pdf/IIFL-artifacts/uploads/20260316_140029_Compliance_Testing_Results_Q3-FY25-26.txt"). Do not use placeholder paths, directory-only paths, inferred paths, or "N/A" when a real source was used.
+    Hard citation requirements:
+    * If you cite a local file from the workspace, the document_name must exactly match the final filename segment of the cited path in url.
+    * If you cite a web source, the document_name must exactly match the final filename segment of the URL path when available; otherwise use the most specific trailing path segment.
+    * Never use generic labels like "RBI Circular", "Master Direction", "Compliance Risk Assessment Methodology", "Assessment Note", "Task Data", "Industry-wide search", "Available Documentation Review", or any other human-friendly renamed title in document_name unless that exact text is the real filename.
+    * Never fabricate a citation. If you cannot identify the exact source filename/path, do not include that citation.
+    * Never cite your own reasoning, your own summaries, the row input/task JSON, generated artifacts, generated analysis scripts, or a directory path as evidence.
+    * A citation must point to a concrete source file, not a folder.
+    Rules for missing evidence:
+    * If the workspace does not contain evidence for a field, say so explicitly in the value using wording like "Insufficient evidence in provided workspace" or "No evidence found in reviewed workspace files". In that case, citations must be an empty array.
+    * Do not use fake support citations for "Not Found", "Not Applicable", or "Insufficient evidence" conclusions.
+    Field-specific evidence rules:
+    * For regulatory obligation fields, customer impact fields, embargo/penalty/license-cancellation fields, and additional RBI requirements, cite only the actual regulation, circular, press release, inspection record, or extracted text file that directly supports the conclusion.
+    * For company-specific control-risk fields, cite only IIFL-specific workspace evidence such as compliance testing files, policy documents, SOPs, observation trackers, internal audit files, reporting logs, or other actual IIFL documents present in the workspace. If those documents are not available, state that evidence is insufficient and use no citations.
+    * For score/rating fields derived from the methodology, cite "instructions.txt" for the scoring rule and separately cite the underlying evidence file that drove the score whenever available.
+    Final validation before answering:
+    * Re-check every citation object and delete any citation whose document_name is not an exact filename, whose url is not an exact file path/URL, or whose excerpt does not literally appear in that cited source.
+    Workspace usage requirements:
+    * Use all relevant evidence available in the provided workspace, not just one subfolder or one preprocessed corpus.
+    * Relevant evidence may come from uploads, extracted_text_from_pdf, pdfs, policy documents, SOPs, compliance testing files, spreadsheets, internal trackers, and other workspace files.
+    * Do not prefer `pdfs/` over `uploads/`, and do not prefer extracted text over the original source by default. Use whichever source gives the best direct evidence for the field.
+    * If a relevant document exists only as a PDF or other binary file and no extracted text file is available, open/read the original file directly and extract the needed text before concluding that evidence is unavailable.
+    * If both an original PDF and an extracted text version exist, you may use either or both, but the citation must still point to the exact file you actually used.
+    * Do not ignore a relevant source just because it is not already converted to `.txt`.
+    * If a file cannot be parsed or read successfully, say that explicitly in your reasoning and do not pretend the evidence was reviewed.
+
+    {{
+      "RBI penalties on other Banks/ NBFCs/ HFCs (Industry Level)": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "In the event where RBI has imposed embargo the business (Industry Level)": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "In the event where RBI has ordered for cancellation of license (Industry Level)": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Guidelines relates to customer impact": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Any other RBI requirements not covered above": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Impact Score (Highest of Score of all Impact Categories)": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Impact Rating": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Likelihood Score": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Likelihood Rating": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Inherent Risk Rating": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Frequency of Regulatory Changes": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "New systems introduced / changes in the existing system": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "New Product Launched/ Changes to existing product": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "No. of compliance observations / failures highlighted in Internal Audit, Concurrent Audit, Branch Audit, Compliance Testing & RCSA Testing": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Compliance observations highlighted in RBI inspection": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Open RBI inspection observations pending implementation": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Penalties / Embargo imposed by the regulator on the Company": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "No. of incorrect/ delay in reportings to RBI": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Open compliance observations / failures in Internal Audit, Concurrent Audit, Branch Audit, Compliance Testing, RCSA Testing, Risk incidents including Vigilance, Fraud, Employee Fraud and Whistleblower": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "No. of Compliance Fraud/ Employee Fraud/ Vigilance/ Whistleblower incidents reported": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Service Delivery Channel (outsourced/ inhouse)": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Average Control Risk Score": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }},
+      "Control Risk Rating": {{
+        "value": "",
+        "citations": [
+          {{ "document_name": "", "page_or_section": "", "excerpt": "", "url": "" }}
+        ]
+      }}
+    }}
+
+    The current task is:
+    {task_json}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workspace-excel-batch-script
+  labels:
+    app.kubernetes.io/name: workspace-excel-batch
+    app.kubernetes.io/part-of: workspace-agent
+data:
+  runner.py: |
+    import json
+    import os
+    import re
+    import sys
+    import tempfile
+    import time
+    import uuid
+    from pathlib import Path
+    from typing import Any
+    from urllib.parse import urlparse
+
+    import boto3
+    import httpx
+    import pandas as pd
+
+
+    TERMINAL_BATCH_STATUSES = {"completed", "completed_with_errors", "failed"}
+
+
+    def getenv_required(name: str) -> str:
+        value = os.getenv(name, "").strip()
+        if not value:
+            raise RuntimeError(f"Missing required environment variable: {name}")
+        return value
+
+
+    def getenv_bool(name: str, default: bool = False) -> bool:
+        value = os.getenv(name)
+        if value is None:
+            return default
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+    def getenv_float(name: str, default: float) -> float:
+        value = os.getenv(name)
+        if value is None or not value.strip():
+            return default
+        return float(value)
+
+
+    def getenv_int(name: str, default: int) -> int:
+        value = os.getenv(name)
+        if value is None or not value.strip():
+            return default
+        return int(value)
+
+
+    def parse_csv_env(name: str) -> list[str]:
+        raw = os.getenv(name, "")
+        return [part.strip() for part in raw.split(",") if part.strip()]
+
+
+    def build_selected_files() -> list[dict[str, Any]]:
+        selected_file_name = os.getenv("SELECTED_FILE_NAME", "").strip()
+        staged_path = os.getenv("SELECTED_FILE_WORKSPACE_STAGED_PATH", "").strip()
+        file_url = os.getenv("SELECTED_FILE_URL", "").strip()
+        if not selected_file_name:
+            return []
+        if not staged_path and not file_url:
+            raise RuntimeError("Set SELECTED_FILE_WORKSPACE_STAGED_PATH or SELECTED_FILE_URL when SELECTED_FILE_NAME is provided")
+        return [
+            {
+                "file_id": os.getenv("SELECTED_FILE_ID", "workspace-selected-file").strip() or "workspace-selected-file",
+                "file_name": selected_file_name,
+                "file_url": file_url,
+                "file_type": os.getenv("SELECTED_FILE_TYPE", "text").strip() or "text",
+                "relative_path": os.getenv("SELECTED_FILE_RELATIVE_PATH", selected_file_name).strip() or selected_file_name,
+                "workspace_staged_path": staged_path or None,
+                "preprocessing_skipped": getenv_bool("SELECTED_FILE_PREPROCESSING_SKIPPED", True),
+                "source_type": "workspace_staged" if staged_path else "remote",
+            }
+        ]
+
+
+    def safe_sheet_name(name: str) -> str:
+        cleaned = re.sub(r"[:\\\\/?*\\[\\]]", "-", name).strip()
+        return (cleaned or "Sheet")[:31]
+
+
+    def sanitize_item_fragment(value: Any) -> str:
+        text = str(value or "").strip()
+        text = re.sub(r"[^A-Za-z0-9._-]+", "-", text)
+        return text.strip("-") or "row"
+
+
+    def parse_s3_uri(uri: str) -> tuple[str, str]:
+        parsed = urlparse(uri)
+        if parsed.scheme != "s3" or not parsed.netloc or not parsed.path:
+            raise RuntimeError(f"Invalid S3 URI: {uri}")
+        return parsed.netloc, parsed.path.lstrip("/")
+
+
+    def build_s3_client():
+        endpoint = os.getenv("MINIO_ENDPOINT", "").rstrip("/")
+        access_key = os.getenv("MINIO_ACCESS_KEY", "")
+        secret_key = os.getenv("MINIO_SECRET_KEY", "")
+        region = os.getenv("AWS_REGION", "ap-south-1")
+        session = boto3.session.Session()
+        kwargs = {
+            "service_name": "s3",
+            "aws_access_key_id": access_key,
+            "aws_secret_access_key": secret_key,
+            "region_name": region,
+        }
+        if endpoint:
+            kwargs["endpoint_url"] = endpoint
+        return session.client(**kwargs)
+
+
+    def download_input_workbook() -> Path:
+        local_path = os.getenv("INPUT_XLSX_PATH", "").strip()
+        if local_path:
+            path = Path(local_path)
+            if not path.exists():
+                raise RuntimeError(f"INPUT_XLSX_PATH does not exist: {path}")
+            return path
+
+        temp_dir = Path(tempfile.mkdtemp(prefix="workspace-excel-batch-"))
+        temp_path = temp_dir / "input.xlsx"
+
+        s3_uri = os.getenv("INPUT_XLSX_S3_URI", "").strip()
+        if s3_uri:
+            bucket, key = parse_s3_uri(s3_uri)
+            build_s3_client().download_file(bucket, key, str(temp_path))
+            return temp_path
+
+        url = os.getenv("INPUT_XLSX_URL", "").strip()
+        if url:
+            timeout = httpx.Timeout(getenv_float("REQUEST_TIMEOUT_SECONDS", 1800.0))
+            verify = not getenv_bool("INSECURE_SKIP_TLS_VERIFY", False)
+            with httpx.Client(timeout=timeout, verify=verify, follow_redirects=True) as client:
+                response = client.get(url)
+                response.raise_for_status()
+                temp_path.write_bytes(response.content)
+            return temp_path
+
+        raise RuntimeError("Provide one of INPUT_XLSX_PATH, INPUT_XLSX_S3_URI, or INPUT_XLSX_URL")
+
+
+    def clean_value(value: Any) -> Any:
+        if pd.isna(value):
+            return None
+        if hasattr(value, "isoformat"):
+            try:
+                return value.isoformat()
+            except Exception:
+                pass
+        return value
+
+
+    def load_rows(workbook_path: Path) -> tuple[list[dict[str, Any]], dict[str, pd.DataFrame]]:
+        requested_sheet = os.getenv("INPUT_XLSX_SHEET_NAME", "").strip()
+        if requested_sheet:
+            sheets = {requested_sheet: pd.read_excel(workbook_path, sheet_name=requested_sheet)}
+        else:
+            sheets = pd.read_excel(workbook_path, sheet_name=None)
+
+        rows: list[dict[str, Any]] = []
+        for sheet_name, dataframe in sheets.items():
+            dataframe = dataframe.copy()
+            header_row_number = 1
+            for index, record in enumerate(dataframe.to_dict(orient="records")):
+                cleaned = {str(key): clean_value(value) for key, value in record.items()}
+                non_empty = {
+                    key: value for key, value in cleaned.items()
+                    if value not in (None, "", [])
+                }
+                if not non_empty:
+                    continue
+                excel_row_number = index + header_row_number + 1
+                row_id_column = os.getenv("ROW_ID_COLUMN", "").strip()
+                row_id_value = cleaned.get(row_id_column) if row_id_column else None
+                rows.append(
+                    {
+                        "sheet_name": sheet_name,
+                        "sheet_index": index,
+                        "excel_row_number": excel_row_number,
+                        "row_id": row_id_value if row_id_value not in (None, "") else excel_row_number,
+                        "record": cleaned,
+                    }
+                )
+        return rows, sheets
+
+
+    def build_items(rows: list[dict[str, Any]]) -> list[dict[str, str]]:
+        question_column = os.getenv("QUESTION_COLUMN", "").strip()
+        prompt_template = os.getenv("PROMPT_TEMPLATE", "").strip()
+        items: list[dict[str, str]] = []
+        for row in rows:
+            record = row["record"]
+            question = ""
+            if question_column and question_column in record:
+                candidate = record.get(question_column)
+                if candidate not in (None, ""):
+                    question = str(candidate).strip()
+            if not question:
+                question = prompt_template.format(
+                    sheet_name=row["sheet_name"],
+                    excel_row_number=row["excel_row_number"],
+                    row_id=row["row_id"],
+                    row_json=json.dumps(record, ensure_ascii=False, default=str),
+                    task_json=json.dumps(record, ensure_ascii=False, indent=2, default=str),
+                ).strip()
+            if not question:
+                raise RuntimeError(
+                    f"Unable to derive question for sheet={row['sheet_name']} excel_row={row['excel_row_number']}"
+                )
+            item_id = (
+                f"{sanitize_item_fragment(row['sheet_name'])}"
+                f"-row-{row['excel_row_number']}"
+                f"-{sanitize_item_fragment(row['row_id'])}"
+            )
+            items.append({"item_id": item_id, "question": question})
+        return items
+
+
+    def submit_batch(client: httpx.Client, base_url: str, items: list[dict[str, str]]) -> dict[str, Any]:
+        batch_id_prefix = os.getenv("BATCH_ID_PREFIX", "workspace-excel-batch").strip() or "workspace-excel-batch"
+        thread_id_prefix = os.getenv("THREAD_ID_PREFIX", batch_id_prefix).strip() or batch_id_prefix
+        unique_suffix = uuid.uuid4().hex[:12]
+        batch_id = f"{batch_id_prefix}-{unique_suffix}"
+        thread_id = f"{thread_id_prefix}-{unique_suffix}"
+        selected_files = build_selected_files()
+        if not selected_files:
+            raise RuntimeError("At least one selected file is required for agent-executor batch runs")
+        response = client.post(
+            f"{base_url}{os.getenv('BATCH_API_PATH', '/batches')}",
+            json={
+                "batch_id": batch_id,
+                "thread_id": thread_id,
+                "user_id": os.getenv("AGENT_USER_ID", "workspace-excel-batch").strip() or "workspace-excel-batch",
+                "selected_files": selected_files,
+                "items": items,
+                "model": os.getenv("MODEL") or None,
+                "max_concurrency": getenv_int("BATCH_MAX_CONCURRENCY", 15),
+            },
+        )
+        response.raise_for_status()
+        return response.json()
+
+
+    def wait_for_batch(client: httpx.Client, base_url: str, batch_id: str) -> dict[str, Any]:
+        poll_interval = getenv_float("BATCH_POLL_INTERVAL_SECONDS", 5.0)
+        while True:
+            response = client.get(f"{base_url}/batches/{batch_id}")
+            response.raise_for_status()
+            payload = response.json()
+            status = payload.get("status")
+            counts = payload.get("counts", {})
+            print(
+                json.dumps(
+                    {
+                        "batch_id": payload.get("batch_id"),
+                        "status": status,
+                        "counts": counts,
+                    },
+                    ensure_ascii=False,
+                ),
+                flush=True,
+            )
+            if status in TERMINAL_BATCH_STATUSES:
+                return payload
+            time.sleep(poll_interval)
+
+
+    def merge_results(rows: list[dict[str, Any]], items: list[dict[str, str]], summary: dict[str, Any]) -> dict[str, pd.DataFrame]:
+        item_results = {item["item_id"]: item for item in summary.get("items", [])}
+        grouped_rows: dict[str, list[dict[str, Any]]] = {}
+        for row, item in zip(rows, items):
+            result = item_results.get(item["item_id"], {})
+            record = dict(row["record"])
+            record["workspace_item_id"] = item["item_id"]
+            record["workspace_sheet_name"] = row["sheet_name"]
+            record["workspace_excel_row_number"] = row["excel_row_number"]
+            record["workspace_row_id"] = row["row_id"]
+            record["workspace_question"] = item["question"]
+            record["workspace_status"] = result.get("status", "missing")
+            record["workspace_run_id"] = result.get("run_id")
+            record["workspace_answer"] = result.get("final_answer")
+            record["workspace_error"] = result.get("error")
+            record["workspace_log_path"] = result.get("log_path")
+            record["workspace_artifact_count"] = len(result.get("artifacts", []))
+            record["workspace_artifact_urls"] = "\n".join(
+                artifact.get("url", "") for artifact in result.get("artifacts", []) if artifact.get("url")
+            )
+            grouped_rows.setdefault(row["sheet_name"], []).append(record)
+        return {sheet_name: pd.DataFrame(records) for sheet_name, records in grouped_rows.items()}
+
+
+    def write_output(summary: dict[str, Any], result_frames: dict[str, pd.DataFrame]) -> Path:
+        output_path = Path(os.getenv("OUTPUT_XLSX_PATH", "/tmp/workspace-batch-results.xlsx"))
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        prefix = os.getenv("OUTPUT_SHEET_PREFIX", "results").strip() or "results"
+        with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
+            summary_frame = pd.DataFrame(
+                [
+                    {
+                        "batch_id": summary.get("batch_id"),
+                        "status": summary.get("status"),
+                        "item_count": summary.get("item_count"),
+                        "completed": summary.get("counts", {}).get("completed"),
+                        "failed": summary.get("counts", {}).get("failed"),
+                        "pending": summary.get("counts", {}).get("pending"),
+                        "in_progress": summary.get("counts", {}).get("in_progress"),
+                        "max_concurrency": summary.get("max_concurrency"),
+                        "created_at": summary.get("created_at"),
+                        "started_at": summary.get("started_at"),
+                        "completed_at": summary.get("completed_at"),
+                    }
+                ]
+            )
+            summary_frame.to_excel(writer, sheet_name="summary", index=False)
+            for sheet_name, dataframe in result_frames.items():
+                dataframe.to_excel(
+                    writer,
+                    sheet_name=safe_sheet_name(f"{prefix}-{sheet_name}"),
+                    index=False,
+                )
+        return output_path
+
+
+    def maybe_upload_output(output_path: Path) -> str | None:
+        output_s3_uri = os.getenv("OUTPUT_S3_URI", "").strip()
+        if not output_s3_uri:
+            return None
+        bucket, key = parse_s3_uri(output_s3_uri)
+        build_s3_client().upload_file(str(output_path), bucket, key)
+        return output_s3_uri
+
+
+    def main() -> int:
+        workbook_path = download_input_workbook()
+        rows, _sheets = load_rows(workbook_path)
+        if not rows:
+            raise RuntimeError("No non-empty rows found in workbook")
+        items = build_items(rows)
+
+        base_url = os.getenv("EXECUTOR_BASE_URL", "").rstrip("/")
+        if not base_url:
+            raise RuntimeError("EXECUTOR_BASE_URL must be set")
+
+        timeout = httpx.Timeout(getenv_float("REQUEST_TIMEOUT_SECONDS", 1800.0))
+        verify = not getenv_bool("INSECURE_SKIP_TLS_VERIFY", False)
+        with httpx.Client(timeout=timeout, verify=verify, follow_redirects=True) as client:
+            batch = submit_batch(client, base_url, items)
+            summary = wait_for_batch(client, base_url, batch["batch_id"])
+
+        result_frames = merge_results(rows, items, summary)
+        output_path = write_output(summary, result_frames)
+        uploaded_to = maybe_upload_output(output_path)
+        print(
+            json.dumps(
+                {
+                    "batch_id": summary.get("batch_id"),
+                    "status": summary.get("status"),
+                    "output_path": str(output_path),
+                    "output_s3_uri": uploaded_to,
+                },
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
+
+        if summary.get("status") in {"failed", "completed_with_errors"}:
+            return 1
+        return 0
+
+
+    if __name__ == "__main__":
+        try:
+            raise SystemExit(main())
+        except Exception as exc:
+            print(json.dumps({"error": str(exc)}, ensure_ascii=False), file=sys.stderr, flush=True)
+            raise

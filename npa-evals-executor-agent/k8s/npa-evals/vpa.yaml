@@ -1,0 +1,27 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: agent-executor
+  labels:
+    app.kubernetes.io/name: agent-executor
+    app.kubernetes.io/part-of: npa-evals
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: agent-executor
+  updatePolicy:
+    updateMode: Auto
+  resourcePolicy:
+    containerPolicies:
+      - containerName: agent-executor
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsAndLimits
+        minAllowed:
+          cpu: 250m
+          memory: 1Gi
+        maxAllowed:
+          cpu: "4"
+          memory: 8Gi
