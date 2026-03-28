@@ -17,16 +17,36 @@ async function main(): Promise<void> {
   }
 
   const collector = new TraceFirstScenarioCollector();
-  const bundles = await collector.loadBundles(path.resolve(process.cwd(), bundleDirectoryPath));
+  const bundles = await collector.loadBundles(
+    path.resolve(process.cwd(), bundleDirectoryPath)
+  );
   const evaluator = new TraceFirstEvaluator(createEvaluationJudge());
   const evaluation = await evaluator.evaluate(bundles);
   const driftSummaries = evaluator.summarizeDrift(evaluation.examples);
-  const resolvedOutputDirectoryPath = path.resolve(process.cwd(), outputDirectoryPath);
+  const resolvedOutputDirectoryPath = path.resolve(
+    process.cwd(),
+    outputDirectoryPath
+  );
 
   await mkdir(resolvedOutputDirectoryPath, { recursive: true });
   await writeFile(
     path.join(resolvedOutputDirectoryPath, "evaluated-examples.jsonl"),
     `${evaluation.examples.map((example) => JSON.stringify(example)).join("\n")}\n`
+  );
+  await writeFile(
+    path.join(resolvedOutputDirectoryPath, "metric-results.jsonl"),
+    `${evaluation.examples
+      .flatMap((example) =>
+        example.metricResults.map((metricResult) =>
+          JSON.stringify({
+            exampleId: example.exampleId,
+            variantGroupId: example.variantGroupId,
+            mode: example.mode,
+            metricResult
+          })
+        )
+      )
+      .join("\n")}\n`
   );
   await writeFile(
     path.join(resolvedOutputDirectoryPath, "peer-efficiency.json"),
@@ -41,6 +61,10 @@ async function main(): Promise<void> {
     JSON.stringify(
       {
         evaluatedExampleCount: evaluation.examples.length,
+        metricResultCount: evaluation.examples.reduce(
+          (total, example) => total + example.metricResults.length,
+          0
+        ),
         peerGroupCount: evaluation.peerEfficiency.length,
         driftGroupCount: driftSummaries.length
       },
