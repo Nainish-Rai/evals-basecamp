@@ -1,0 +1,296 @@
+---
+task_id: 6fd489d1-5fb3-462c-bafa-f43744be874f
+variant_id: 1
+---
+
+### User Task
+In SEBI mutual fund master circular, there are many references to the fact that AMFI will be clarifying a few propositions on implementation and scope of compliance obligations for mutual funds. Search for the AMFI response on all of these references and prepare a table of the finalized compliance obligations after considering AMFI responses. 
+
+My final output should be a table with the following columns: Clause referencing AMFI, Context in which AMFI was supposed to issue AMFI clarification, AMFI Clarificiation, Clarified Compliance Obligation, Email to AMFI
+
+
+### Task Files
+- [Master Circular for Mutual Funds, 2026](https://benchmark-supporting-files.s3.ap-south-1.amazonaws.com/master-circular-mutual-funds-2026.pdf)
+
+
+### System Instructions
+In a common regulatory regime, we have both regulators and self-regulatory organizations. The core responsibility of the regulator is to lay down the binding legal and compliance framework, while the role of the self-regulatory organization is often to clarify operational questions, standardize market practice, issue formats or procedural guidance, and resolve implementation-level ambiguities for regulated entities.
+
+Sometimes, the regulator also includes key AMFI circulars within the master circular document directly. In such cases, you should treat the embedded or incorporated AMFI guidance as the relevant AMFI response, and you should not separately treat the absence of a standalone AMFI circular as a gap.
+
+In case the SRO hasnt issued a relevant communication in a context that they were supposed to, you should feel free to draft an email to the SRO asking for clarification. However, if there is an already existing communication which answers the question, it will be deeply embarassing and will call into question the .
+
+### Workspace Files
+- AMFI BPG/AMFI BPG 116  Process  for Transfer of Mutual Fund Units held in SoA Mode_14-08-2024.pdf
+- AMFI BPG/AMFI BPG 118  Financial Tr Non Individuals.pdf
+- AMFI BPG/AMFI BPG circular no.113 - MFD_s Name found to be added as Jt. holder in folio of unrelated 1st holder 15.03.2024.pdf
+- AMFI BPG/AMFI BPG circular no.114 _ Name of urelated person found to be added as Jt. holder in folio of multiple unrelated 1st holders 19.06.2024.pdf
+- AMFI BPG/AMFI BPG circular no.115 - Investments in Partly Paid Debentures 26-07-2024.pdf
+- AMFI BPG/AMFI Best Practice Guidelines Circular No. 109-A_Revised CAGR values for Illustrations_10-09-2024.pdf
+- AMFI BPG/AMFI Best Practices Guidelines Circular No. 117 -  Prudential norms for LRM of OES 13-11-2024.pdf
+- AMFI BPG/CU100-AMFI BP Cir  76 dt. 20-3-19-Std. Proc. for Tagging Trxns to T-30,B-30 PIN Codes.pdf
+- AMFI BPG/CU101-AMFI BP Cir 77 dt 20-3-19 Std Proc for Capturing, Updating Email ID, Mobile No.pdf
+- AMFI BPG/CU102-AMFI BPG Circular 78 reg. Revision in Guidelines on Trf of AUM 26-3-19 (2).pdf
+- AMFI BPG/CU103-AMFI BP 79 dt. 24-Sep-19-Standard process for computing int. on delayed pymt of red., divd, refund.pdf
+- AMFI BPG/CU104-AMFI BP 80 dt. 24-Sep-19-Providing trxn data feeds under Direct Plan to SEBI regd. Portfolio Managers.pdf
+- AMFI BPG/CU105-AMFI BP 81 dt. 24-Sep-19-Standard process for treatment of business recd thr suspended distributors.pdf
+- AMFI BPG/CU106-AMFI BP 82 dt. 10-Oct-19-Aggregation of multiple purchase trxns from B30 locations for charging addl TER.pdf
+- AMFI BPG/CU107-AMFI BP cir. 83 dt. 18-Nov-19- Various guidelines pursuant to SEBI cir dt 24-09-19 (1).pdf
+- AMFI BPG/CU108-AMFI BP Cir 84-Treatment of trxns recd from entities debarred by SEBI.pdf
+- AMFI BPG/CU109-AMFIs-email-dt14-Nov-18toAMCs.pdf
+- AMFI BPG/CU114-AMFI BP Cir No. 87 dt.16-Jul-2020 - Revision in Guidelines on Transfer of AUM.pdf
+- AMFI BPG/CU114-Ch1BP 87 - Changes made in AMFI BPG no. 78 dated 26-Mar-2019 on Transfer of AUM by MFDs.pdf
+- AMFI BPG/CU115-AMFI BP Cir No. 88 dt. 30-Jul-2020-Additional disclosures in monthly Fact Sheets.pdf
+- AMFI BPG/CU116-AMFI BP cir No. 86-16-Jul-2020- Updated Guidelines reg. Minors Account and change of status from Minor to Major.pdf
+- AMFI BPG/CU116-Ch1BP 86 - MAM Form- for change in status from Minor to Major (1).pdf
+- AMFI BPG/CU116-Ch1BP 86 - MAM Form- for change in status from Minor to Major.pdf
+- AMFI BPG/CU116-Ch2BP 86 - Form for providing Minor DoB And Details of Guardian (1).pdf
+- AMFI BPG/CU116-Ch2BP 86 - Form for providing Minor DoB And Details of Guardian.pdf
+- AMFI BPG/CU116-Ch3BP 86 - Annexure-I - Bank Attestation of Signature (1).pdf
+- AMFI BPG/CU116-Ch3BP 86 - Annexure-I - Bank Attestation of Signature.pdf
+- AMFI BPG/CU116-Ch4BP 86 - Request for change in Guardian of Minor Unitholder (1).pdf
+- AMFI BPG/CU116-Ch4BP 86 - Request for change in Guardian of Minor Unitholder.pdf
+- AMFI BPG/CU117-AMFI BP Cir 89 dt. 28-Aug-2020-Outlier criteria for Polling process.pdf
+- AMFI BPG/CU118-AMFI BP Cir. 90 dt 03-Mar-2021- Mutual Fund Transactions received through Stock Brokers.pdf
+- AMFI BPG/CU119-AMFI BP Cir 91 dt. 24-Mar-2021 - Valuation of Bonds issued under Basel III framework.pdf
+- AMFI BPG/CU121-AMFIBPCir92dt.25-Jun-21-ClubbingofTxnbelow2lakhdated26-06-2021.pdf
+- AMFI BPG/CU122-AMFI BP cir no. 85 - 26-Jun-20 - Updated Guidelines on Transmission of Units and std.formats.pdf
+- AMFI BPG/CU122-Ch1BP 85 Annexures.zip
+- AMFI BPG/CU123-AMFI BP Cir 93 dt. 24-Jul-21-Prudential norms for liquidity risk management for Open Ended Funds.pdf
+- AMFI BPG/CU124-AMFIBPGCircular93adt.03-Dec-21-PrudentialnormsforLiquidity.pdf
+- AMFI BPG/CU125-AMFI BP Guidelines cir No.94 dt. 28-Oct-2021.pdf
+- AMFI BPG/CU125-Ch1Attachment to AMFI BP cir no. 94 dt. 28-Oct-21-Addendum_Alignment of Interest.docx
+- AMFI BPG/CU126-AMFI Best Practices Guidelines Circular No.95 on Floating Rate Bonds 23.02.2022.pdf
+- AMFI BPG/CU126-Ch1Annexure B to AMFI BP 95 - Disclosed Yield or Disclosed YTM calculation - FRB.xlsx
+- AMFI BPG/CU127-AMFI Best Practices Guidelines Circular No.96 dt. 23.03.2022 on Swing Pricing Framework.pdf
+- AMFI BPG/CU127-Ch1Annexure to AMFI BP cir no. 96 - Swing Pricing Workings.xlsx
+- AMFI BPG/CU129-AMFIBPGno.97dt.28.03.2022-Std.ProcessforValidationofEmail ID-MobilenoBankMandate.pdf
+- AMFI BPG/CU130-AMFI BPG 98 dt. 28.03.2022 - Std process for Mitigating Risks of Co-mingling of funds at PA-PG level.pdf
+- AMFI BPG/CU131-AMFI BPG No. 99 dt. 29.03.2022 on Data Sharing Principles-revised.pdf
+- AMFI BPG/CU132-AMFI BPG No.100 dt. 26.04.2022 - AMC Skin in the Game.pdf
+- AMFI BPG/CU132-Ch1Appendix I to AMFI BPG No.100 dt. 26.04.2022 on Alignment of interest.xlsx
+- AMFI BPG/CU133-AMFI BP cir 101 dt 30-Jun-22-uniformity in sharing of information to stakeholders at each stage of transaction.pdf
+- AMFI BPG/CU133-Ch1Attachment to AMFI BP cir 101 dt. 30-Jun-22-stagewise communication.xlsx
+- AMFI BPG/CU134-AMFI BP Cir No.102 dt. 10-Oct-22-Basic requirements for automated polling process.pdf
+- AMFI BPG/CU134-Ch1Attachment to AMFI BP Cir no. 102-SEBI Letter to AMFI 27.09.22-Automated polling process.pdf
+- AMFI BPG/CU134-Ch2Attachment to AMFI BP Cir no. 102-Polling Outlier Report Format.xlsx
+- AMFI BPG/CU135-AMFI Best Practices Guidelines Circular No.103- Stress Testing by Debt schemes of MFs.pdf
+- AMFI BPG/CU135-Ch1AMFI Best Practice Guidelines cir no. 103 dt 12-Oct-22 on Stress Testing - Illustrations.xlsx
+- AMFI BPG/CU136-AMFI BP circ. 103a dt 15.11.22-Addendum to AMFI BP Cir No.103 on Stress Testing AMFI Guidelines.pdf
+- AMFI BPG/CU136-Ch1Attachment 1 to AMFI BP circ. 103a dt 15.11.22-Addendum to AMFI BP Cir No.103 on Stress Testing AMFI Guidelines.xlsx
+- AMFI BPG/CU136-Ch2Attachment 2 to AMFI BP circ. 103a dt 15.11.22-Addendum to AMFI BP Cir No.103 on Stress Testing AMFI Guidelines.xlsx
+- AMFI BPG/CU137-AMFI BP circ. 103b dt 13.12.22-Addendum to AMFI BP Cir No.103 on Stress Testing AMFI Guidelines.pdf
+- AMFI BPG/CU137-Ch1Attachment 1 to AMFI BP circ. 103b dt 13-12-22-stress testing input values - nov 2022 - final1.xlsx
+- AMFI BPG/CU137-Ch2Attachment 2 to AMFI BP circ. 103b dt 13-12-22-AMFI stress testing threshold portfolios - final with further sector breakup.xlsx
+- AMFI BPG/CU137-Ch3Attachment 3 to AMFI BP circ. 103b dt 13-12-22-AMFI Best Practice Guidelines on Stress Testing - Illustrations - Revised.xlsx
+- AMFI BPG/CU138-AMFI BPG circular no 104 dt. 23.11.2022 - Guidelines for availing discretionary PMS by employees of AMC and Trustees.pdf
+- AMFI BPG/CU138-Ch1Attachment to AMFI BP cir 104-Discretionary PMS for AMC Employees - AMFI guidelines - Sent to AMFI_21112022.docx
+- AMFI BPG/CU144-AMFI BP Cir No.93b dt.15-Jun-23-Changes to Table 2 of Annexure 1 of AMFI BP Cir No.93 dated 24-Jul-21.pdf
+- AMFI BPG/CU144-Ch1Annexure I-AMFI BP Guidelines Cir No.93b dt.15-Jun-23-AMFI Email to dated 23-Mar-23 to SEBI.pdf
+- AMFI BPG/CU144-Ch2Annexure II-AMFI BP Guidelines Circ No.93b dt.15-Jun-23-SEBI Letter dt. 08-Jun-23-reg AMFI BP Guidelines-Prudential norms for LRM for OES.pdf
+- AMFI BPG/CU145-AMFI Email dt. 27-Jul-23-Updated Table 1 and Table 3 of AMFI BP Cir No.93 dt 24-Jul-21.pdf
+- AMFI BPG/CU149-Ch10Attachment 10 to AMFI BP cir 110 dt. 31-Jan-24-Annexure-III.pdf
+- AMFI BPG/CU149-Ch11Attachment 11 to AMFI BP cir 110 dt. 31-Jan-24-Annexure-IV.pdf
+- AMFI BPG/CU149-Ch12Attachment 12 to AMFI BP cir 110 dt. 31-Jan-24-Annexure-V.pdf
+- AMFI BPG/CU149-Ch13Attachment 13 to AMFI BP cir 110 dt. 31-Jan-24-Annexure VI.pdf
+- AMFI BPG/CU149-Ch14Attachment 14 to AMFI BP cir 110 dt. 31-Jan-24-MF-NominationForm.pdf
+- AMFI BPG/CU149-Ch1Attachment 1 to AMFI BP cir 110 dt. 31-Jan-24-SEBILetter.pdf
+- AMFI BPG/CU149-Ch2Attachment 2 to AMFI BP cir 110 dt. 31-Jan-24-Form T1.pdf
+- AMFI BPG/CU149-Ch3Attachment 3 to AMFI BP cir 110 dt. 31-Jan-24-Form T2.pdf
+- AMFI BPG/CU149-Ch4Attachment 4 to AMFI BP cir 110 dt. 31-Jan-24-Form T3.pdf
+- AMFI BPG/CU149-Ch5Attachment 5 to AMFI BP cir 110 dt. 31-Jan-24-Form T4.pdf
+- AMFI BPG/CU149-Ch6Attachment 6 to AMFI BP cir 110 dt. 31-Jan-24-Form T5.pdf
+- AMFI BPG/CU149-Ch7Attachment 7 to AMFI BP cir 110 dt. 31-Jan-24-Annexure-I a.pdf
+- AMFI BPG/CU149-Ch8Attachment 8 to AMFI BP cir 110 dt. 31-Jan-24-Annexure-I b.pdf
+- AMFI BPG/CU149-Ch9Attachment 9 to AMFI BP cir 110 dt. 31-Jan-24-Annexure-II.pdf
+- AMFI BPG/CU150-AMFI BP cir 111 dt. 02-Feb-24-Treatment of Transactions received with invalid ARNs.pdf
+- AMFI BPG/CU152-Ch1Minimum Standards Recommendations for AML-CFT-KYC and Revised STR (12-Mar-24).pdf
+- AMFI BPG/CU152-Revised Minimum Standards on AML, CFT and Revised STR Criteria.pdf
+- AMFI BPG/CU160-AMFI BP Cir No. 96-B dt. 04-Nov-24-Swing Pricing Framework.pdf
+- AMFI BPG/CU163-AMFI BP cir 119  dt. 08-May-25-Process for transfer of units held in Non-Demat (SoA) mode for individual holders.pdf
+- AMFI BPG/CU165-AMFI BP cir 121 dt. 16-May-25 - Treatment of applicability of comm rate in case of switch trxn to NFO of MF schemes.pdf
+- AMFI BPG/CU92-CU92-AMFI Best Practice cir no. 70 dt. 24-Jan-18.pdf
+- AMFI BPG/CU93-AMFI Best Practice Cir. No. 71 dt. 23-Mar-18.pdf
+- AMFI BPG/CU94-AMFI BP Cir. no. 72 dt. 26-Jun-18-TER-Disclosure in Factsheet.pdf
+- AMFI BPG/CU95-AMFI BP Cir. no. 73 dt. 26-Jun-18.pdf
+- AMFI BPG/CU95-Ch1Minimum Standards Report for AML-CFT-KYC- Attachment to BP cir no. 73.pdf
+- AMFI BPG/CU95-Ch2Revised STR Alert Criteria w.e.f. 1 April 2018 - Attachment to BP cir no. 73.pdf
+- AMFI BPG/CU96-AMFI B.P. Cir 74 dt. 29-Aug-18-Guidelines on Electronic Transactions.pdf
+- AMFI BPG/CU96-Ch1Annexure to AMFI Best Practice Guidelines on ElectronicTransactions.pdf
+- AMFI BPG/CU97-AMFI BP Cir no. 75 dt. 19-Oct-18-Capturing RIA Code of DirectPlan trxns.pdf
+- AMFI BPG/New AMFI BP circulars/1. AMFI BP 15 Guidelines for changing agent-distributors during the currency of investments – Clarification regarding payment of Trail Commission dt. 07-May-2010.pdf
+- AMFI BPG/New AMFI BP circulars/10. AMFI BP 23 Risk mitigation process against Third-Party Cheques in mutual fund subscriptions- Clarification on Clause No.3(A) (a) dt. 29-Apr-2011.pdf
+- AMFI BPG/New AMFI BP circulars/11. AMFI email 35P 74List of 1st tier benchmark indices - Change in the Index for Dynamic Asset Allocation  Balanced Advantage Fund - Proposed by CRISIL & IISL  dt. 04-Dec-21.pdf
+- AMFI BPG/New AMFI BP circulars/11. AMFI email 35P 8 Addendum to AMFI BP Circular No. 20_2010-11 dated 09-Feb-11 dt. 09-Jun-2011.pdf
+- AMFI BPG/New AMFI BP circulars/12. AMFI BP 24 Risk mitigation process against Third-Party Cheques in mutual fund subscriptions- Amendment in Clause No.4(f) dt. 17-Jun-2011.pdf
+- AMFI BPG/New AMFI BP circulars/12. AMFI email 35P 76  SEBI circular dated October 27, 2021 on Guiding Principles for bringing uniformity in dt. 10-Dec-21.pdf
+- AMFI BPG/New AMFI BP circulars/13. AMFI BP 25 Risk mitigation process against Third-Party Cheques in mutual fund subscriptions – Insertion of new clause 3.A.d dt. 16-Jan-2012.pdf
+- AMFI BPG/New AMFI BP circulars/13a. Nifty Press Release for launch of Housing Index.pdf
+- AMFI BPG/New AMFI BP circulars/13b. Factsheet_Nifty Housing Index.pdf
+- AMFI BPG/New AMFI BP circulars/13c. Methodology Document - NSE Indices.pdf
+- AMFI BPG/New AMFI BP circulars/14. AMFI BP 25 Revision in the guidelines on Standardization of Complaints Grievances Reporting Procedure dt. 07-Mar-2012.pdf
+- AMFI BPG/New AMFI BP circulars/14. AMFI email SEBI circular dated 27-10-2021 on Guiding Principles dt. 14-Mar-22.pdf
+- AMFI BPG/New AMFI BP circulars/14a. Method_NIFTY_Equity_Indices.pdf
+- AMFI BPG/New AMFI BP circulars/14b. Factsheet_Nifty_India_Manufacturing_Index.pdf
+- AMFI BPG/New AMFI BP circulars/15. AMFI BP 26 Uniform procedure for Change Updation of Bank details Change of Address dt. 21-Mar-2012.pdf
+- AMFI BPG/New AMFI BP circulars/16. AMFI BP 27 Revisions in the Guidelines on Standardization of Complaints Grievances dt. 04-Apr-2012.pdf
+- AMFI BPG/New AMFI BP circulars/17. AMFI BP 28 Guidelines on uniform practice for dealing with redemptions switch-out prior to realisation of funds dt.15-May-2012.pdf
+- AMFI BPG/New AMFI BP circulars/18. AMFI BP 29 Guidelines on Valuation Principles for valuing Debt and Money Market Instruments dt.15-May-2012.pdf
+- AMFI BPG/New AMFI BP circulars/18. AMFI emailTier-1 benchmarks for open ended debt schemes as per the Potential Risk Class matrix dt. 31-Mar-22.pdf
+- AMFI BPG/New AMFI BP circulars/19. AMFI BP 30 Guidelines on charging of additonal Total Expense Ratio (TER) on account of inflows from beyond Top 15 cities (T-15) dt. 01-Nov-2012.pdf
+- AMFI BPG/New AMFI BP circulars/1a. SEBI_s Letter to AMFI Attachment 1a. SEBI_s Letter to AMFI dt. 15-Oct-2019.pdf   dt. 15-Oct-2019.pdf
+- AMFI BPG/New AMFI BP circulars/2. 35P 18A  Clarification on AMFI Best Practice Circular No. 15 dated May 7, 2010 dt 31-May-2010.pdf
+- AMFI BPG/New AMFI BP circulars/20. AMFI BP 31 Amendments to AMFI BP Circular No. 15_10-11 dated 07-May-2010 - Change of Distributor initiated by the investor dt. 08-Nov-2012.pdf
+- AMFI BPG/New AMFI BP circulars/21. AMFI BP 32 Guidelines on implementation of Employee Unique Identification Number (EUIN) dt. 07-Dec-2012.pdf
+- AMFI BPG/New AMFI BP circulars/22. AMFI BP 33 dt.  Revised Guidelines on implementation of EUIN 31-Dec-2012.pdf
+- AMFI BPG/New AMFI BP circulars/23. AMFI BP 34 AMFI Best Practices on Direct Plan- Tagging of ARN dt. 02-Jan-2013.pdf
+- AMFI BPG/New AMFI BP circulars/24. AMFI BP 35 Uniform process for aggregating split transactions for NAV applicability in terms of SEBI Circular dated September 13, 2012  dt. 18-Feb-2013.pdf
+- AMFI BPG/New AMFI BP circulars/26. AMFI BP 37 Amendments to AMFI BP Circular No. 33 dt. 31-Dec-2012 on EUIN validation dt. 28-Mar-2013.pdf
+- AMFI BPG/New AMFI BP circulars/27. AMFI BP 38 Extension of date for implementation of EUIN in respect of certain transactions dt. 31-Jul-2013.pdf
+- AMFI BPG/New AMFI BP circulars/28. AMFI BP 39  Bank Mandate Registration as part of new folio creation dt. 23-Aug-2013.pdf
+- AMFI BPG/New AMFI BP circulars/29. AMFI BP 40 Clarification on BP Circular No. 37 dt. 28-Mar-13 on EUIN validation and extension of date of implementation dt. 27-Aug-2013.pdf
+- AMFI BPG/New AMFI BP circulars/3. AMFI BP 16 Risk mitigation process against Third-Party Cheques in mutual fund subscriptions  dt. 16-Aug-2010.pdf
+- AMFI BPG/New AMFI BP circulars/3. AMFI_s email dt. 24-Dec-19-IST Valuations - TAT and Go Live Date.pdf
+- AMFI BPG/New AMFI BP circulars/30. AMFI BP 41 Valuation of Securities with Residual Maturity up to 60 days dt. 19-Sep-2013.pdf
+- AMFI BPG/New AMFI BP circulars/31. AMFI BP 42 Scrip Level Valuation for Debt Securities having maturity greater than 60 days dt. 19-Nov-2013.pdf
+- AMFI BPG/New AMFI BP circulars/31.1 crisil agreement.pdf
+- AMFI BPG/New AMFI BP circulars/31.2 icra agreement.pdf
+- AMFI BPG/New AMFI BP circulars/31.3 Crisil commercials.pdf
+- AMFI BPG/New AMFI BP circulars/31.4 ICRA commercials.pdf
+- AMFI BPG/New AMFI BP circulars/32. AMFI BP 43 Guidelines on Transfer of AUM from one ARN to another ARN dt. 22-Jan-2014.pdf
+- AMFI BPG/New AMFI BP circulars/33. AMFI BP 44 Outlier Trades dt. 14-Mar-2014.pdf
+- AMFI BPG/New AMFI BP circulars/34. AMFI BP 45 Standardizing Product Labeling dt. 14-Mar-2014.pdf
+- AMFI BPG/New AMFI BP circulars/35. AMFI BP 46Deferment of forfeiture of brokerage due to EUIN non compliance  dt. 02-Apr-2014.pdf
+- AMFI BPG/New AMFI BP circulars/36. AMFI BP 47 Guidelines on valuation of BRDS dt. 26-May-2014.pdf
+- AMFI BPG/New AMFI BP circulars/37. AMFI BP 48 Dealing with Applications when the scheme name in in the Application Transaction Slip differs from that on payment instrument dt. 24-Jun-2014.pdf
+- AMFI BPG/New AMFI BP circulars/38. AMFI BP 49 Change in Fundamental attributes of a scheme in compliance with Regulation 18 (15A) of SEBI (Mutual Funds) Regulations, 1996 dt. 30-Jul-2014.pdf
+- AMFI BPG/New AMFI BP circulars/39. AMFI BP 50 Guidelines on Standardizing Product Labelling of Arbitrage Funds dt. 05-Aug-2014.pdf
+- AMFI BPG/New AMFI BP circulars/4. AMFI BP 17 Registration of Multiple Bank Accounts dt. 22-Oct-2010.pdf
+- AMFI BPG/New AMFI BP circulars/4.1 AMFI - Attachment 4.1 AMFI - Multiple Bank Account Registration Form.pdf
+- AMFI BPG/New AMFI BP circulars/40. AMFI emailClarification_Advisory w.r.t. applicability of AMFI BP circular on Distributors_ Commission dt. 14-Nov-2018.pdf
+- AMFI BPG/New AMFI BP circulars/41. AMFI BP 101 Uniformity in sharing of information to stakeholders at each stage of transaction dt. 30-Jun-2022.pdf
+- AMFI BPG/New AMFI BP circulars/42. AMFI BP 103b dt. 13-Dec-2022.pdf
+- AMFI BPG/New AMFI BP circulars/5. AMFI BP 18 dt.Risk mitigation process against Third-Party Cheques in mutual fund subscriptions – Modification in Clause 3.A.b 22-Dec-2010.pdf
+- AMFI BPG/New AMFI BP circulars/7. AMFI email 35P 70 dt. 25-Nov-21.pdf
+- AMFI BPG/New AMFI BP circulars/7.1 AMFI - NISM Implementation Minor, Guardian, Transmission_Attachment  7.1 AMFI - NISM Implementation Minor Guardian Transmission.pdf
+- AMFI BPG/New AMFI BP circulars/7.2 AMFI - NISM Transmission Annexures.pdf
+- AMFI BPG/New AMFI BP circulars/8. AMFI BP 21 Guidelines on Standardization of Complaints Grievances Reporting Procedure dt. 24-Mar-2011.pdf
+- AMFI BPG/New AMFI BP circulars/8.1 Guidelines on standardisation of complaints classification and reporting.pdf
+- AMFI BPG/New AMFI BP circulars/8.2 Guidelines on standardisation of complaints classification and reporting 1.pdf
+- AMFI BPG/New AMFI BP circulars/9. AMFI BP 22 Modifications to AMFI Best Practice Guidelines Circular No.20 2010-11 dt. 31-Mar-2011.pdf
+- AMFI BPG/New AMFI BP circulars/9. AMFI email 35P 72 dt. 02-Dec-21-SEBI Cir SEBI Circular dated Oct. 27, 2021 on Guiding Principles for bringing dt. 27-Oct-2021.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI BPG 116  Process  for Transfer of Mutual Fund Units held in SoA Mode_14-08-2024.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI BPG 118  Financial Tr Non Individuals.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI BPG circular no.113 - MFD_s Name found to be added as Jt. holder in folio of unrelated 1st holder 15.03.2024.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI BPG circular no.114 _ Name of urelated person found to be added as Jt. holder in folio of multiple unrelated 1st holders 19.06.2024.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI BPG circular no.115 - Investments in Partly Paid Debentures 26-07-2024.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI Best Practice Guidelines Circular No. 109-A_Revised CAGR values for Illustrations_10-09-2024.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI Best Practices Guidelines Circular No. 117 -  Prudential norms for LRM of OES 13-11-2024.pdf
+- AMFI BPG/New AMFI BP circulars/AMFI Data Sharing Principles to be followed by AMCs while sharing Unitholders data.pdf
+- AMFI BPG/New AMFI BP circulars/CU100-AMFI BP Cir  76 dt. 20-3-19- Standard Procedure for Tagging Transactions to T-30, B-20 PIN Codes.pdf
+- AMFI BPG/New AMFI BP circulars/CU102-AMFI BPG Circular 78 reg. Revision in the Guidelines on Transfer of AUM from one MF Distributor to another 26-3-19.pdf
+- AMFI BPG/New AMFI BP circulars/CU103-AMFI BP 79 dt. 24-Sep-19-Standard process for computing int. on delayed pymt of red., divd, refund.pdf
+- AMFI BPG/New AMFI BP circulars/CU104-AMFI BP 80 dt. 24-Sep-19-Providing trxn data feeds under Direct Plan to SEBI regd. Portfolio Managers.pdf
+- AMFI BPG/New AMFI BP circulars/CU105-AMFI BP 81 dt. 24-Sep-19-Standard Process for treatment of business received through suspended distributors.pdf
+- AMFI BPG/New AMFI BP circulars/CU106-AMFI BP 82 dt. 10-Oct-19-Tracking and Aggregation of multiple purchase transactions from B30 locations for charging of additional TER.pdf
+- AMFI BPG/New AMFI BP circulars/CU107-AMFI BP cir. 83 dt. 18-Nov-19- Various guidelines pursuant to SEBI cir dt 24-09-19.pdf
+- AMFI BPG/New AMFI BP circulars/CU108-AMFI BP Cir 84-Treatment of trxns recd from entities debarred by SEBI 14-Feb-2020.pdf
+- AMFI BPG/New AMFI BP circulars/CU114-AMFI BP Cir No. 87 dt.16-Jul-2020 - Revision in Guidelines on Transfer of AUM.pdf
+- AMFI BPG/New AMFI BP circulars/CU115-AMFI BP Cir No. 88 dt. 30-Jul-2020-Additional disclosures in monthly Fact Sheets.pdf
+- AMFI BPG/New AMFI BP circulars/CU116-AMFI BP cir No. 86-16-Jul-2020- Updated Guidelines reg. Minors Account and change of status from Minor to Major.pdf
+- AMFI BPG/New AMFI BP circulars/CU116-Ch1BP 86 - MAM Form- for change in status from Minor to Major.pdf
+- AMFI BPG/New AMFI BP circulars/CU116-Ch2BP 86 - Form for providing Minor DoB And Details of Guardian.pdf
+- AMFI BPG/New AMFI BP circulars/CU116-Ch3BP 86 - Annexure-I - Bank Attestation of Signature.pdf
+- AMFI BPG/New AMFI BP circulars/CU116-Ch4BP 86 - Request for change in Guardian of Minor Unitholder.pdf
+- AMFI BPG/New AMFI BP circulars/CU117-AMFI BP Cir 89 dt. 28-Aug-2020-Outlier criteria for Polling process.pdf
+- AMFI BPG/New AMFI BP circulars/CU118-AMFI BP Cir. 90 dt 03-Mar-2021- Mutual Fund Transactions received through Stock Brokers.pdf
+- AMFI BPG/New AMFI BP circulars/CU119-AMFI BP Cir 91 dt. 24-Mar-2021 - Valuation of Bonds issued under Basel III framework.pdf
+- AMFI BPG/New AMFI BP circulars/CU121-AMFIBPCir92dt.25-Jun-21-ClubbingofTxnbelow2lakhdated26-06-2021.pdf
+- AMFI BPG/New AMFI BP circulars/CU122-AMFI BP cir no. 85 - 26-Jun-20 - Updated Guidelines on Transmission of Units and std.formats.pdf
+- AMFI BPG/New AMFI BP circulars/CU123-AMFI BP Cir 93 dt. 24-Jul-21-Prudential norms for liquidity risk management for Open Ended Funds.pdf
+- AMFI BPG/New AMFI BP circulars/CU124-AMFIBPGCircular93adt.03-Dec-21-Prudential norms for Liquidity Risk Management for Open-ended Debt Schemes – Clarifications  Amendments.pdf
+- AMFI BPG/New AMFI BP circulars/CU125-AMFI BP Guidelines cir No.94 dt. 28-Oct-2021.pdf
+- AMFI BPG/New AMFI BP circulars/CU126-AMFI Best Practices Guidelines Circular No.95 on Floating Rate Bonds 23.02.2022.pdf
+- AMFI BPG/New AMFI BP circulars/CU127-AMFI Best Practices Guidelines Circular No.96 dt. 23.03.2022 on Swing Pricing Framework.pdf
+- AMFI BPG/New AMFI BP circulars/CU130-AMFI BPG 98 dt. 28.03.2022 - Standardization of process for Mitigating Risks of Co-mingling of funds at the level of Payment Aggregator & Payment Gateways.pdf
+- AMFI BPG/New AMFI BP circulars/CU131-AMFI BPG No. 99 dt. 29.03.2022 on Data Sharing Principles-revised.pdf
+- AMFI BPG/New AMFI BP circulars/CU132-AMFI BPG No.100 dt. 26.04.2022 - AMC Skin in the Game.pdf
+- AMFI BPG/New AMFI BP circulars/CU134-AMFI BP Cir No.102 dt. 10-Oct-22-Basic requirements for automated polling process.pdf
+- AMFI BPG/New AMFI BP circulars/CU134-Ch1Attachment to AMFI BP Cir no. 102-SEBI Letter to AMFI 27.09.22-Automated polling process.pdf
+- AMFI BPG/New AMFI BP circulars/CU135-AMFI Best Practices Guidelines Circular No.103- Stress Testing by Debt schemes of MFs (1).pdf
+- AMFI BPG/New AMFI BP circulars/CU135-AMFI Best Practices Guidelines Circular No.103- Stress Testing by Debt schemes of MFs.pdf
+- AMFI BPG/New AMFI BP circulars/CU136-AMFI BP circ. 103a dt 15.11.22-Addendum to AMFI Best Practice Guidelines Circular No.103 _2022-23 - Stress testing by Debt schemes of MFs.pdf
+- AMFI BPG/New AMFI BP circulars/CU138-AMFI BPG circular no 104 dt. 23.11.2022 - Guidelines for availing discretionary PMS by employees of AMC and Trustees.pdf
+- AMFI BPG/New AMFI BP circulars/CU139-AMFI BP Guidelines Circular No.105 dated 09-Jan-23-on Impementation of SEBI circular on Nomination.pdf
+- AMFI BPG/New AMFI BP circulars/CU140-AMFI BP cir 106 dt. 21-Mar-23 - Revision in the Guidelines on Transfer of AUM.pdf
+- AMFI BPG/New AMFI BP circulars/CU144-Ch1Annexure I-15-Jun-23.pdf
+- AMFI BPG/New AMFI BP circulars/CU144-Ch2Annexure II-15-Jun-23.pdf
+- AMFI BPG/New AMFI BP circulars/CU149-AMFI BP cir 110 Updated Guidelines on Transmission of Units dt. 31-Jan-24.pdf
+- AMFI BPG/New AMFI BP circulars/CU149-Ch1Attachment 1 to AMFI BP cir 110 dt. 31-Jan-24-SEBILetter.pdf
+- AMFI BPG/New AMFI BP circulars/CU149-Ch2Attachment 2 to AMFI BP cir 110 dt. 31-Jan-24-Form T1.pdf
+- AMFI BPG/New AMFI BP circulars/CU149-Ch3Attachment 3 to AMFI BP cir 110 dt. 31-Jan-24-Form T2.pdf
+- AMFI BPG/New AMFI BP circulars/CU149-Ch4Attachment 4 to AMFI BP cir 110 dt. 31-Jan-24-Form T3.pdf
+- AMFI BPG/New AMFI BP circulars/CU149-Ch5Attachment 5 to AMFI BP cir 110 dt. 31-Jan-24-Form T4.pdf
+- AMFI BPG/New AMFI BP circulars/CU149-Ch6Attachment 6 to AMFI BP cir 110 dt. 31-Jan-24-Form T5.pdf
+- AMFI BPG/New AMFI BP circulars/CU150-AMFI BP cir 111 Treatment of Transactions received with invalid ARNs dt. 02-Feb-23.pdf
+- AMFI BPG/New AMFI BP circulars/CU151-AMFI BP cir 112 Payment of Commission to new distributor where change of MFD is done at the request of investor dt. 05-Mar-24.pdf
+- AMFI BPG/New AMFI BP circulars/CU152-Ch1Minimum (12-Mar-24).pdf
+- AMFI BPG/New AMFI BP circulars/CU152-Revised Minimum Standards on AML, CFT and Revised STR Criteria.pdf
+- AMFI BPG/New AMFI BP circulars/CU154-AMFI BP cir 113 Action to be taken by AMCs in cases where the Distributor is found to be Joint holder in multiple folios of unrelated 1st holder dt.15-Mar-24.pdf
+- AMFI BPG/New AMFI BP circulars/CU24-BP 12 Declaring Saturday as a Non Business Day Dated September 5, 2007.pdf
+- AMFI BPG/New AMFI BP circulars/CU26-BP 13 Revised Circular on Reimbursement of Demand Draft (DD) Charges Dt. October 3, 2007.pdf
+- AMFI BPG/New AMFI BP circulars/CU27-BP 14 Standardization of Fact Sheets and News Letters issued by Mutual Funds Dt.October 25, 2007.pdf
+- AMFI BPG/New AMFI BP circulars/CU49-BP Guidelines for implementing SEBI Circular no. SEBI_IMD_CIR no.1_42529_05 dated June 14.2005 on 20-25 Rule Dated November 9, 2005.pdf
+- AMFI BPG/New AMFI BP circulars/CU49-Ch1BP-10 9Nov05 - Process Note_Attachment  CU49_Ch1BP_10 9Nov05 Process Note.doc.doc
+- AMFI BPG/New AMFI BP circulars/CU50-BP 9 Operational Guidelines and Procedure for implementing Sevice Tax Provisions April 01, 2005.pdf
+- AMFI BPG/New AMFI BP circulars/CU51-BP 9A Operational Guidelines and Procedure for implementing Sevice Tax Provisions - Revised Clause D.9 April 04, 2005.pdf
+- AMFI BPG/New AMFI BP circulars/CU52-BP 8 Prudential Guidelines on Banks_ investment in non-SLR Securities  February 15, 2005.pdf
+- AMFI BPG/New AMFI BP circulars/CU53-BP 7 UIN (MAPIN) Dated January 28, 2005.pdf
+- AMFI BPG/New AMFI BP circulars/CU54-BP 6 DDT Dated July 21, 2004.pdf
+- AMFI BPG/New AMFI BP circulars/CU54-BP Recommendations for uniform implementation procedure of differential Dividend Distribution Tax (DDT) Dated July 21, 2004 (1).pdf
+- AMFI BPG/New AMFI BP circulars/CU55-BP 5 Rebating Dated February 27, 2004.pdf
+- AMFI BPG/New AMFI BP circulars/CU57-BP 3 Recommended guidelines AUM Dated October 8, 2003.pdf
+- AMFI BPG/New AMFI BP circulars/CU58-BP 2 Cut Off Time for applicability of NAV Dated October 8, 2003.pdf
+- AMFI BPG/New AMFI BP circulars/CU60-BP 11 Guidelines for changing agent-distributors during the currency of investment  Dated September 5, 2007.pdf
+- AMFI BPG/New AMFI BP circulars/CU61-AMFI Best Practice Guidelines Circular No.54 Distribution Cost - Commission Pay-out dt 26-03-2015.pdf
+- AMFI BPG/New AMFI BP circulars/CU61-AMFI Best Practice circular no. 53 d. 11-Feb-15 - Revision to guidelines on Transmission of Units.pdf
+- AMFI BPG/New AMFI BP circulars/CU61-AMFI Best Practices Circular 52-To Dicontinue Div Reinvestment Option in ELSS.pdf
+- AMFI BPG/New AMFI BP circulars/CU61-BP 1 Reimbursement of DD Charges Dated October 8, 2003.pdf
+- AMFI BPG/New AMFI BP circulars/CU61-BP 51 dt 12-Sep-14 on  Stress Testing of Money Market Mutual Funds and Liquid Funds.pdf
+- AMFI BPG/New AMFI BP circulars/CU61-Ch1Draft of Notice addendum for ELSS.docx
+- AMFI BPG/New AMFI BP circulars/CU70-Ch1AMFI BP Circular No. 53A dt. March 30, 2015 - Clarification in respect of AMFI BP circular No. 53 dt. Feb 11, 2015.pdf
+- AMFI BPG/New AMFI BP circulars/CU72-AMFI Best Practice Guidelines Circular no.55 dtd 20-4-2015 -Risk Mitigation Process against Third-Party cheques in Mutual Fund Subscriptions.pdf
+- AMFI BPG/New AMFI BP circulars/CU73-AMFI Best Pratice Circular 56 dtd 20-4-2015- Accounting of Unutilised Bal of 2bps Set Aside for Investor Awareness.pdf
+- AMFI BPG/New AMFI BP circulars/CU74-AMFI BP Guidelines Circular no  57 dt. 18-May-15 - Product Labelling in Mutual Fund Schemes - Revised Framework and Guidelines.pdf
+- AMFI BPG/New AMFI BP circulars/CU75-AMFI Best Guidelines Circular 58 dt. 19-May-15- DIscontinuation of Bonus Plan.pdf
+- AMFI BPG/New AMFI BP circulars/CU78-AMFI BP Circular No. 53A dt. March 30, 2015 - Clarification in respect of AMFI BP circular No. 53 dt. Feb 11, 2015.pdf
+- AMFI BPG/New AMFI BP circulars/CU79-BP Circular  59 dt 26-06-2015 -Relaxations in AMFI Best Practice Guidelines Circular No. 54 on Commission Pay-outs.pdf
+- AMFI BPG/New AMFI BP circulars/CU80-BP Circular  60 dt 10-09-2015 -Revisions in AMFI Best Practice Guidelines Circular No. 54 on Commission Pay-outs.pdf
+- AMFI BPG/New AMFI BP circulars/CU81-AMFI BP Circular No. 61 dt. 14-Sep-15-Standardization of information in Factsheets.pdf
+- AMFI BPG/New AMFI BP circulars/CU82-AMFI Best Practice Circular No 62 - 18 Sep 2015 - Uniform implementation of KYC requirements to overcome KYC related issues.pdf
+- AMFI BPG/New AMFI BP circulars/CU83-AMFI Best Practice Circular 63 dtd 16-09-2015 - Uniform implementation of FATCA_ CRS requirements.pdf
+- AMFI BPG/New AMFI BP circulars/CU83-Ch1Attachment to CP Cir. 63 - Guidance Notes for Implementation of FATCA-CRS Reporting-MoF.pdf
+- AMFI BPG/New AMFI BP circulars/CU84-AMFI Best Practice Cir. 64 dt. 29-Oct-15 Clarification in respect of AMFI Best PRactice Guidelines Circular No. 61 on Standardization of information in Factsheets.pdf
+- AMFI BPG/New AMFI BP circulars/CU86-AMFI Best Practice Cir 66A dt. 17-Dec-15-Partial modification of Cir No. 66.pdf
+- AMFI BPG/New AMFI BP circulars/CU87-AMFI B P Cir no.60A - AMFI Best Practice Guidelines on Commission Pay-outs - Clarification w.r.t. Payouts in B-15 Locations for NFOs in B-15 locations for NFOs.pdf
+- AMFI BPG/New AMFI BP circulars/CU88-AMFI Best Practice Guidelines Circular no.67- Revision in guidelines on distributors commission  18-Apr-2016.pdf
+- AMFI BPG/New AMFI BP circulars/CU89-AMFI Best Practice Circular No. 68 - Implementation of Central KYC (CKYC) norms- 22-12-2016.pdf
+- AMFI BPG/New AMFI BP circulars/CU89-Ch1Annexure 1 to AMFI BP Cir no. 68 - CKYC_KRA_KYC Form.pdf
+- AMFI BPG/New AMFI BP circulars/CU89-Ch2Annexure 2  to AMFI BP Cir no. 68 -Supplementary CKYC Form.pdf
+- AMFI BPG/New AMFI BP circulars/CU90-AMFI Best Practice circular no. 69-Treatment of Inter Schemes Investments and disclosure of AAUM 18-Apr-2017.pdf
+- AMFI BPG/New AMFI BP circulars/CU93-AMFI Best Practice Cir. No. 71 Guidelines for Accounting of Borrowing Cost by Mutual Fundsdt. 23-Mar-18.pdf
+- AMFI BPG/New AMFI BP circulars/CU94-AMFI BP Cir. no. 72 dt. 26-Jun-18-TER-Disclosure in Factsheet.pdf
+- AMFI BPG/New AMFI BP circulars/CU95-AMFI BP Cir. no. 73 Minimum Standards on AML_ CFT and Revised STR Criteria dt. 26-Jun-18.pdf
+- AMFI BPG/New AMFI BP circulars/CU95-Ch1Minimum Standards Report for AML-CFT-KYC- Attachment to BP cir no. 73.pdf
+- AMFI BPG/New AMFI BP circulars/CU95-Ch2Revised STR Alert Criteria w.e.f. 1 April 2018 - Attachment to BP cir no. 73.pdf
+- AMFI BPG/New AMFI BP circulars/CU96-AMFI B.P. Cir 74 dt. 29-Aug-18-Guidelines on Electronic Transactions.pdf
+- AMFI BPG/New AMFI BP circulars/CU96-Ch1Annexure to AMFI Best Practice Guidelines on ElectronicTransactions.pdf
+- AMFI BPG/New AMFI BP circulars/CU97-AMFI BP Cir no. 75 dt. 19-Oct-18-Capturing RIA Code of Direct Plan Transactions and providing transaction data feed.pdf
+- AMFI BPG/New AMFI BP circulars/Copy of CU154-AMFI BP cir 113 Action to be taken by AMCs in cases where the Distributor is found to be Joint holder in multiple folios of unrelated 1st holder dt.15-Mar-24.pdf
+- AMFI BPG/New AMFI BP circulars/Copy of Copy of CU154-AMFI BP cir 113 Action to be taken by AMCs in cases where the Distributor is found to be Joint holder in multiple folios of unrelated 1st holder dt.15-Mar-24.pdf
+- AMFI BPG/New AMFI BP circulars/c.pdf
+- AMFI BPG/SEBI additional circulars /Amendment to Guidelines on Anti-Money Laundering (AML) Standards and Combating the Financing of Terrorism_CFTObligations of Securities Market Intermediaries under the Prevention of Money Laundering Act, 2.pdf
+- AMFI BPG/SEBI additional circulars /Cyber Security and Cyber Resilience framework for Mutual Funds  Asset Management Companies AMCs 10 January 2019.pdf
+- AMFI BPG/SEBI additional circulars /Investment trading in securities by employees and Board members of AMCs and Trustees of Mutual Funds 28 October 2021.pdf
+- AMFI BPG/SEBI additional circulars /Master Circular on KYC Norms for the Securities Market - 12th Oct_23.pdf
+- AMFI BPG/SEBI additional circulars /Master Circular on the redressal of investor grievances through the SEBI Complaints Redress System (SCORES) platform 07 Sept. 2025.PDF
