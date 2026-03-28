@@ -89,9 +89,13 @@ describe("ScenarioRunner", () => {
         status: "completed"
       })
     ]);
-    expect(result.executions[0]?.agentResult.outputArtifacts).toEqual([
-      expect.stringContaining("workspace/case/governance-curated-note.md")
-    ]);
+    expect(result.executions[0]?.agentResult.outputArtifacts).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("workspace/case/notes/governance-curated-note.md"),
+        expect.stringContaining("workspace/case/outputs/governance-final-answer.md"),
+        expect.stringContaining("workspace/case/delegations/governance-subagent-output.md")
+      ])
+    );
     expect(rerunMetadata.memoryReads).toEqual([
       expect.objectContaining({
         candidateId: "memory-opportunity-governance-001",
