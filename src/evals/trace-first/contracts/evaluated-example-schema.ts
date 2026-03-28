@@ -83,6 +83,8 @@ export const evaluatedExampleSchema = z.object({
   exampleId: z.string().min(1),
   variantGroupId: z.string().min(1),
   runId: z.string().min(1),
+  agentLabel: z.string().min(1),
+  modelLabel: z.string().min(1),
   taskType: z.string().min(1),
   mode: z.enum(["initial", "feedback_rerun"]),
   accuracyScore: z.number().min(0).max(1),

@@ -1,0 +1,28 @@
+{
+  "subsetId": "release",
+  "label": "Release",
+  "description": "Broader subset for main-branch and release regression sweeps.",
+  "expectedScenarioIds": [
+    "scenario-compliance-001",
+    "scenario-compliance-002",
+    "scenario-compliance-003",
+    "scenario-governance-001",
+    "scenario-governance-002",
+    "scenario-governance-003",
+    "scenario-investigation-001",
+    "scenario-investigation-002",
+    "scenario-investigation-003",
+    "scenario-risk-001",
+    "scenario-risk-002",
+    "scenario-risk-003"
+  ],
+  "regressionThresholds": {
+    "maxDomainCorrectnessMeanDrop": 0.05,
+    "maxTrajectoryMeanDrop": 0.07,
+    "maxContextMeanDrop": 0.07,
+    "maxMemoryMeanDrop": 0.07,
+    "maxResponseQualityMeanDrop": 0.1,
+    "maxPerExampleDrop": 0.15,
+    "minComparableExampleRate": 1
+  }
+}

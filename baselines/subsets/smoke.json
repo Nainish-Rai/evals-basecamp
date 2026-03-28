@@ -1,0 +1,20 @@
+{
+  "subsetId": "smoke",
+  "label": "Smoke",
+  "description": "Fast subset for PR-level regression checks.",
+  "expectedScenarioIds": [
+    "scenario-compliance-001",
+    "scenario-governance-001",
+    "scenario-investigation-001",
+    "scenario-risk-001"
+  ],
+  "regressionThresholds": {
+    "maxDomainCorrectnessMeanDrop": 0.03,
+    "maxTrajectoryMeanDrop": 0.05,
+    "maxContextMeanDrop": 0.05,
+    "maxMemoryMeanDrop": 0.05,
+    "maxResponseQualityMeanDrop": 0.08,
+    "maxPerExampleDrop": 0.1,
+    "minComparableExampleRate": 1
+  }
+}

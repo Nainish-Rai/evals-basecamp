@@ -61,6 +61,8 @@ function createEvaluatedExample(
     exampleId,
     variantGroupId,
     runId: `${exampleId}-run`,
+    agentLabel: "workspace",
+    modelLabel: "local-scenario-agent",
     taskType: "risk",
     mode: "initial",
     accuracyScore: 0.9,

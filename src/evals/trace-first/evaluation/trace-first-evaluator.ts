@@ -112,6 +112,8 @@ export class TraceFirstEvaluator {
             exampleId: runBundle.example.exampleId,
             variantGroupId: runBundle.example.variantGroupId,
             runId: runBundle.runId,
+            agentLabel: runBundle.agentLabel,
+            modelLabel: runBundle.modelLabel,
             taskType: runBundle.example.taskType,
             mode: runBundle.mode,
             accuracyScore: accuracy.score,
