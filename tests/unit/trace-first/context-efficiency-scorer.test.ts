@@ -9,28 +9,32 @@ describe("ContextEfficiencyScorer", () => {
     const bundle = runBundleSchema.parse({
       bundleId: "bundle-1",
       example: {
-        exampleId: "example-1",
-        variantGroupId: "variant-1",
-        taskType: "risk",
-        task: "Review the risk case.",
-        skills: [],
-        data: [],
-        evaluationSpec: {
-          instruction: "Review the risk case.",
-          minimumCorrectnessThreshold: 0.75,
-          requiredFindings: [],
-          expectedEvidenceRefs: [],
-          memoryCheckpoints: [],
-          contextCheckpoints: [],
-          staticOverhead: {
-            systemPromptTokens: 200,
-            toolDefinitionTokens: 100
-          }
-        }
+        example_id: "example-1",
+        variation_group_id: "variant-1",
+        task_type: "risk",
+        task: {
+          text: "Review the risk case.",
+          images: []
+        },
+        instructions: "Review the risk case.",
+        workspace: []
       },
       mode: "initial",
       runId: "run-1",
+      runBatchId: "batch-1",
       traceId: "trace-1",
+      feedbackTurns: [],
+      evaluationContext: {
+        minimumCorrectnessThreshold: 0.75,
+        requiredFindings: [],
+        expectedEvidenceRefs: [],
+        memoryCheckpoints: [],
+        contextCheckpoints: [],
+        staticOverhead: {
+          systemPromptTokens: 200,
+          toolDefinitionTokens: 100
+        }
+      },
       feedbackIds: [],
       finalResponse: "Disposition: maintain_high_residual_risk.",
       outputArtifacts: [],
@@ -110,38 +114,39 @@ describe("ContextEfficiencyScorer", () => {
     const bundle = runBundleSchema.parse({
       bundleId: "bundle-2",
       example: {
-        exampleId: "example-2",
-        variantGroupId: "variant-2",
-        taskType: "compliance",
-        task: "Review the compliance case.",
-        skills: [
-          { skillId: "policy_search", label: "policy_search" },
-          { skillId: "customer_lookup", label: "customer_lookup" }
-        ],
-        data: [],
-        evaluationSpec: {
-          instruction: "Review the compliance case.",
-          minimumCorrectnessThreshold: 0.75,
-          requiredFindings: [],
-          expectedEvidenceRefs: [],
-          requiredContext: ["kyc onboarding checklist", "proof of address policy"],
-          optionalContext: ["customer risk tier summary"],
-          distractorContext: ["legacy screening note"],
-          duplicateContext: ["duplicated checklist extract"],
-          staleContext: ["superseded branch guidance"],
-          expectedActiveTools: ["policy_search"],
-          overlappingToolNames: ["customer_lookup"],
-          memoryCheckpoints: [],
-          contextCheckpoints: [],
-          staticOverhead: {
-            systemPromptTokens: 180,
-            toolDefinitionTokens: 120
-          }
-        }
+        example_id: "example-2",
+        variation_group_id: "variant-2",
+        task_type: "compliance",
+        task: {
+          text: "Review the compliance case.",
+          images: []
+        },
+        instructions: "Review the compliance case.",
+        workspace: []
       },
       mode: "initial",
       runId: "run-2",
+      runBatchId: "batch-2",
       traceId: "trace-2",
+      feedbackTurns: [],
+      evaluationContext: {
+        minimumCorrectnessThreshold: 0.75,
+        requiredFindings: [],
+        expectedEvidenceRefs: [],
+        requiredContext: ["kyc onboarding checklist", "proof of address policy"],
+        optionalContext: ["customer risk tier summary"],
+        distractorContext: ["legacy screening note"],
+        duplicateContext: ["duplicated checklist extract"],
+        staleContext: ["superseded branch guidance"],
+        expectedActiveTools: ["policy_search"],
+        overlappingToolNames: ["customer_lookup"],
+        memoryCheckpoints: [],
+        contextCheckpoints: [],
+        staticOverhead: {
+          systemPromptTokens: 180,
+          toolDefinitionTokens: 120
+        }
+      },
       feedbackIds: [],
       finalResponse: "The proof of address policy is mandatory for onboarding.",
       outputArtifacts: ["artifact-policy"],
@@ -189,8 +194,8 @@ describe("ContextEfficiencyScorer", () => {
     expect(result.diagnostics).toMatchObject({
       contextPrecision: 0.75,
       activeToolSurfaceArea: 1,
-      unusedToolDefinitionRatio: 0.5,
-      toolOverlapRate: 0.5,
+      unusedToolDefinitionRatio: 0,
+      toolOverlapRate: 1,
       artifactReuseRate: 1
     });
     expect(result.diagnostics.duplicateContextRate).toBeGreaterThan(0);

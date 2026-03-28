@@ -45,10 +45,11 @@ export class TraceFirstScenarioCollector {
       ? [await loadScenarioFile(request.scenarioFilePath)]
       : await loadScenarioDirectory(request.scenarioDirectoryPath);
     const bundles: RunBundle[] = [];
-    const runBundlesDirectoryPath = path.join(request.outputDirectoryPath, "run-bundles");
+    const invocationsDirectoryPath = path.join(request.outputDirectoryPath, "invocations");
     const environmentConfig = loadEnvironmentConfig();
+    const runBatchId = buildRunBatchId();
 
-    await mkdir(runBundlesDirectoryPath, { recursive: true });
+    await mkdir(invocationsDirectoryPath, { recursive: true });
 
     for (const scenario of scenarios) {
       const scenarioOutputPath = path.join(
@@ -70,10 +71,10 @@ export class TraceFirstScenarioCollector {
         outputRootPath: scenarioOutputPath,
         agent: this.resolveAgentFactory(environmentConfig)(scenario)
       });
-      const scenarioBundles = this.adapter.adapt(runResult);
+      const scenarioBundles = this.adapter.adapt(runResult, { runBatchId });
 
       for (const bundle of scenarioBundles) {
-        const bundlePath = path.join(runBundlesDirectoryPath, `${bundle.bundleId}.json`);
+        const bundlePath = path.join(invocationsDirectoryPath, `${bundle.bundleId}.json`);
         await writeFile(bundlePath, JSON.stringify(bundle, null, 2));
       }
 
@@ -84,14 +85,14 @@ export class TraceFirstScenarioCollector {
   }
 
   async loadBundles(bundleDirectoryPath: string): Promise<RunBundle[]> {
-    const runBundleDirectoryPath = path.join(bundleDirectoryPath, "run-bundles");
-    const fileNames = (await readdir(runBundleDirectoryPath))
+    const invocationDirectoryPath = path.join(bundleDirectoryPath, "invocations");
+    const fileNames = (await readdir(invocationDirectoryPath))
       .filter((fileName) => fileName.endsWith(".json"))
       .sort();
 
     return Promise.all(
       fileNames.map(async (fileName) => {
-        const filePath = path.join(runBundleDirectoryPath, fileName);
+        const filePath = path.join(invocationDirectoryPath, fileName);
         const fileContents = await importRunBundle(filePath);
 
         if (fileContents.trace !== null) {
@@ -139,6 +140,10 @@ export class TraceFirstScenarioCollector {
   private resolveTraceFetcher(): TraceFirstTraceFetcher {
     return this.traceFetcher ?? LangfuseTraceFetcher.fromEnvironment();
   }
+}
+
+function buildRunBatchId(): string {
+  return `batch-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 async function importRunBundle(filePath: string) {

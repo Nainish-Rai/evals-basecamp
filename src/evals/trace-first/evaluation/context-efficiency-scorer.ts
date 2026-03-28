@@ -103,7 +103,7 @@ export class ContextEfficiencyScorer {
     const rawScore = hasIncompleteSubagent
       ? 0
       : Math.min(...participantContextScores.map((participant) => participant.score));
-    const threshold = bundle.example.evaluationSpec.minimumCorrectnessThreshold;
+    const threshold = bundle.evaluationContext.minimumCorrectnessThreshold;
     const gatedScore = roundScore(rawScore * Math.min(1, accuracyScore / Math.max(threshold, 0.01)));
     const rootParticipant = participants[0];
     const diagnostics = buildContextDiagnostics({
@@ -146,8 +146,8 @@ function detectParticipants(bundle: RunBundle): Participant[] {
     participantId: "supervisor",
     participantType: "supervisor",
     complete: true,
-    systemPromptTokens: bundle.example.evaluationSpec.staticOverhead.systemPromptTokens,
-    toolDefinitionTokens: bundle.example.evaluationSpec.staticOverhead.toolDefinitionTokens,
+    systemPromptTokens: bundle.evaluationContext.staticOverhead.systemPromptTokens,
+    toolDefinitionTokens: bundle.evaluationContext.staticOverhead.toolDefinitionTokens,
     totalInputTokens: bundle.tokenUsage.inputTokens,
     toolCallCount: toolCalls.filter((toolCall) => toolCall.status !== "skipped").length,
     toolRetryCount: toolCalls.filter((toolCall) => toolCall.status === "failed").length,
@@ -192,11 +192,7 @@ function buildContextDiagnostics(options: {
 }): EvaluatedExample["contextDiagnostics"] {
   const rootParticipant = options.rootParticipant;
   const definedToolNames = [
-    ...new Set(
-      options.bundle.example.skills.length > 0
-        ? options.bundle.example.skills.map((skill) => skill.skillId)
-        : options.bundle.example.evaluationSpec.expectedActiveTools
-    )
+    ...new Set(options.bundle.evaluationContext.expectedActiveTools)
   ];
   const activeToolNames = [
     ...new Set(
@@ -210,7 +206,7 @@ function buildContextDiagnostics(options: {
   const retrievedContextTokens = rootParticipant?.retrievedContextTokens ?? 0;
   const totalInputTokens = rootParticipant?.totalInputTokens ?? options.bundle.tokenUsage.inputTokens;
   const handoffPromptTokens = rootParticipant?.handoffPromptTokens ?? 0;
-  const evaluationSpec = options.bundle.example.evaluationSpec;
+  const evaluationSpec = options.bundle.evaluationContext;
   const staticContextEntries = [
     ...evaluationSpec.requiredContext,
     ...evaluationSpec.optionalContext,

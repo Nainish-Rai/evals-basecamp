@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { feedbackEventSchema } from "../../../domain/feedback/feedback-event-schema.js";
 import { evalExampleSchema } from "./eval-example-schema.js";
 
 const traceScoreSchema = z.object({
@@ -43,12 +44,63 @@ export const traceExportSchema = z.object({
   vendorTraceIds: z.array(z.string().min(1))
 });
 
+export const evaluationCheckpointSchema = z.object({
+  checkpointId: z.string().min(1),
+  description: z.string().min(1)
+});
+
+export const evaluationStaticOverheadSchema = z.object({
+  systemPromptTokens: z.number().int().nonnegative().default(0),
+  toolDefinitionTokens: z.number().int().nonnegative().default(0)
+});
+
+export const evaluationContextSchema = z.object({
+  minimumCorrectnessThreshold: z.number().min(0).max(1).default(0.75),
+  requiredFindings: z.array(z.string().min(1)).default([]),
+  expectedEvidenceRefs: z.array(z.string().min(1)).default([]),
+  correctnessExpectation: z.string().min(1).optional(),
+  expectedDisposition: z.string().min(1).optional(),
+  requiredContext: z.array(z.string().min(1)).default([]),
+  optionalContext: z.array(z.string().min(1)).default([]),
+  distractorContext: z.array(z.string().min(1)).default([]),
+  duplicateContext: z.array(z.string().min(1)).default([]),
+  staleContext: z.array(z.string().min(1)).default([]),
+  expectedActiveTools: z.array(z.string().min(1)).default([]),
+  overlappingToolNames: z.array(z.string().min(1)).default([]),
+  memoryCheckpoints: z.array(evaluationCheckpointSchema).default([]),
+  contextCheckpoints: z.array(evaluationCheckpointSchema).default([]),
+  staticOverhead: evaluationStaticOverheadSchema.default({
+    systemPromptTokens: 0,
+    toolDefinitionTokens: 0
+  })
+});
+
 export const runBundleSchema = z.object({
   bundleId: z.string().min(1),
   example: evalExampleSchema,
   mode: z.enum(["initial", "feedback_rerun"]),
   runId: z.string().min(1),
+  runBatchId: z.string().min(1),
   traceId: z.string().min(1).nullable(),
+  feedbackTurns: z.array(feedbackEventSchema).default([]),
+  evaluationContext: evaluationContextSchema.default({
+    minimumCorrectnessThreshold: 0.75,
+    requiredFindings: [],
+    expectedEvidenceRefs: [],
+    requiredContext: [],
+    optionalContext: [],
+    distractorContext: [],
+    duplicateContext: [],
+    staleContext: [],
+    expectedActiveTools: [],
+    overlappingToolNames: [],
+    memoryCheckpoints: [],
+    contextCheckpoints: [],
+    staticOverhead: {
+      systemPromptTokens: 0,
+      toolDefinitionTokens: 0
+    }
+  }),
   feedbackIds: z.array(z.string().min(1)).default([]),
   finalResponse: z.string().min(1),
   outputArtifacts: z.array(z.string().min(1)).default([]),

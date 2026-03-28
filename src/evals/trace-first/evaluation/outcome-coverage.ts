@@ -14,27 +14,27 @@ export type OutcomeCoverage = {
 
 export function analyzeOutcomeCoverage(bundle: RunBundle): OutcomeCoverage {
   const groundedEvidenceRefs = readGroundedEvidenceRefs(bundle.agentMetadata);
-  const matchedFindings = bundle.example.evaluationSpec.requiredFindings.filter(
+  const matchedFindings = bundle.evaluationContext.requiredFindings.filter(
     (finding) => containsMeaningfulContent(bundle.finalResponse, finding)
   );
   const matchedEvidenceRefs =
-    bundle.example.evaluationSpec.expectedEvidenceRefs.filter(
+    bundle.evaluationContext.expectedEvidenceRefs.filter(
       (evidenceRef) =>
         bundle.outputArtifacts.includes(evidenceRef) ||
         groundedEvidenceRefs.includes(evidenceRef)
     );
-  const expectedDisposition = bundle.example.evaluationSpec.expectedDisposition;
+  const expectedDisposition = bundle.evaluationContext.expectedDisposition;
   const dispositionMatched = expectedDisposition
     ? containsMeaningfulContent(bundle.finalResponse, expectedDisposition)
     : true;
   const findingCoverage = average(
     matchedFindings.length,
-    bundle.example.evaluationSpec.requiredFindings.length,
+    bundle.evaluationContext.requiredFindings.length,
     1
   );
   const evidenceCoverage = average(
     matchedEvidenceRefs.length,
-    bundle.example.evaluationSpec.expectedEvidenceRefs.length,
+    bundle.evaluationContext.expectedEvidenceRefs.length,
     1
   );
   const dispositionScore = dispositionMatched ? 1 : 0;
@@ -47,12 +47,12 @@ export function analyzeOutcomeCoverage(bundle: RunBundle): OutcomeCoverage {
     evidenceCoverage,
     dispositionScore,
     matchedFindings,
-    missingFindings: bundle.example.evaluationSpec.requiredFindings.filter(
+    missingFindings: bundle.evaluationContext.requiredFindings.filter(
       (finding) => !matchedFindings.includes(finding)
     ),
     matchedEvidenceRefs,
     missingEvidenceRefs:
-      bundle.example.evaluationSpec.expectedEvidenceRefs.filter(
+      bundle.evaluationContext.expectedEvidenceRefs.filter(
         (evidenceRef) => !matchedEvidenceRefs.includes(evidenceRef)
       ),
     dispositionMatched

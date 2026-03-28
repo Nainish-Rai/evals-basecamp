@@ -50,18 +50,19 @@ describe("TraceFirstScenarioCollector", () => {
       await readFile(
         path.join(
           outputDirectoryPath,
-          "run-bundles",
+          "invocations",
           `${bundles[0]?.bundleId}.json`
         ),
         "utf8"
       )
-    ) as { runId: string; trace: { spans: unknown[] } };
+    ) as { runId: string; runBatchId: string; trace: { spans: unknown[] } };
     const evaluation = await new TraceFirstEvaluator(
       new HeuristicEvaluationJudge()
     ).evaluate(bundles);
 
     expect(bundles).toHaveLength(2);
     expect(writtenBundleContents.runId.length).toBeGreaterThan(0);
+    expect(writtenBundleContents.runBatchId.length).toBeGreaterThan(0);
     expect(writtenBundleContents.trace.spans.length).toBeGreaterThan(0);
     expect(evaluation.examples).toHaveLength(2);
     expect(evaluation.examples[1]).toMatchObject({

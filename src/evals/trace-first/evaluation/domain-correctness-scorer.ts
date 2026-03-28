@@ -5,8 +5,7 @@ import { analyzeOutcomeCoverage } from "./outcome-coverage.js";
 export class DomainCorrectnessScorer {
   score(bundle: RunBundle) {
     const coverage = analyzeOutcomeCoverage(bundle);
-    const passThreshold =
-      bundle.example.evaluationSpec.minimumCorrectnessThreshold;
+    const passThreshold = bundle.evaluationContext.minimumCorrectnessThreshold;
 
     return metricResultSchema.parse({
       metricId: `domain-correctness:${bundle.bundleId}`,
@@ -16,8 +15,7 @@ export class DomainCorrectnessScorer {
       summary: buildSummary(bundle, coverage),
       details: {
         minimumCorrectnessThreshold: passThreshold,
-        correctnessExpectation:
-          bundle.example.evaluationSpec.correctnessExpectation ?? null,
+        correctnessExpectation: bundle.evaluationContext.correctnessExpectation ?? null,
         findingCoverage: coverage.findingCoverage,
         evidenceCoverage: coverage.evidenceCoverage,
         dispositionScore: coverage.dispositionScore,
@@ -25,11 +23,10 @@ export class DomainCorrectnessScorer {
         missingFindings: coverage.missingFindings,
         matchedEvidenceRefs: coverage.matchedEvidenceRefs,
         missingEvidenceRefs: coverage.missingEvidenceRefs,
-        expectedDisposition:
-          bundle.example.evaluationSpec.expectedDisposition ?? null,
+        expectedDisposition: bundle.evaluationContext.expectedDisposition ?? null,
         dispositionMatched: coverage.dispositionMatched
       },
-      evidenceRefs: bundle.example.evaluationSpec.expectedEvidenceRefs
+      evidenceRefs: bundle.evaluationContext.expectedEvidenceRefs
     });
   }
 }
@@ -41,7 +38,7 @@ function buildSummary(
   const missingFindingCount = coverage.missingFindings.length;
   const missingEvidenceCount = coverage.missingEvidenceRefs.length;
   const dispositionStatus = coverage.dispositionMatched ? "matched" : "missed";
-  const expectation = bundle.example.evaluationSpec.correctnessExpectation;
+  const expectation = bundle.evaluationContext.correctnessExpectation;
 
   if (expectation) {
     return `${expectation} Findings missed: ${missingFindingCount}. Evidence missed: ${missingEvidenceCount}. Disposition ${dispositionStatus}.`;

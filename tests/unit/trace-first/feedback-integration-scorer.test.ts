@@ -8,47 +8,50 @@ describe("FeedbackIntegrationScorer", () => {
     const initialBundle = runBundleSchema.parse({
       bundleId: "bundle-feedback-initial",
       example: {
-        exampleId: "example-feedback-1",
-        variantGroupId: "variant-feedback-1",
-        taskType: "compliance",
-        task: "Review the package.",
-        skills: [],
-        data: [],
-        feedbackTurns: [
-          {
-            feedbackId: "feedback-1",
-            turnId: "turn-2",
-            source: "reviewer",
-            summary: "The first draft missed the proof-of-address requirement.",
-            instructions: [
-              "Update the final finding to include the missing document."
-            ],
-            correctedFacts: [
-              "Proof of address is mandatory for this customer type."
-            ],
-            priority: "high",
-            resolution: "pending"
-          }
-        ],
-        evaluationSpec: {
-          instruction: "Review the package.",
-          minimumCorrectnessThreshold: 0.8,
-          requiredFindings: [
-            "The customer file is missing valid proof of address."
-          ],
-          expectedEvidenceRefs: ["artifact-policy"],
-          expectedDisposition: "hold_for_document_collection",
-          memoryCheckpoints: [],
-          contextCheckpoints: [],
-          staticOverhead: {
-            systemPromptTokens: 0,
-            toolDefinitionTokens: 0
-          }
-        }
+        example_id: "example-feedback-1",
+        variation_group_id: "variant-feedback-1",
+        task_type: "compliance",
+        task: {
+          text: "Review the package.",
+          images: []
+        },
+        instructions: "Review the package.",
+        workspace: []
       },
       mode: "initial",
       runId: "run-feedback-initial",
+      runBatchId: "batch-feedback-1",
       traceId: null,
+      feedbackTurns: [
+        {
+          feedbackId: "feedback-1",
+          turnId: "turn-2",
+          source: "reviewer",
+          summary: "The first draft missed the proof-of-address requirement.",
+          instructions: [
+            "Update the final finding to include the missing document."
+          ],
+          correctedFacts: [
+            "Proof of address is mandatory for this customer type."
+          ],
+          priority: "high",
+          resolution: "pending"
+        }
+      ],
+      evaluationContext: {
+        minimumCorrectnessThreshold: 0.8,
+        requiredFindings: [
+          "The customer file is missing valid proof of address."
+        ],
+        expectedEvidenceRefs: ["artifact-policy"],
+        expectedDisposition: "hold_for_document_collection",
+        memoryCheckpoints: [],
+        contextCheckpoints: [],
+        staticOverhead: {
+          systemPromptTokens: 0,
+          toolDefinitionTokens: 0
+        }
+      },
       feedbackIds: [],
       finalResponse: "Disposition: hold_for_document_collection.",
       outputArtifacts: ["artifact-policy"],

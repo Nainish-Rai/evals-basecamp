@@ -78,10 +78,10 @@ export class AiSdkEvaluationJudge implements EvaluationJudge {
 
   async judgeMemory(bundle: RunBundle): Promise<MemoryJudgeOutput> {
     const sharedMemoryPacket = {
-      instruction: bundle.example.evaluationSpec.instruction,
-      task: bundle.example.task,
+      instruction: bundle.example.instructions,
+      task: bundle.example.task.text,
       finalResponse: bundle.finalResponse,
-      memoryCheckpoints: bundle.example.evaluationSpec.memoryCheckpoints,
+      memoryCheckpoints: bundle.evaluationContext.memoryCheckpoints,
       memoryWrites: readAgentMetadataArray(bundle.agentMetadata, "memoryWrites"),
       memoryWritesSkipped: readAgentMetadataArray(bundle.agentMetadata, "memoryWritesSkipped"),
       memoryReads: readAgentMetadataArray(bundle.agentMetadata, "memoryReads")
