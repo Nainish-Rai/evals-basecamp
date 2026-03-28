@@ -1,7 +1,7 @@
 # Agent Evaluation Harness Implementation Plan
 
 Date: 2026-03-27
-Status: Ready for execution
+Status: In progress after PR #1 merge on 2026-03-28
 Depends on: `docs/plans/2026-03-27-agent-evaluation-design.md`
 
 ## 1. Notes
@@ -9,6 +9,24 @@ Depends on: `docs/plans/2026-03-27-agent-evaluation-design.md`
 - This plan is written directly because the `writing-plans` skill referenced by the brainstorming workflow is not available in this session.
 - The implementation language is TypeScript/JavaScript.
 - Existing unrelated repo changes must remain untouched.
+
+### Current Snapshot
+
+As of 2026-03-28 after PR #1 merge, the repo now has more than the original foundation:
+
+- milestones 1 through 7 are largely complete
+- a trace-first evaluation path now exists
+- run bundles can be collected locally and evaluated post hoc
+- external-agent runs can be hydrated from Langfuse by `runId`
+- first-pass accuracy, memory, context, peer-summary, and CoV-based drift scoring exists
+
+The main remaining work is now:
+
+- real workspace-agent execution and richer subagent traces
+- stronger trace-native scoring fidelity
+- baseline storage and baseline-relative drift comparison
+- trajectory scoring integration
+- reporting and CI regression workflows
 
 ## 2. Delivery Strategy
 
@@ -221,6 +239,8 @@ Deliverables:
 - Langfuse client wrapper
 - trace and span helpers
 - score writing helpers
+- trace export contract
+- Langfuse hydration path for external runs
 
 Tasks:
 
@@ -240,11 +260,14 @@ Tasks:
   - skipped retrieval
   - used in decision
 - add safe fallbacks when Langfuse is disabled locally
+- preserve a stable `runId` for each execution
+- allow trace-first collectors to hydrate traces later from Langfuse using `sessionId == runId`
 
 Exit criteria:
 
 - local run produces a trace with nested spans
 - score helpers can attach numeric and categorical scores
+- external runs can be re-linked to Langfuse traces by `runId`
 
 ### Milestone 6: Tool-Chain Agent
 
@@ -295,6 +318,15 @@ Exit criteria:
 
 ### Milestone 8: First Metric Engines
 
+Status on 2026-03-28:
+
+- partially complete via the trace-first evaluator path
+- implemented:
+  - deterministic accuracy scoring
+  - correctness-gated context efficiency scoring
+  - retry attribution
+  - peer summaries grouped by task type and accuracy bin
+
 Deliverables:
 
 - domain correctness scorer
@@ -338,6 +370,11 @@ Exit criteria:
 
 ### Milestone 9: Workspace Agent
 
+Status on 2026-03-28:
+
+- still pending as the main execution gap
+- current trace-first collector can evaluate workspace-family scenarios, but only through sparse stub behavior unless an external agent is injected
+
 Deliverables:
 
 - workspace graph
@@ -364,6 +401,14 @@ Exit criteria:
 - normalized record contains retrieval, file, and subagent data
 
 ### Milestone 10: Remaining Metric Engines
+
+Status on 2026-03-28:
+
+- partially complete
+- implemented:
+  - memory utilization scorer
+  - coefficient-of-variation drift aggregation over memory and context scores
+- remaining work is primarily about fidelity, baseline comparison, and trajectory scoring
 
 Deliverables:
 
@@ -433,6 +478,9 @@ Tasks:
   - retry due to tool schema ambiguity rate
   - retry due to missing context rate
 - integrate AgentEvals for selected stable scenarios and trajectory hints
+- promote `variantGroupId` from an adapter default to an authored benchmark concept so drift comparisons operate on real variants instead of scenario IDs
+- replace scenario-authored static overhead with directly measured overhead where possible
+- read more scoring evidence directly from hydrated trace spans and events instead of relying mainly on emitted agent metadata
 
 Exit criteria:
 
@@ -444,6 +492,11 @@ Exit criteria:
 - baseline comparison is possible on a benchmark subset
 
 ### Milestone 11: Drift and Regression Pipeline
+
+Status on 2026-03-28:
+
+- pending
+- within-group drift summaries exist, but baseline snapshots, baseline-relative comparison, and CI gating still need to be built
 
 Deliverables:
 
@@ -478,6 +531,11 @@ Exit criteria:
 - drift output explains whether the regression came from outcome quality or execution path
 
 ### Milestone 12: Reports and Hardening
+
+Status on 2026-03-28:
+
+- partially started through JSON outputs from the trace-first evaluation CLIs
+- still missing durable report shapes for benchmark review and release gating
 
 Deliverables:
 
@@ -552,6 +610,8 @@ Focus:
 - metric functions
 - normalization helpers
 - drift comparison logic
+- run-id propagation
+- Langfuse trace hydration normalization
 
 ### Integration Tests
 
@@ -559,6 +619,8 @@ Focus:
 
 - scenario runner
 - Langfuse trace emission
+- trace-first bundle collection
+- trace-first post-hoc evaluation
 - tool-chain graph execution
 - workspace graph execution
 - filesystem materialization
@@ -579,12 +641,15 @@ Focus:
 - run one case
 - run one benchmark group
 - optionally disable Langfuse writes
+- collect trace-first bundles with `pnpm run run:eval:collect`
+- evaluate run bundles with `pnpm run run:eval:evaluate`
 
 ### CI Smoke Mode
 
 - run smoke benchmark subset
 - low cost
 - deterministic scenarios only
+- prefer heuristic judges unless explicit evaluator-agent coverage is under test
 
 ### Release Mode
 
@@ -671,18 +736,16 @@ Owner responsibility:
 - Langfuse wrappers
 - config and logging
 
-## 10. First Week Execution Checklist
+## 10. Post-Merge Execution Checklist
 
-1. Initialize the TypeScript project.
-2. Add strict schemas and type tests.
-3. Create the first 12 benchmark scenarios.
-4. Implement the scenario runner with a stub agent.
-5. Add Langfuse tracing wrappers.
-6. Implement the tool-chain agent first.
-7. Build normalized record generation.
-8. Implement domain correctness, feedback integration, and context efficiency scorers.
-9. Implement the workspace agent.
-10. Add smoke benchmark execution and baseline comparison.
+1. Merge PR #1 and treat the trace-first evaluation path as the new scoring baseline.
+2. Make `variantGroupId` a first-class authored concept in scenarios or benchmark-side example fixtures.
+3. Build the real workspace agent path and emit richer subagent traces.
+4. Add a separate domain correctness scorer.
+5. Add a separate feedback integration scorer.
+6. Add baseline storage and baseline-relative comparison.
+7. Integrate trajectory scoring for selected stable scenarios.
+8. Add smoke benchmark execution over the trace-first collection and evaluation CLIs.
 
 ## 11. Definition of Done for v1
 
@@ -692,14 +755,14 @@ v1 is complete when:
 2. All four financial compliance task families are represented.
 3. Feedback-informed reruns are scored.
 4. The required metric families are implemented.
-5. Langfuse traces and scores are written for benchmark runs.
+5. Benchmark runs preserve a stable `runId`, and scored runs have either embedded traces or Langfuse-hydrated traces.
 6. A smoke benchmark can run in CI.
 7. A release benchmark can compare to baseline.
 
 ## 12. Immediate Next Step
 
-After this plan is accepted, the next implementation action should be:
+After PR #1 merge, the next implementation action should be:
 
-1. scaffold the TypeScript project
-2. define benchmark and normalized-record contracts
-3. add the first hand-authored synthetic scenarios
+1. author real variant groups instead of defaulting drift groups to scenario IDs
+2. implement the real workspace agent execution path
+3. add baseline snapshots and baseline-relative drift comparison

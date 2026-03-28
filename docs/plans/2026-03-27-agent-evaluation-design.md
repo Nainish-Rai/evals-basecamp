@@ -1,7 +1,7 @@
 # Agent Evaluation Harness Design
 
 Date: 2026-03-27
-Status: Approved for implementation
+Status: Approved for implementation, updated after PR #1 merge on 2026-03-28
 Primary stack: TypeScript, LangChain, LangGraph, Langfuse, AgentEvals
 
 ## 1. Purpose
@@ -43,6 +43,7 @@ Why this is the recommended path:
 - AgentEvals is used where trajectory or rubric-based intermediate-step evaluation is valuable.
 - Benchmark datasets remain version-controlled in Git instead of being hidden inside a platform-specific UI.
 - The evaluation harness owns the canonical execution contract, which reduces coupling to LangGraph internals and provider SDK churn.
+- External or vendor agents can stay black-boxed as long as the harness preserves a stable `runId` and can hydrate traces back from Langfuse later.
 
 ## 3. Design Principles
 
@@ -150,6 +151,26 @@ Most scenarios should run in two phases:
 2. Feedback-informed execution
 
 This is required to test whether agents genuinely integrate reviewer feedback.
+
+### Trace-First Evaluation Overlay
+
+Scenario files remain the authoring source of truth.
+
+Post-hoc scoring now runs on a trace-first evaluation overlay:
+
+- `EvalExample`
+  - the per-example scoring contract
+  - captures `task`, `skills`, `data`, and evaluation metadata
+- `RunBundle`
+  - the per-run evidence contract
+  - captures `runId`, final outputs, agent metadata, and either:
+    - an embedded trace export
+    - or a `traceId` plus enough information to hydrate the trace from Langfuse later
+
+This means the system is now:
+
+- `scenario-centric` for benchmark authoring
+- `trace-first` for post-hoc evaluation
 
 ### Context Evaluation Spec
 
@@ -405,7 +426,7 @@ Subagent requirement:
 
 Execution pipeline:
 
-`Scenario Registry -> Scenario Runner -> Environment Simulator -> Agent Adapter -> LangGraph Agent -> Langfuse Trace -> Normalized Evaluation Record -> Metric Engines -> Drift Engine -> Reports`
+`Scenario Registry -> Scenario Runner -> Environment Simulator -> Agent Adapter -> Agent -> runId -> Embedded Trace Export or Langfuse Hydration -> ScenarioRunBundleAdapter -> RunBundle -> TraceFirstEvaluator -> Evaluated Examples / Peer Summaries / Drift Summaries -> Reports`
 
 ### Architectural Boundary
 
@@ -416,12 +437,21 @@ The critical design boundary is:
 That means:
 
 - evaluators do not inspect arbitrary graph internals directly
-- evaluators consume a normalized record
+- evaluators consume a stable evaluation contract such as `NormalizedEvaluationRecord` or `RunBundle`
 - adapters are the only layer allowed to translate raw graph state into evaluation contracts
 
 ## 13. Normalized Evaluation Record
 
-Every agent run must normalize to one shared record.
+Every agent run should still normalize to one shared record for harness-owned normalization and agent-family comparison.
+
+The project now also has a second evaluation-facing contract for trace-first scoring:
+
+- `RunBundle`
+  - post-hoc scoring input
+  - includes `EvalExample`, `runId`, outputs, agent metadata, and trace evidence
+- `EvaluatedExample`
+  - post-hoc scoring output
+  - includes accuracy, memory, context, retry attribution, participant context scores, and drift summary
 
 Recommended fields:
 
@@ -484,7 +514,9 @@ Recommended fields:
 - `tokenUsage`
 - `langfuseTraceId`
 
-This record is the canonical interface for the evaluation layer.
+`NormalizedEvaluationRecord` remains the canonical normalization interface.
+
+`RunBundle` is now the canonical post-hoc scoring interface.
 
 ## 14. Observability and Tracing
 
@@ -511,13 +543,51 @@ Trace or span boundaries should include:
 - experiment history
 - debugging links from benchmark reports
 
+### Run Identity and Hydration
+
+Every execution should have a stable `runId`.
+
+That `runId` is the join key between:
+
+- the harness execution record
+- external or vendor agent runs
+- Langfuse trace hydration
+
+The current preferred model is:
+
+- embed the trace directly when the harness owns it locally
+- hydrate the trace from Langfuse later when the agent is external and only a vendor trace reference is available
+
 ### Local Artifact Responsibilities
 
-The harness should also emit local machine-readable summaries such as JSONL so benchmark runs remain reproducible outside the platform UI.
+The harness should also emit local machine-readable summaries such as run bundles, evaluated examples, drift summaries, and JSONL exports so benchmark runs remain reproducible outside the platform UI.
 
 ## 15. Evaluation Strategy
 
 Use deterministic checks first and LLM-as-judge second.
+
+### Current Implemented Baseline
+
+The current implementation now includes a first trace-first scoring path with:
+
+- a deterministic accuracy scorer
+- a memory utilization scorer using the nine-state memory frame
+- a correctness-gated context efficiency scorer
+- retry attribution
+- peer summaries grouped by `taskType` and accuracy bin
+- coefficient-of-variation drift summaries across variant groups
+
+This is enough to score post-hoc run bundles and produce machine-readable evaluation artifacts.
+
+### Next Layer Still Planned
+
+The next layer should improve scoring fidelity rather than re-argue the architecture:
+
+- direct trace-native memory evidence parsing instead of relying mostly on emitted agent metadata
+- direct measured prompt and tool overhead instead of relying partly on scenario-authored static overhead
+- baseline-relative drift comparison
+- trajectory scoring integration with AgentEvals
+- richer workspace-agent traces and subagent evidence
 
 ### Metric Families
 
@@ -830,6 +900,11 @@ Drift should be computed in this order:
 3. `cohort aggregation`
 4. `drift classification`
 
+Current implementation status:
+
+- within-group drift summaries using mean, standard deviation, and coefficient of variation are implemented
+- baseline-relative drift comparison and benchmark-group regression gating are still follow-on work
+
 Recommended drift classification:
 
 - `quality-preserving variation`
@@ -905,11 +980,13 @@ src/
     artifacts/
   evals/
     contracts/
-    metrics/
-    judges/
-    trajectory/
-    drift/
-    reporting/
+    normalization/
+    trace-first/
+      adapters/
+      cli/
+      collection/
+      contracts/
+      evaluation/
   infra/
     langfuse/
     storage/
@@ -990,6 +1067,7 @@ The happy path for execution and evaluation should stay readable.
 - LLM-as-judge components may introduce evaluator instability
 - workspace scenarios may become too open-ended without strong artifact expectations
 - tool-chain scenarios may overfit to deterministic trajectories if rubric design is weak
+- `runId` / `sessionId` mismatches may weaken Langfuse trace hydration for external runs
 
 ### Mitigations
 
@@ -998,6 +1076,7 @@ The happy path for execution and evaluation should stay readable.
 - version benchmark cases
 - add reviewer audits for benchmark quality
 - preserve run artifacts and traces for debugging
+- keep the `runId` contract explicit across runner, agent boundary, Langfuse, and collector
 
 ## 23. Scaling Triggers
 
@@ -1024,7 +1103,7 @@ v1 is successful when:
 1. Both agent families can run the same scenario contract.
 2. The benchmark covers all four financial compliance task families.
 3. Feedback-informed scenarios are scored correctly.
-4. Every run produces a Langfuse trace and a normalized record.
+4. Every scored run produces a `runId` plus either an embedded trace export or a Langfuse-hydrated trace, alongside machine-readable evaluation artifacts.
 5. The harness can detect score regressions across benchmark subsets.
 6. The repo remains clean enough for continued benchmark growth.
 
