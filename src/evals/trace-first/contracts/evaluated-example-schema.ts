@@ -21,6 +21,23 @@ export const driftSummarySchema = z.object({
   contextCoefficientOfVariation: z.number().nonnegative().nullable()
 });
 
+export const contextDiagnosticsSchema = z.object({
+  contextPrecision: z.number().min(0).max(1),
+  contextRecall: z.number().min(0).max(1),
+  systemPromptTokenOverhead: z.number().int().nonnegative(),
+  toolDefinitionTokenOverhead: z.number().int().nonnegative(),
+  tokenToValueRatio: z.number().nonnegative(),
+  contextBloatIndex: z.number().min(0).max(1),
+  duplicateContextRate: z.number().min(0).max(1),
+  contextPartitionEfficiency: z.number().min(0).max(1),
+  artifactReuseRate: z.number().min(0).max(1),
+  activeToolSurfaceArea: z.number().int().nonnegative(),
+  unusedToolDefinitionRatio: z.number().min(0).max(1),
+  duplicateToolDefinitionRate: z.number().min(0).max(1),
+  toolOverlapRate: z.number().min(0).max(1),
+  fileReadRedundancyRate: z.number().min(0).max(1)
+});
+
 export const evaluatedExampleSchema = z.object({
   exampleId: z.string().min(1),
   variantGroupId: z.string().min(1),
@@ -49,6 +66,7 @@ export const evaluatedExampleSchema = z.object({
     toolRetryCount: z.number().int().nonnegative()
   }),
   participantContextScores: z.array(participantContextScoreSchema),
+  contextDiagnostics: contextDiagnosticsSchema,
   metricResults: z.array(metricResultSchema).default([]),
   drift: driftSummarySchema.optional()
 });

@@ -5,6 +5,7 @@ import type { EvaluationJudge, RetryAttributionLabel } from "./evaluation-judge.
 type AgentMetadataContextMetrics = {
   promptTokens?: number;
   retrievedContextTokens?: number;
+  relevantContextTokens?: number;
   unusedContextTokens?: number;
   subagentCommunicationTokens?: number;
 };
@@ -14,7 +15,13 @@ type AgentMetadataToolCall = {
   status?: string;
   inputSummary?: string;
   outputSummary?: string;
+  outputArtifactRefs?: string[];
   inputArtifactRefs?: string[];
+};
+
+type AgentMetadataToolSpec = {
+  toolName?: string;
+  description?: string;
 };
 
 type AgentMetadataMultimodalEvent = {
@@ -34,6 +41,7 @@ export type ContextEfficiencyResult = {
   retryAttribution: EvaluatedExample["retryAttribution"];
   participantContextScores: EvaluatedExample["participantContextScores"];
   peerMetrics: EvaluatedExample["peerMetrics"];
+  diagnostics: EvaluatedExample["contextDiagnostics"];
 };
 
 type Participant = {
@@ -71,6 +79,13 @@ export class ContextEfficiencyScorer {
     bundle: RunBundle,
     accuracyScore: number
   ): Promise<ContextEfficiencyResult> {
+    const metadata = bundle.agentMetadata as {
+      contextMetrics?: AgentMetadataContextMetrics;
+      toolCalls?: AgentMetadataToolCall[];
+      toolSpecsCreated?: AgentMetadataToolSpec[];
+      multimodalNormalizationEvents?: AgentMetadataMultimodalEvent[];
+      subagentEvents?: AgentMetadataSubagentEvent[];
+    };
     const participants = detectParticipants(bundle);
     const retryAttribution = await summarizeRetryAttribution(
       participants.flatMap((participant) => participant.failedToolCalls),
@@ -91,12 +106,21 @@ export class ContextEfficiencyScorer {
     const threshold = bundle.example.evaluationSpec.minimumCorrectnessThreshold;
     const gatedScore = roundScore(rawScore * Math.min(1, accuracyScore / Math.max(threshold, 0.01)));
     const rootParticipant = participants[0];
+    const diagnostics = buildContextDiagnostics({
+      bundle,
+      accuracyScore,
+      rootParticipant,
+      toolCalls: metadata.toolCalls ?? [],
+      toolSpecsCreated: metadata.toolSpecsCreated ?? [],
+      contextMetrics: metadata.contextMetrics ?? {}
+    });
 
     return {
       score: gatedScore,
       passed: !hasIncompleteSubagent && gatedScore >= 0.75,
       retryAttribution,
       participantContextScores,
+      diagnostics,
       peerMetrics: {
         systemPromptTokens: rootParticipant?.systemPromptTokens ?? 0,
         toolDefinitionTokens: rootParticipant?.toolDefinitionTokens ?? 0,
@@ -156,6 +180,87 @@ function detectParticipants(bundle: RunBundle): Participant[] {
   const subagents = detectSubagents(bundle.trace, metadata.subagentEvents ?? []);
 
   return [rootParticipant, ...subagents];
+}
+
+function buildContextDiagnostics(options: {
+  bundle: RunBundle;
+  accuracyScore: number;
+  rootParticipant: Participant | undefined;
+  toolCalls: AgentMetadataToolCall[];
+  toolSpecsCreated: AgentMetadataToolSpec[];
+  contextMetrics: AgentMetadataContextMetrics;
+}): EvaluatedExample["contextDiagnostics"] {
+  const rootParticipant = options.rootParticipant;
+  const definedToolNames = [
+    ...new Set(
+      options.bundle.example.evaluationSpec.expectedActiveTools.length > 0
+        ? options.bundle.example.evaluationSpec.expectedActiveTools
+        : options.bundle.example.skills.map((skill) => skill.skillId)
+    )
+  ];
+  const activeToolNames = [
+    ...new Set(
+      options.toolCalls
+        .filter((toolCall) => toolCall.status !== "skipped")
+        .map((toolCall) => toolCall.toolName)
+        .filter((toolName): toolName is string => Boolean(toolName))
+    )
+  ];
+  const relevantContextTokens = options.contextMetrics.relevantContextTokens ?? 0;
+  const retrievedContextTokens = rootParticipant?.retrievedContextTokens ?? 0;
+  const totalInputTokens = rootParticipant?.totalInputTokens ?? options.bundle.tokenUsage.inputTokens;
+  const handoffPromptTokens = rootParticipant?.handoffPromptTokens ?? 0;
+  const totalContextFootprint =
+    (rootParticipant?.systemPromptTokens ?? 0) +
+    (rootParticipant?.toolDefinitionTokens ?? 0) +
+    retrievedContextTokens +
+    handoffPromptTokens;
+  const estimatedRequiredContextTokens = estimateTokenCount(
+    options.bundle.example.evaluationSpec.contextCheckpoints
+      .map((checkpoint) => checkpoint.description)
+      .join(" ")
+  );
+  const duplicateToolDefinitionRate = rate(
+    countDuplicateToolDefinitions(options.toolSpecsCreated),
+    Math.max(options.toolSpecsCreated.length, definedToolNames.length)
+  );
+  const toolOverlapRate = options.bundle.example.evaluationSpec.overlappingToolNames.length > 0
+    ? rate(options.bundle.example.evaluationSpec.overlappingToolNames.length, definedToolNames.length)
+    : rate(
+        countOverlappingToolDefinitions(options.toolSpecsCreated),
+        Math.max(options.toolSpecsCreated.length, definedToolNames.length)
+      );
+  const fileReadRedundancyRate = rate(
+    rootParticipant?.duplicateReadCount ?? 0,
+    rootParticipant?.totalReadCount ?? 0
+  );
+
+  return {
+    contextPrecision: roundScore(rate(relevantContextTokens, retrievedContextTokens, 1)),
+    contextRecall: roundScore(rate(relevantContextTokens, estimatedRequiredContextTokens, 1)),
+    systemPromptTokenOverhead: rootParticipant?.systemPromptTokens ?? 0,
+    toolDefinitionTokenOverhead: rootParticipant?.toolDefinitionTokens ?? 0,
+    tokenToValueRatio: roundValue(totalContextFootprint / Math.max(totalInputTokens * Math.max(options.accuracyScore, 0.01), 1)),
+    contextBloatIndex: roundScore(
+      rate(
+        (rootParticipant?.systemPromptTokens ?? 0) +
+          (rootParticipant?.toolDefinitionTokens ?? 0) +
+          (rootParticipant?.unusedContextTokens ?? 0),
+        totalInputTokens,
+        0
+      )
+    ),
+    duplicateContextRate: roundScore(fileReadRedundancyRate),
+    contextPartitionEfficiency: roundScore(1 - clamp01(handoffPromptTokens / Math.max(totalInputTokens, 1))),
+    artifactReuseRate: roundScore(calculateArtifactReuseRate(options.toolCalls)),
+    activeToolSurfaceArea: activeToolNames.length,
+    unusedToolDefinitionRatio: roundScore(
+      rate(Math.max(definedToolNames.length - activeToolNames.length, 0), definedToolNames.length, 0)
+    ),
+    duplicateToolDefinitionRate: roundScore(duplicateToolDefinitionRate),
+    toolOverlapRate: roundScore(toolOverlapRate),
+    fileReadRedundancyRate: roundScore(fileReadRedundancyRate)
+  };
 }
 
 function detectSubagents(
@@ -363,6 +468,88 @@ function countDuplicateReads(toolCalls: AgentMetadataToolCall[]): number {
   return duplicateReadCount;
 }
 
+function countDuplicateToolDefinitions(toolSpecs: AgentMetadataToolSpec[]): number {
+  const seenToolNames = new Set<string>();
+  let duplicateCount = 0;
+
+  for (const toolSpec of toolSpecs) {
+    const toolName = toolSpec.toolName;
+
+    if (!toolName) {
+      continue;
+    }
+
+    if (seenToolNames.has(toolName)) {
+      duplicateCount += 1;
+      continue;
+    }
+
+    seenToolNames.add(toolName);
+  }
+
+  return duplicateCount;
+}
+
+function countOverlappingToolDefinitions(toolSpecs: AgentMetadataToolSpec[]): number {
+  const descriptions = toolSpecs
+    .map((toolSpec) => normalizeDescription(toolSpec.description))
+    .filter((description): description is string => description.length > 0);
+  const countsByDescription = new Map<string, number>();
+
+  for (const description of descriptions) {
+    countsByDescription.set(description, (countsByDescription.get(description) ?? 0) + 1);
+  }
+
+  let overlapCount = 0;
+
+  for (const count of countsByDescription.values()) {
+    if (count > 1) {
+      overlapCount += count;
+    }
+  }
+
+  return overlapCount;
+}
+
+function calculateArtifactReuseRate(toolCalls: AgentMetadataToolCall[]): number {
+  const seenArtifacts = new Set<string>();
+  let reusableCallCount = 0;
+  let reusedCallCount = 0;
+
+  for (const toolCall of toolCalls) {
+    const inputArtifactRefs = toolCall.inputArtifactRefs ?? [];
+    const outputArtifactRefs = toolCall.outputArtifactRefs ?? [];
+
+    if (inputArtifactRefs.length > 0) {
+      reusableCallCount += 1;
+
+      if (inputArtifactRefs.some((artifactRef) => seenArtifacts.has(artifactRef))) {
+        reusedCallCount += 1;
+      }
+    }
+
+    for (const artifactRef of [...inputArtifactRefs, ...outputArtifactRefs]) {
+      seenArtifacts.add(artifactRef);
+    }
+  }
+
+  return rate(reusedCallCount, reusableCallCount, 1);
+}
+
+function normalizeDescription(value: string | undefined): string {
+  return (value ?? "").trim().toLowerCase().replaceAll(/\s+/g, " ");
+}
+
+function estimateTokenCount(text: string): number {
+  const normalizedText = text.trim();
+
+  if (normalizedText.length === 0) {
+    return 0;
+  }
+
+  return Math.ceil(normalizedText.split(/\s+/).length * 1.3);
+}
+
 function readNumberMetadata(metadata: Record<string, unknown>, key: string): number {
   const value = metadata[key];
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
@@ -380,6 +567,18 @@ function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
+function rate(numerator: number, denominator: number, fallback = 0): number {
+  if (denominator <= 0) {
+    return fallback;
+  }
+
+  return clamp01(numerator / denominator);
+}
+
 function roundScore(value: number): number {
+  return Number(value.toFixed(4));
+}
+
+function roundValue(value: number): number {
   return Number(value.toFixed(4));
 }

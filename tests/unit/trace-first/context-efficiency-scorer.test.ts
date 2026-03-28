@@ -40,8 +40,19 @@ describe("ContextEfficiencyScorer", () => {
         totalTokens: 900
       },
       agentMetadata: {
+        toolSpecsCreated: [
+          {
+            toolName: "policy_search",
+            description: "Searches policy context relevant to risk work."
+          },
+          {
+            toolName: "policy_search",
+            description: "Searches policy context relevant to risk work."
+          }
+        ],
         toolCalls: [],
         contextMetrics: {
+          relevantContextTokens: 80,
           retrievedContextTokens: 120,
           unusedContextTokens: 10,
           subagentCommunicationTokens: 60
@@ -78,6 +89,12 @@ describe("ContextEfficiencyScorer", () => {
 
     expect(result.score).toBe(0);
     expect(result.passed).toBe(false);
+    expect(result.diagnostics).toMatchObject({
+      contextPrecision: 0.6667,
+      systemPromptTokenOverhead: 200,
+      toolDefinitionTokenOverhead: 100,
+      duplicateToolDefinitionRate: 0.5
+    });
     expect(result.participantContextScores).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

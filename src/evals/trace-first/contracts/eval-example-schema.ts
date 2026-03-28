@@ -34,6 +34,8 @@ export const evalExampleSpecSchema = z.object({
   expectedEvidenceRefs: z.array(z.string().min(1)).default([]),
   correctnessExpectation: z.string().min(1).optional(),
   expectedDisposition: z.string().min(1).optional(),
+  expectedActiveTools: z.array(z.string().min(1)).default([]),
+  overlappingToolNames: z.array(z.string().min(1)).default([]),
   memoryCheckpoints: z.array(evalCheckpointSchema).default([]),
   contextCheckpoints: z.array(evalCheckpointSchema).default([]),
   staticOverhead: evalStaticOverheadSchema.default({

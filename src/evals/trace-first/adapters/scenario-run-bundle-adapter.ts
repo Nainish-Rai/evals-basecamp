@@ -46,6 +46,12 @@ export class ScenarioRunBundleAdapter {
             expectedDisposition:
               runResult.scenario.driftEvaluationSpec.expectedOutcomeCriteria
                 .expectedDisposition,
+            expectedActiveTools:
+              runResult.scenario.contextEvaluationSpec.toolSurfaceProfile
+                .expectedActiveTools,
+            overlappingToolNames:
+              runResult.scenario.contextEvaluationSpec.toolSurfaceProfile
+                .overlappingToolNames,
             memoryCheckpoints:
               runResult.scenario.memoryEvaluationSpec?.memoryCheckpoints.map(
                 (checkpoint) => ({

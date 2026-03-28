@@ -72,6 +72,22 @@ function createEvaluatedExample(
         score: contextScore
       }
     ],
+    contextDiagnostics: {
+      contextPrecision: 1,
+      contextRecall: 1,
+      systemPromptTokenOverhead: 200,
+      toolDefinitionTokenOverhead: 100,
+      tokenToValueRatio: 0.5,
+      contextBloatIndex: 0.25,
+      duplicateContextRate: 0,
+      contextPartitionEfficiency: 1,
+      artifactReuseRate: 1,
+      activeToolSurfaceArea: 2,
+      unusedToolDefinitionRatio: 0,
+      duplicateToolDefinitionRate: 0,
+      toolOverlapRate: 0,
+      fileReadRedundancyRate: 0
+    },
     metricResults: []
   });
 }
