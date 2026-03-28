@@ -24,6 +24,7 @@ import {
   type ScenarioAgentRunResult
 } from "./stub-scenario-agent.js";
 import type { LangfuseTraceContext } from "../tracing/langfuse-tracer.js";
+import { createWorkspaceScenarioAgent } from "../../agents/workspace/create-workspace-agent.js";
 
 export type ScenarioRunRequest = {
   scenario: Scenario;
@@ -63,7 +64,7 @@ export class ScenarioRunner {
   ) {}
 
   async run(request: ScenarioRunRequest): Promise<ScenarioRunResult> {
-    const agent = request.agent ?? new StubScenarioAgent();
+    const agent = request.agent ?? createDefaultAgent(request.scenario);
     const trace = this.tracer.startTrace({
       name: "scenario_run",
       metadata: {
@@ -222,6 +223,14 @@ export class ScenarioRunner {
 
     return executions;
   }
+}
+
+function createDefaultAgent(scenario: Scenario): ScenarioAgent {
+  if (scenario.agentFamily === "workspace") {
+    return createWorkspaceScenarioAgent();
+  }
+
+  return new StubScenarioAgent();
 }
 
 function buildRunId(options: {

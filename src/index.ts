@@ -37,6 +37,8 @@ export * from "./runtime/artifacts/artifact-registry.js";
 export * from "./runtime/materialization/case-environment-materializer.js";
 export * from "./agents/tool-chain/tool-chain-state.js";
 export * from "./agents/tool-chain/create-tool-chain-agent.js";
+export * from "./agents/workspace/workspace-state.js";
+export * from "./agents/workspace/create-workspace-agent.js";
 export * from "./runtime/runner/feedback-replay-engine.js";
 export * from "./runtime/runner/http-scenario-agent.js";
 export * from "./runtime/runner/scenario-runner.js";
