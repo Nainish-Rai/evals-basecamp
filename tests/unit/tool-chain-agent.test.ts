@@ -227,7 +227,8 @@ function createTraceStub() {
       scoreCount: 0,
       eventCount: 0,
       vendorTraceIds: []
-    })
+    }),
+    export: () => null
   };
 }
 

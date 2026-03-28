@@ -62,6 +62,20 @@ export type TraceEventRecord = {
   metadata: Record<string, unknown>;
 };
 
+export type TraceExport = {
+  traceId: string | null;
+  enabled: boolean;
+  traceName: string | null;
+  status: Exclude<TraceStatus, "running">;
+  startedAt: string | null;
+  endedAt: string | null;
+  metadata: Record<string, unknown>;
+  scores: TraceScore[];
+  spans: TraceSpanRecord[];
+  events: TraceEventRecord[];
+  vendorTraceIds: string[];
+};
+
 export type LangfuseTraceContext = {
   traceId: string | null;
   enabled: boolean;
@@ -95,6 +109,7 @@ export type BenchmarkTrace = {
   annotate(metadata: Record<string, unknown>): void;
   snapshot(): LangfuseTraceContext;
   finish(): LangfuseTraceContext;
+  export(): TraceExport | null;
 };
 
 export type LangfuseTracerOptions = {
@@ -157,6 +172,10 @@ class DisabledBenchmarkTrace implements BenchmarkTrace {
 
   finish(): LangfuseTraceContext {
     return this.context;
+  }
+
+  export(): TraceExport | null {
+    return null;
   }
 }
 
@@ -271,6 +290,31 @@ class InMemoryBenchmarkTrace implements BenchmarkTrace {
         this.state.scores.length +
         this.state.spans.reduce((count, span) => count + span.scores.length, 0),
       eventCount: this.state.events.length,
+      vendorTraceIds: [...this.state.vendorTraceIds]
+    };
+  }
+
+  export(): TraceExport {
+    this.state.endedAt ??= new Date().toISOString();
+
+    return {
+      traceId: this.traceId,
+      enabled: true,
+      traceName: this.traceName,
+      status: this.state.status === "running" ? "completed" : this.state.status,
+      startedAt: this.state.startedAt,
+      endedAt: this.state.endedAt,
+      metadata: { ...this.state.metadata },
+      scores: [...this.state.scores],
+      spans: this.state.spans.map((span) => ({
+        ...span,
+        metadata: { ...span.metadata },
+        scores: [...span.scores]
+      })),
+      events: this.state.events.map((event) => ({
+        ...event,
+        metadata: { ...event.metadata }
+      })),
       vendorTraceIds: [...this.state.vendorTraceIds]
     };
   }

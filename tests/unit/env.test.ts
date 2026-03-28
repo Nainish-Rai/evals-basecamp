@@ -29,4 +29,12 @@ describe("loadEnvironmentConfig", () => {
       })
     ).toThrow(/DEFAULT_SUBAGENT_MODEL_TIER/);
   });
+
+  it("requires an OpenAI API key when the evaluator agent is enabled", () => {
+    expect(() =>
+      loadEnvironmentConfig({
+        EVALUATOR_AGENT_ENABLED: "true"
+      })
+    ).toThrow(/OPENAI_API_KEY/);
+  });
 });

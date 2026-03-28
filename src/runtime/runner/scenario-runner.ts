@@ -6,7 +6,8 @@ import {
 } from "../../domain/scenarios/scenario-loader.js";
 import {
   LangfuseTracer,
-  type BenchmarkTrace
+  type BenchmarkTrace,
+  type TraceExport
 } from "../tracing/langfuse-tracer.js";
 import {
   CaseEnvironmentMaterializer,
@@ -50,6 +51,7 @@ export type ScenarioRunResult = {
   environment: MaterializedCaseEnvironment;
   executions: ScenarioExecutionResult[];
   traceContext: LangfuseTraceContext;
+  traceExport: TraceExport | null;
 };
 
 export class ScenarioRunner {
@@ -126,7 +128,8 @@ export class ScenarioRunner {
         scenario: request.scenario,
         environment,
         executions,
-        traceContext: trace.finish()
+        traceContext: trace.finish(),
+        traceExport: trace.export()
       };
     } catch (error) {
       trace.recordEvent("scenario_run_failed", {

@@ -86,7 +86,16 @@ const toolChainMetadataSchema = z.object({
     unusedContextTokens: z.number(),
     workspaceArtifactTokens: z.number(),
     subagentCommunicationTokens: z.number()
-  }).optional()
+  }).optional(),
+  multimodalNormalizationEvents: z.array(
+    z.object({
+      modality: z.string(),
+      strategy: z.enum(["inline_summary", "structured_summary"]),
+      sourceArtifactRefs: z.array(z.string()).default([]),
+      sourceTokenCount: z.number().default(0),
+      normalizedTokenCount: z.number()
+    })
+  ).default([])
 });
 
 export class ToolChainAgentAdapter {

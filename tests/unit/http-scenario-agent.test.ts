@@ -252,6 +252,19 @@ function createEnabledTrace() {
       scoreCount: 0,
       eventCount: 0,
       vendorTraceIds: []
+    }),
+    export: () => ({
+      traceId: "trace-123",
+      enabled: true,
+      traceName: "scenario_run",
+      status: "completed" as const,
+      startedAt: new Date().toISOString(),
+      endedAt: new Date().toISOString(),
+      metadata: {},
+      scores: [],
+      spans: [],
+      events: [],
+      vendorTraceIds: []
     })
   };
 }
@@ -287,6 +300,7 @@ function createDisabledTrace() {
       scoreCount: 0,
       eventCount: 0,
       vendorTraceIds: []
-    })
+    }),
+    export: () => null
   };
 }

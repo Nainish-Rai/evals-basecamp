@@ -259,6 +259,7 @@ function createMultimodalNormalizationEvents(
       ? "structured_summary"
       : "inline_summary",
     sourceArtifactRefs,
+    sourceTokenCount: 120,
     normalizedTokenCount: 40
   }));
 }
