@@ -1,6 +1,7 @@
 import type { EvaluatedExample } from "../contracts/evaluated-example-schema.js";
 import type { RunBundle, TraceExportRecord } from "../contracts/run-bundle-schema.js";
 import type { EvaluationJudge, RetryAttributionLabel } from "./evaluation-judge.js";
+import { ContextCounterfactualScorer } from "./context-counterfactual-scorer.js";
 
 type AgentMetadataContextMetrics = {
   promptTokens?: number;
@@ -73,6 +74,8 @@ const CONTEXT_WEIGHTS = {
 } as const;
 
 export class ContextEfficiencyScorer {
+  private readonly counterfactualScorer = new ContextCounterfactualScorer();
+
   constructor(private readonly judge: EvaluationJudge) {}
 
   async score(
@@ -112,7 +115,8 @@ export class ContextEfficiencyScorer {
       rootParticipant,
       toolCalls: metadata.toolCalls ?? [],
       toolSpecsCreated: metadata.toolSpecsCreated ?? [],
-      contextMetrics: metadata.contextMetrics ?? {}
+      contextMetrics: metadata.contextMetrics ?? {},
+      counterfactualScorer: this.counterfactualScorer
     });
 
     return {
@@ -189,6 +193,7 @@ function buildContextDiagnostics(options: {
   toolCalls: AgentMetadataToolCall[];
   toolSpecsCreated: AgentMetadataToolSpec[];
   contextMetrics: AgentMetadataContextMetrics;
+  counterfactualScorer: ContextCounterfactualScorer;
 }): EvaluatedExample["contextDiagnostics"] {
   const rootParticipant = options.rootParticipant;
   const definedToolNames = [
@@ -254,32 +259,47 @@ function buildContextDiagnostics(options: {
     evaluationSpec.duplicateContext.length,
     staticContextEntries.length
   );
+  const contextPrecision = roundScore(rate(relevantContextTokens, retrievedContextTokens, 1));
+  const contextRecall = roundScore(
+    rate(
+      relevantContextTokens,
+      estimatedRequiredContextTokens,
+      evaluationSpec.requiredContext.length === 0 ? 1 : 0
+    )
+  );
+  const contextBloatIndex = roundScore(
+    rate(
+      (rootParticipant?.systemPromptTokens ?? 0) +
+        (rootParticipant?.toolDefinitionTokens ?? 0) +
+        (rootParticipant?.unusedContextTokens ?? 0) +
+        staticNoiseTokenCount,
+      totalInputTokens,
+      0
+    )
+  );
+  const counterfactualMetrics = options.counterfactualScorer.score({
+    bundle: options.bundle,
+    accuracyScore: options.accuracyScore,
+    retrievedContextTokens,
+    relevantContextTokens,
+    unusedContextTokens: rootParticipant?.unusedContextTokens ?? 0,
+    handoffPromptTokens,
+    fileReadRedundancyRate,
+    contextPrecision,
+    contextRecall,
+    contextBloatIndex
+  });
 
   return {
-    contextPrecision: roundScore(rate(relevantContextTokens, retrievedContextTokens, 1)),
-    contextRecall: roundScore(
-      rate(
-        relevantContextTokens,
-        estimatedRequiredContextTokens,
-        evaluationSpec.requiredContext.length === 0 ? 1 : 0
-      )
-    ),
+    contextPrecision,
+    contextRecall,
     systemPromptTokenOverhead: rootParticipant?.systemPromptTokens ?? 0,
     toolDefinitionTokenOverhead: rootParticipant?.toolDefinitionTokens ?? 0,
     tokenToValueRatio: roundValue(
       totalContextFootprint /
         Math.max(totalInputTokens * Math.max(options.accuracyScore, 0.01), 1)
     ),
-    contextBloatIndex: roundScore(
-      rate(
-        (rootParticipant?.systemPromptTokens ?? 0) +
-          (rootParticipant?.toolDefinitionTokens ?? 0) +
-          (rootParticipant?.unusedContextTokens ?? 0) +
-          staticNoiseTokenCount,
-        totalInputTokens,
-        0
-      )
-    ),
+    contextBloatIndex,
     duplicateContextRate: roundScore(
       Math.max(fileReadRedundancyRate, staticDuplicateContextRate)
     ),
@@ -291,7 +311,19 @@ function buildContextDiagnostics(options: {
     ),
     duplicateToolDefinitionRate: roundScore(duplicateToolDefinitionRate),
     toolOverlapRate: roundScore(toolOverlapRate),
-    fileReadRedundancyRate: roundScore(fileReadRedundancyRate)
+    fileReadRedundancyRate: roundScore(fileReadRedundancyRate),
+    minimalSufficientContextTokens:
+      counterfactualMetrics.minimalSufficientContextTokens,
+    currentContextTokens: counterfactualMetrics.currentContextTokens,
+    removableContextTokens: counterfactualMetrics.removableContextTokens,
+    ablationLossPerArtifact: counterfactualMetrics.ablationLossPerArtifact,
+    progressiveContextGain: counterfactualMetrics.progressiveContextGain,
+    contextSaturationPointTokens:
+      counterfactualMetrics.contextSaturationPointTokens,
+    budgetConstrainedRobustness:
+      counterfactualMetrics.budgetConstrainedRobustness,
+    contextInheritanceRedundancy:
+      counterfactualMetrics.contextInheritanceRedundancy
   };
 }
 

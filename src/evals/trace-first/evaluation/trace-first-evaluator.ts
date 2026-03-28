@@ -6,6 +6,7 @@ import type { RunBundle } from "../contracts/run-bundle-schema.js";
 import { AgentEvalsTrajectoryScorer } from "./agentevals-trajectory-scorer.js";
 import { AccuracyScorer } from "./accuracy-scorer.js";
 import { ContextEfficiencyScorer } from "./context-efficiency-scorer.js";
+import { CounterfactualContextScorer } from "./counterfactual-context-scorer.js";
 import { DomainCorrectnessScorer } from "./domain-correctness-scorer.js";
 import { DriftAggregator } from "./drift-aggregator.js";
 import type { EvaluationJudge } from "./evaluation-judge.js";
@@ -34,6 +35,7 @@ export class TraceFirstEvaluator {
   private readonly trajectoryCoverageScorer: TrajectoryCoverageScorer;
   private readonly agentEvalsTrajectoryScorer: AgentEvalsTrajectoryScorer;
   private readonly contextScorer: ContextEfficiencyScorer;
+  private readonly counterfactualContextScorer: CounterfactualContextScorer;
   private readonly responseQualityDriftScorer: ResponseQualityDriftScorer;
   private readonly driftAggregator: DriftAggregator;
 
@@ -45,6 +47,7 @@ export class TraceFirstEvaluator {
     this.trajectoryCoverageScorer = new TrajectoryCoverageScorer();
     this.agentEvalsTrajectoryScorer = new AgentEvalsTrajectoryScorer();
     this.contextScorer = new ContextEfficiencyScorer(judge);
+    this.counterfactualContextScorer = new CounterfactualContextScorer();
     this.responseQualityDriftScorer = new ResponseQualityDriftScorer();
     this.driftAggregator = new DriftAggregator();
   }
@@ -85,6 +88,10 @@ export class TraceFirstEvaluator {
           const context = await this.contextScorer.score(
             runBundle,
             accuracy.score
+          );
+          const counterfactualContext = this.counterfactualContextScorer.score(
+            runBundle,
+            baselineBundle
           );
           const responseQualityDrift = this.responseQualityDriftScorer.score(
             runBundle,
@@ -127,6 +134,7 @@ export class TraceFirstEvaluator {
               memory.metricResult,
               trajectory,
               agentEvalsTrajectory,
+              counterfactualContext,
               responseQualityDrift,
               {
                 metricId: `context-efficiency:${runBundle.bundleId}`,

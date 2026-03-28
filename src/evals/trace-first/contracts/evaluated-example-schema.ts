@@ -67,7 +67,15 @@ export const contextDiagnosticsSchema = z.object({
   unusedToolDefinitionRatio: z.number().min(0).max(1),
   duplicateToolDefinitionRate: z.number().min(0).max(1),
   toolOverlapRate: z.number().min(0).max(1),
-  fileReadRedundancyRate: z.number().min(0).max(1)
+  fileReadRedundancyRate: z.number().min(0).max(1),
+  minimalSufficientContextTokens: z.number().int().nonnegative(),
+  currentContextTokens: z.number().int().nonnegative(),
+  removableContextTokens: z.number().int().nonnegative(),
+  ablationLossPerArtifact: z.number().min(0).max(1),
+  progressiveContextGain: z.number().min(0).max(1),
+  contextSaturationPointTokens: z.number().int().nonnegative(),
+  budgetConstrainedRobustness: z.number().min(0).max(1),
+  contextInheritanceRedundancy: z.number().min(0).max(1)
 });
 
 export const evaluatedExampleSchema = z.object({

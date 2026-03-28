@@ -3,6 +3,7 @@ import { z } from "zod";
 export const metricFamilySchema = z.enum([
   "response_quality_drift",
   "context_efficiency",
+  "context_counterfactual",
   "memory_utilization",
   "domain_correctness",
   "feedback_integration",

@@ -93,8 +93,19 @@ describe("ContextEfficiencyScorer", () => {
       contextPrecision: 0.6667,
       systemPromptTokenOverhead: 200,
       toolDefinitionTokenOverhead: 100,
-      duplicateToolDefinitionRate: 0.5
+      duplicateToolDefinitionRate: 0.5,
+      minimalSufficientContextTokens: expect.any(Number),
+      currentContextTokens: expect.any(Number),
+      removableContextTokens: expect.any(Number),
+      ablationLossPerArtifact: expect.any(Number),
+      progressiveContextGain: expect.any(Number),
+      contextSaturationPointTokens: expect.any(Number),
+      budgetConstrainedRobustness: expect.any(Number),
+      contextInheritanceRedundancy: expect.any(Number)
     });
+    expect(result.diagnostics.minimalSufficientContextTokens).toBeLessThanOrEqual(
+      result.diagnostics.currentContextTokens
+    );
     expect(result.participantContextScores).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -191,8 +202,19 @@ describe("ContextEfficiencyScorer", () => {
       activeToolSurfaceArea: 1,
       unusedToolDefinitionRatio: 0.5,
       toolOverlapRate: 0.5,
-      artifactReuseRate: 1
+      artifactReuseRate: 1,
+      minimalSufficientContextTokens: expect.any(Number),
+      currentContextTokens: expect.any(Number),
+      removableContextTokens: expect.any(Number),
+      ablationLossPerArtifact: expect.any(Number),
+      progressiveContextGain: expect.any(Number),
+      contextSaturationPointTokens: expect.any(Number),
+      budgetConstrainedRobustness: expect.any(Number),
+      contextInheritanceRedundancy: expect.any(Number)
     });
+    expect(result.diagnostics.contextSaturationPointTokens).toBeGreaterThanOrEqual(
+      result.diagnostics.minimalSufficientContextTokens
+    );
     expect(result.diagnostics.duplicateContextRate).toBeGreaterThan(0);
     expect(result.diagnostics.contextBloatIndex).toBeGreaterThan(0.35);
   });
