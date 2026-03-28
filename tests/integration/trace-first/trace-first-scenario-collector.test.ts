@@ -80,6 +80,9 @@ describe("TraceFirstScenarioCollector", () => {
     expect(evaluation.examples[1]?.metricResults).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          metricFamily: "memory_utilization"
+        }),
+        expect.objectContaining({
           metricFamily: "feedback_integration"
         })
       ])

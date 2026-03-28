@@ -67,12 +67,12 @@ export class TraceFirstEvaluator {
             accuracy.score
           );
 
-        return evaluatedExampleSchema.parse({
-          bundleId: runBundle.bundleId,
-          exampleId: runBundle.example.exampleId,
-          variantGroupId: runBundle.example.variantGroupId,
-          runId: runBundle.runId,
-          taskType: runBundle.example.taskType,
+          return evaluatedExampleSchema.parse({
+            bundleId: runBundle.bundleId,
+            exampleId: runBundle.example.exampleId,
+            variantGroupId: runBundle.example.variantGroupId,
+            runId: runBundle.runId,
+            taskType: runBundle.example.taskType,
             mode: runBundle.mode,
             accuracyScore: accuracy.score,
             domainCorrectnessScore: domainCorrectness.score,
@@ -82,36 +82,26 @@ export class TraceFirstEvaluator {
             memoryState: memory.state,
             memoryPassed: memory.passed,
             contextScore: context.score,
-          contextPassed: context.passed,
-          retryAttribution: context.retryAttribution,
-          peerMetrics: context.peerMetrics,
-          participantContextScores: context.participantContextScores,
-          contextDiagnostics: context.diagnostics,
-          metricResults: [
-            domainCorrectness,
-            feedbackIntegration,
-              {
-                metricId: `memory-utilization:${runBundle.bundleId}`,
-                metricFamily: "memory_utilization",
-                score: memory.score,
-                passed: memory.passed,
-                summary: memory.rationale,
-                details: {
-                  state: memory.state
-                },
-                evidenceRefs: []
-              },
+            contextPassed: context.passed,
+            retryAttribution: context.retryAttribution,
+            peerMetrics: context.peerMetrics,
+            participantContextScores: context.participantContextScores,
+            contextDiagnostics: context.diagnostics,
+            metricResults: [
+              domainCorrectness,
+              feedbackIntegration,
+              memory.metricResult,
               {
                 metricId: `context-efficiency:${runBundle.bundleId}`,
                 metricFamily: "context_efficiency",
                 score: context.score,
                 passed: context.passed,
-              summary: `Context efficiency score ${context.score}.`,
-              details: {
-                diagnostics: context.diagnostics,
-                retryAttribution: context.retryAttribution,
-                participantContextScores: context.participantContextScores,
-                peerMetrics: context.peerMetrics
+                summary: `Context efficiency score ${context.score}.`,
+                details: {
+                  diagnostics: context.diagnostics,
+                  retryAttribution: context.retryAttribution,
+                  participantContextScores: context.participantContextScores,
+                  peerMetrics: context.peerMetrics
                 },
                 evidenceRefs: []
               }
