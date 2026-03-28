@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { metricResultSchema } from "../../contracts/metric-result-schema.js";
+
 export const participantContextScoreSchema = z.object({
   participantId: z.string().min(1),
   participantType: z.enum(["supervisor", "subagent"]),
@@ -25,6 +27,8 @@ export const evaluatedExampleSchema = z.object({
   taskType: z.string().min(1),
   mode: z.enum(["initial", "feedback_rerun"]),
   accuracyScore: z.number().min(0).max(1),
+  domainCorrectnessScore: z.number().min(0).max(1),
+  feedbackIntegrationScore: z.number().min(0).max(1),
   accuracyBin: z.string().min(1),
   memoryScore: z.number().min(0).max(1),
   memoryState: z.string().min(1),
@@ -45,6 +49,7 @@ export const evaluatedExampleSchema = z.object({
     toolRetryCount: z.number().int().nonnegative()
   }),
   participantContextScores: z.array(participantContextScoreSchema),
+  metricResults: z.array(metricResultSchema).default([]),
   drift: driftSummarySchema.optional()
 });
 

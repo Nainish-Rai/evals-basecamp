@@ -1,7 +1,10 @@
 import path from "node:path";
 
 import type { ScenarioRunResult } from "../../../runtime/runner/scenario-runner.js";
-import { runBundleSchema, type RunBundle } from "../contracts/run-bundle-schema.js";
+import {
+  runBundleSchema,
+  type RunBundle
+} from "../contracts/run-bundle-schema.js";
 
 export class ScenarioRunBundleAdapter {
   adapt(runResult: ScenarioRunResult): RunBundle[] {
@@ -25,33 +28,44 @@ export class ScenarioRunBundleAdapter {
             summary: entry.description,
             sourceKind: entry.sourceKind
           })),
+          feedbackTurns: runResult.scenario.feedbackTurns,
           evaluationSpec: {
             instruction: runResult.scenario.caseBrief,
             minimumCorrectnessThreshold:
-              runResult.scenario.contextEvaluationSpec.minimumCorrectnessThreshold,
+              runResult.scenario.contextEvaluationSpec
+                .minimumCorrectnessThreshold,
             requiredFindings: runResult.scenario.expectedOutcomes.map(
               (expectedOutcome) => expectedOutcome.summary
             ),
             expectedEvidenceRefs: runResult.scenario.expectedOutcomes.flatMap(
               (expectedOutcome) => expectedOutcome.requiredEvidenceRefs
             ),
+            correctnessExpectation:
+              runResult.scenario.driftEvaluationSpec.expectedOutcomeCriteria
+                .correctnessExpectation,
             expectedDisposition:
-              runResult.scenario.driftEvaluationSpec.expectedOutcomeCriteria.expectedDisposition,
+              runResult.scenario.driftEvaluationSpec.expectedOutcomeCriteria
+                .expectedDisposition,
             memoryCheckpoints:
-              runResult.scenario.memoryEvaluationSpec?.memoryCheckpoints.map((checkpoint) => ({
-                checkpointId: checkpoint.checkpointId,
-                description: checkpoint.rationale
-              })) ?? [],
-            contextCheckpoints: runResult.scenario.contextEvaluationSpec.requiredContext.map(
-              (contextItem, contextIndex) => ({
-                checkpointId: `context-${contextIndex + 1}`,
-                description: contextItem
-              })
-            ),
+              runResult.scenario.memoryEvaluationSpec?.memoryCheckpoints.map(
+                (checkpoint) => ({
+                  checkpointId: checkpoint.checkpointId,
+                  description: checkpoint.rationale
+                })
+              ) ?? [],
+            contextCheckpoints:
+              runResult.scenario.contextEvaluationSpec.requiredContext.map(
+                (contextItem, contextIndex) => ({
+                  checkpointId: `context-${contextIndex + 1}`,
+                  description: contextItem
+                })
+              ),
             staticOverhead: {
               systemPromptTokens:
-                runResult.scenario.contextEvaluationSpec.systemPromptProfile.fixedTokenOverhead +
-                runResult.scenario.contextEvaluationSpec.systemPromptProfile.dynamicTokenOverhead,
+                runResult.scenario.contextEvaluationSpec.systemPromptProfile
+                  .fixedTokenOverhead +
+                runResult.scenario.contextEvaluationSpec.systemPromptProfile
+                  .dynamicTokenOverhead,
               toolDefinitionTokens:
                 runResult.scenario.contextEvaluationSpec.toolSurfaceProfile
                   .toolDefinitionTokenOverhead
@@ -60,13 +74,18 @@ export class ScenarioRunBundleAdapter {
         },
         mode: execution.mode,
         runId: execution.runId,
-        traceId: execution.agentResult.vendorTraceId ?? runResult.traceExport?.traceId ?? null,
+        traceId:
+          execution.agentResult.vendorTraceId ??
+          runResult.traceExport?.traceId ??
+          null,
         feedbackIds: execution.feedbackIds,
         finalResponse: execution.agentResult.summary,
         outputArtifacts: execution.agentResult.outputArtifacts,
         tokenUsage: execution.agentResult.tokenUsage,
         agentMetadata: execution.agentResult.metadata ?? {},
-        trace: execution.agentResult.vendorTraceId ? null : runResult.traceExport,
+        trace: execution.agentResult.vendorTraceId
+          ? null
+          : runResult.traceExport,
         collectedAt: new Date().toISOString(),
         agentLabel: runResult.scenario.agentFamily,
         modelLabel: "local-scenario-agent"

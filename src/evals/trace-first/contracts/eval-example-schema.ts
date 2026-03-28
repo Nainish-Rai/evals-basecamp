@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { feedbackEventSchema } from "../../../domain/feedback/feedback-event-schema.js";
+
 export const evalSkillSchema = z.object({
   skillId: z.string().min(1),
   label: z.string().min(1),
@@ -30,6 +32,7 @@ export const evalExampleSpecSchema = z.object({
   minimumCorrectnessThreshold: z.number().min(0).max(1).default(0.75),
   requiredFindings: z.array(z.string().min(1)).default([]),
   expectedEvidenceRefs: z.array(z.string().min(1)).default([]),
+  correctnessExpectation: z.string().min(1).optional(),
   expectedDisposition: z.string().min(1).optional(),
   memoryCheckpoints: z.array(evalCheckpointSchema).default([]),
   contextCheckpoints: z.array(evalCheckpointSchema).default([]),
@@ -47,6 +50,7 @@ export const evalExampleSchema = z.object({
   task: z.string().min(1),
   skills: z.array(evalSkillSchema).default([]),
   data: z.array(evalDataItemSchema).default([]),
+  feedbackTurns: z.array(feedbackEventSchema).default([]),
   evaluationSpec: evalExampleSpecSchema
 });
 

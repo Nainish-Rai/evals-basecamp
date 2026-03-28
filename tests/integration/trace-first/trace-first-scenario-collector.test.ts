@@ -16,9 +16,9 @@ const cleanupPaths: string[] = [];
 describe("TraceFirstScenarioCollector", () => {
   afterEach(async () => {
     await Promise.all(
-      cleanupPaths.splice(0).map((cleanupPath) =>
-        rm(cleanupPath, { recursive: true, force: true })
-      )
+      cleanupPaths
+        .splice(0)
+        .map((cleanupPath) => rm(cleanupPath, { recursive: true, force: true }))
     );
   });
 
@@ -38,13 +38,21 @@ describe("TraceFirstScenarioCollector", () => {
       true
     );
     const bundles = await collector.collect({
-      scenarioFilePath: path.join(fixtureRoot, "scenarios", "compliance-001.json"),
+      scenarioFilePath: path.join(
+        fixtureRoot,
+        "scenarios",
+        "compliance-001.json"
+      ),
       syntheticPackDirectoryPath: path.join(fixtureRoot, "packs"),
       outputDirectoryPath
     });
     const writtenBundleContents = JSON.parse(
       await readFile(
-        path.join(outputDirectoryPath, "run-bundles", `${bundles[0]?.bundleId}.json`),
+        path.join(
+          outputDirectoryPath,
+          "run-bundles",
+          `${bundles[0]?.bundleId}.json`
+        ),
         "utf8"
       )
     ) as { runId: string; trace: { spans: unknown[] } };
@@ -61,6 +69,20 @@ describe("TraceFirstScenarioCollector", () => {
       memoryPassed: true
     });
     expect(evaluation.examples[1]?.contextScore).toBeGreaterThan(0);
+    expect(evaluation.examples[0]?.metricResults).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          metricFamily: "domain_correctness"
+        })
+      ])
+    );
+    expect(evaluation.examples[1]?.metricResults).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          metricFamily: "feedback_integration"
+        })
+      ])
+    );
     expect(evaluation.peerEfficiency).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

@@ -1,9 +1,14 @@
-import { evaluatedExampleSchema, type EvaluatedExample } from "../contracts/evaluated-example-schema.js";
+import {
+  evaluatedExampleSchema,
+  type EvaluatedExample
+} from "../contracts/evaluated-example-schema.js";
 import type { RunBundle } from "../contracts/run-bundle-schema.js";
 import { AccuracyScorer } from "./accuracy-scorer.js";
 import { ContextEfficiencyScorer } from "./context-efficiency-scorer.js";
+import { DomainCorrectnessScorer } from "./domain-correctness-scorer.js";
 import { DriftAggregator } from "./drift-aggregator.js";
 import type { EvaluationJudge } from "./evaluation-judge.js";
+import { FeedbackIntegrationScorer } from "./feedback-integration-scorer.js";
 import { MemoryUtilizationScorer } from "./memory-utilization-scorer.js";
 
 export type PeerEfficiencySummary = {
@@ -20,12 +25,16 @@ export type PeerEfficiencySummary = {
 
 export class TraceFirstEvaluator {
   private readonly accuracyScorer: AccuracyScorer;
+  private readonly domainCorrectnessScorer: DomainCorrectnessScorer;
+  private readonly feedbackIntegrationScorer: FeedbackIntegrationScorer;
   private readonly memoryScorer: MemoryUtilizationScorer;
   private readonly contextScorer: ContextEfficiencyScorer;
   private readonly driftAggregator: DriftAggregator;
 
   constructor(judge: EvaluationJudge) {
     this.accuracyScorer = new AccuracyScorer();
+    this.domainCorrectnessScorer = new DomainCorrectnessScorer();
+    this.feedbackIntegrationScorer = new FeedbackIntegrationScorer();
     this.memoryScorer = new MemoryUtilizationScorer(judge);
     this.contextScorer = new ContextEfficiencyScorer(judge);
     this.driftAggregator = new DriftAggregator();
@@ -35,29 +44,77 @@ export class TraceFirstEvaluator {
     examples: EvaluatedExample[];
     peerEfficiency: PeerEfficiencySummary[];
   }> {
+    const initialBundlesByKey = new Map<string, RunBundle>(
+      runBundles
+        .filter((runBundle) => runBundle.mode === "initial")
+        .map((runBundle) => [buildRunGroupKey(runBundle), runBundle])
+    );
     const evaluatedExamples = this.driftAggregator.attach(
-      await Promise.all(runBundles.map(async (runBundle) => {
-        const accuracy = this.accuracyScorer.score(runBundle);
-        const memory = await this.memoryScorer.score(runBundle);
-        const context = await this.contextScorer.score(runBundle, accuracy.score);
+      await Promise.all(
+        runBundles.map(async (runBundle) => {
+          const accuracy = this.accuracyScorer.score(runBundle);
+          const domainCorrectness =
+            this.domainCorrectnessScorer.score(runBundle);
+          const feedbackIntegration = this.feedbackIntegrationScorer.score(
+            runBundle,
+            runBundle.mode === "feedback_rerun"
+              ? (initialBundlesByKey.get(buildRunGroupKey(runBundle)) ?? null)
+              : null
+          );
+          const memory = await this.memoryScorer.score(runBundle);
+          const context = await this.contextScorer.score(
+            runBundle,
+            accuracy.score
+          );
 
-        return evaluatedExampleSchema.parse({
-          exampleId: runBundle.example.exampleId,
-          variantGroupId: runBundle.example.variantGroupId,
-          taskType: runBundle.example.taskType,
-          mode: runBundle.mode,
-          accuracyScore: accuracy.score,
-          accuracyBin: accuracy.bin,
-          memoryScore: memory.score,
-          memoryState: memory.state,
-          memoryPassed: memory.passed,
-          contextScore: context.score,
-          contextPassed: context.passed,
-          retryAttribution: context.retryAttribution,
-          peerMetrics: context.peerMetrics,
-          participantContextScores: context.participantContextScores
-        });
-      }))
+          return evaluatedExampleSchema.parse({
+            exampleId: runBundle.example.exampleId,
+            variantGroupId: runBundle.example.variantGroupId,
+            taskType: runBundle.example.taskType,
+            mode: runBundle.mode,
+            accuracyScore: accuracy.score,
+            domainCorrectnessScore: domainCorrectness.score,
+            feedbackIntegrationScore: feedbackIntegration?.score ?? 1,
+            accuracyBin: accuracy.bin,
+            memoryScore: memory.score,
+            memoryState: memory.state,
+            memoryPassed: memory.passed,
+            contextScore: context.score,
+            contextPassed: context.passed,
+            retryAttribution: context.retryAttribution,
+            peerMetrics: context.peerMetrics,
+            participantContextScores: context.participantContextScores,
+            metricResults: [
+              domainCorrectness,
+              feedbackIntegration,
+              {
+                metricId: `memory-utilization:${runBundle.bundleId}`,
+                metricFamily: "memory_utilization",
+                score: memory.score,
+                passed: memory.passed,
+                summary: memory.rationale,
+                details: {
+                  state: memory.state
+                },
+                evidenceRefs: []
+              },
+              {
+                metricId: `context-efficiency:${runBundle.bundleId}`,
+                metricFamily: "context_efficiency",
+                score: context.score,
+                passed: context.passed,
+                summary: `Context efficiency score ${context.score}.`,
+                details: {
+                  retryAttribution: context.retryAttribution,
+                  participantContextScores: context.participantContextScores,
+                  peerMetrics: context.peerMetrics
+                },
+                evidenceRefs: []
+              }
+            ].filter((metricResult) => metricResult !== null)
+          });
+        })
+      )
     );
 
     return {
@@ -69,6 +126,15 @@ export class TraceFirstEvaluator {
   summarizeDrift(examples: EvaluatedExample[]) {
     return this.driftAggregator.summarize(examples);
   }
+}
+
+function buildRunGroupKey(bundle: RunBundle): string {
+  return [
+    bundle.example.exampleId,
+    bundle.example.variantGroupId,
+    bundle.agentLabel,
+    bundle.modelLabel
+  ].join("::");
 }
 
 function summarizePeerEfficiency(
@@ -95,20 +161,34 @@ function summarizePeerEfficiency(
         average(group.map((example) => example.peerMetrics.systemPromptTokens))
       ),
       averageToolDefinitionTokens: round(
-        average(group.map((example) => example.peerMetrics.toolDefinitionTokens))
+        average(
+          group.map((example) => example.peerMetrics.toolDefinitionTokens)
+        )
       ),
       averageMultimodalRawTokens: round(
         average(group.map((example) => example.peerMetrics.multimodalRawTokens))
       ),
       averageMultimodalCompressedTokens: round(
-        average(group.map((example) => example.peerMetrics.multimodalCompressedTokens))
+        average(
+          group.map((example) => example.peerMetrics.multimodalCompressedTokens)
+        )
       ),
-      averageContextScore: round(average(group.map((example) => example.contextScore))),
+      averageContextScore: round(
+        average(group.map((example) => example.contextScore))
+      ),
       systemPromptVaguenessRetryRate: round(
         group.reduce(
-          (total, example) => total + example.retryAttribution.systemPromptVagueness,
+          (total, example) =>
+            total + example.retryAttribution.systemPromptVagueness,
           0
-        ) / Math.max(group.reduce((total, example) => total + example.peerMetrics.toolRetryCount, 0), 1)
+        ) /
+          Math.max(
+            group.reduce(
+              (total, example) => total + example.peerMetrics.toolRetryCount,
+              0
+            ),
+            1
+          )
       )
     };
   });

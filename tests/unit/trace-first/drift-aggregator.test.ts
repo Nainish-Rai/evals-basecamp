@@ -43,6 +43,8 @@ function createEvaluatedExample(
     taskType: "risk",
     mode: "initial",
     accuracyScore: 0.9,
+    domainCorrectnessScore: 0.9,
+    feedbackIntegrationScore: 1,
     accuracyBin: "0.90-1.00",
     memoryScore,
     memoryState: "correct_save_correct_needed_retrieval",
@@ -69,6 +71,7 @@ function createEvaluatedExample(
         complete: true,
         score: contextScore
       }
-    ]
+    ],
+    metricResults: []
   });
 }
