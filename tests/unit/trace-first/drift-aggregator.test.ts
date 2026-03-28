@@ -8,7 +8,18 @@ describe("DriftAggregator", () => {
     const aggregator = new DriftAggregator();
     const examples = [
       createEvaluatedExample("example-1", "variant-a", 0.8, 0.7),
-      createEvaluatedExample("example-2", "variant-a", 0.82, 0.72),
+      createEvaluatedExample("example-2", "variant-a", 0.82, 0.72, {
+        score: 0.92,
+        classification: "quality_preserving_variation",
+        deltas: {
+          outcomeScoreDelta: 0,
+          domainCorrectnessDelta: 0,
+          feedbackIntegrationDelta: 0.9,
+          requiredFindingsRecallDelta: 0,
+          evidenceGroundingDelta: 0,
+          escalationDecisionDelta: 0
+        }
+      }),
       createEvaluatedExample("example-3", "variant-b", 0.5, 0.4)
     ];
 
@@ -19,7 +30,10 @@ describe("DriftAggregator", () => {
         expect.objectContaining({
           variantGroupId: "variant-a",
           status: "passed",
-          variantCount: 2
+          variantCount: 2,
+          pairedComparisonCount: 1,
+          dominantClassification: "quality_preserving_variation",
+          responseQualityMean: 0.92
         }),
         expect.objectContaining({
           variantGroupId: "variant-b",
@@ -35,7 +49,12 @@ function createEvaluatedExample(
   exampleId: string,
   variantGroupId: string,
   memoryScore: number,
-  contextScore: number
+  contextScore: number,
+  responseQualityDrift?: {
+    score: number;
+    classification: string;
+    deltas: Record<string, number>;
+  }
 ) {
   return evaluatedExampleSchema.parse({
     bundleId: `${exampleId}-bundle`,
@@ -90,6 +109,21 @@ function createEvaluatedExample(
       toolOverlapRate: 0,
       fileReadRedundancyRate: 0
     },
-    metricResults: []
+    metricResults: responseQualityDrift
+      ? [
+          {
+            metricId: `response-quality-drift:${exampleId}`,
+            metricFamily: "response_quality_drift",
+            score: responseQualityDrift.score,
+            passed: true,
+            summary: "Synthetic response-quality drift metric.",
+            details: {
+              classification: responseQualityDrift.classification,
+              deltas: responseQualityDrift.deltas
+            },
+            evidenceRefs: []
+          }
+        ]
+      : []
   });
 }

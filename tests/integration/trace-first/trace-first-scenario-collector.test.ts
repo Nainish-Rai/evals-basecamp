@@ -84,9 +84,15 @@ describe("TraceFirstScenarioCollector", () => {
         }),
         expect.objectContaining({
           metricFamily: "feedback_integration"
+        }),
+        expect.objectContaining({
+          metricFamily: "response_quality_drift"
         })
       ])
     );
+    expect(evaluation.examples[1]?.drift).toMatchObject({
+      pairedComparisonCount: 1
+    });
     expect(evaluation.peerEfficiency).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

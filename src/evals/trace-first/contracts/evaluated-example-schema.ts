@@ -12,7 +12,39 @@ export const participantContextScoreSchema = z.object({
 export const driftSummarySchema = z.object({
   variantGroupId: z.string().min(1),
   variantCount: z.number().int().nonnegative(),
+  pairedComparisonCount: z.number().int().nonnegative().default(0),
   status: z.enum(["passed", "failed", "insufficient_variants"]),
+  dominantClassification: z
+    .enum([
+      "quality_preserving_variation",
+      "outcome_only_drift",
+      "trajectory_only_drift",
+      "combined_drift",
+      "unclassified"
+    ])
+    .default("unclassified"),
+  classificationCounts: z
+    .object({
+      qualityPreservingVariation: z.number().int().nonnegative(),
+      outcomeOnlyDrift: z.number().int().nonnegative(),
+      trajectoryOnlyDrift: z.number().int().nonnegative(),
+      combinedDrift: z.number().int().nonnegative()
+    })
+    .default({
+      qualityPreservingVariation: 0,
+      outcomeOnlyDrift: 0,
+      trajectoryOnlyDrift: 0,
+      combinedDrift: 0
+    }),
+  responseQualityMean: z.number().min(0).max(1).nullable(),
+  responseQualityStdDev: z.number().nonnegative().nullable(),
+  responseQualityCoefficientOfVariation: z.number().nonnegative().nullable(),
+  outcomeScoreDeltaMean: z.number().min(-1).max(1).nullable(),
+  domainCorrectnessDeltaMean: z.number().min(-1).max(1).nullable(),
+  feedbackIntegrationDeltaMean: z.number().min(-1).max(1).nullable(),
+  requiredFindingsRecallDeltaMean: z.number().min(-1).max(1).nullable(),
+  evidenceGroundingDeltaMean: z.number().min(-1).max(1).nullable(),
+  escalationDecisionDeltaMean: z.number().min(-1).max(1).nullable(),
   memoryMean: z.number().min(0).max(1).nullable(),
   memoryStdDev: z.number().nonnegative().nullable(),
   memoryCoefficientOfVariation: z.number().nonnegative().nullable(),

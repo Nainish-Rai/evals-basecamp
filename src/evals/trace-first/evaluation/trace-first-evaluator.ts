@@ -10,6 +10,7 @@ import { DriftAggregator } from "./drift-aggregator.js";
 import type { EvaluationJudge } from "./evaluation-judge.js";
 import { FeedbackIntegrationScorer } from "./feedback-integration-scorer.js";
 import { MemoryUtilizationScorer } from "./memory-utilization-scorer.js";
+import { ResponseQualityDriftScorer } from "./response-quality-drift-scorer.js";
 
 export type PeerEfficiencySummary = {
   taskType: string;
@@ -29,6 +30,7 @@ export class TraceFirstEvaluator {
   private readonly feedbackIntegrationScorer: FeedbackIntegrationScorer;
   private readonly memoryScorer: MemoryUtilizationScorer;
   private readonly contextScorer: ContextEfficiencyScorer;
+  private readonly responseQualityDriftScorer: ResponseQualityDriftScorer;
   private readonly driftAggregator: DriftAggregator;
 
   constructor(judge: EvaluationJudge) {
@@ -37,6 +39,7 @@ export class TraceFirstEvaluator {
     this.feedbackIntegrationScorer = new FeedbackIntegrationScorer();
     this.memoryScorer = new MemoryUtilizationScorer(judge);
     this.contextScorer = new ContextEfficiencyScorer(judge);
+    this.responseQualityDriftScorer = new ResponseQualityDriftScorer();
     this.driftAggregator = new DriftAggregator();
   }
 
@@ -52,19 +55,38 @@ export class TraceFirstEvaluator {
     const evaluatedExamples = this.driftAggregator.attach(
       await Promise.all(
         runBundles.map(async (runBundle) => {
-          const accuracy = this.accuracyScorer.score(runBundle);
-          const domainCorrectness =
-            this.domainCorrectnessScorer.score(runBundle);
-          const feedbackIntegration = this.feedbackIntegrationScorer.score(
-            runBundle,
+          const baselineBundle =
             runBundle.mode === "feedback_rerun"
               ? (initialBundlesByKey.get(buildRunGroupKey(runBundle)) ?? null)
-              : null
+              : null;
+          const accuracy = this.accuracyScorer.score(runBundle);
+          const domainCorrectness = this.domainCorrectnessScorer.score(runBundle);
+          const feedbackIntegration = this.feedbackIntegrationScorer.score(
+            runBundle,
+            baselineBundle
           );
+          const baselineDomainCorrectness = baselineBundle
+            ? this.domainCorrectnessScorer.score(baselineBundle)
+            : null;
+          const baselineFeedbackIntegration = baselineBundle
+            ? this.feedbackIntegrationScorer.score(baselineBundle, null)
+            : null;
           const memory = await this.memoryScorer.score(runBundle);
           const context = await this.contextScorer.score(
             runBundle,
             accuracy.score
+          );
+          const responseQualityDrift = this.responseQualityDriftScorer.score(
+            runBundle,
+            baselineBundle,
+            {
+              currentDomainCorrectnessScore: domainCorrectness.score,
+              baselineDomainCorrectnessScore:
+                baselineDomainCorrectness?.score ?? domainCorrectness.score,
+              currentFeedbackIntegrationScore: feedbackIntegration?.score ?? 1,
+              baselineFeedbackIntegrationScore:
+                baselineFeedbackIntegration?.score ?? 0
+            }
           );
 
           return evaluatedExampleSchema.parse({
@@ -91,6 +113,7 @@ export class TraceFirstEvaluator {
               domainCorrectness,
               feedbackIntegration,
               memory.metricResult,
+              responseQualityDrift,
               {
                 metricId: `context-efficiency:${runBundle.bundleId}`,
                 metricFamily: "context_efficiency",
