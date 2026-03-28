@@ -105,4 +105,95 @@ describe("ContextEfficiencyScorer", () => {
       ])
     );
   });
+
+  it("surfaces static context and tool-surface diagnostics", async () => {
+    const bundle = runBundleSchema.parse({
+      bundleId: "bundle-2",
+      example: {
+        exampleId: "example-2",
+        variantGroupId: "variant-2",
+        taskType: "compliance",
+        task: "Review the compliance case.",
+        skills: [
+          { skillId: "policy_search", label: "policy_search" },
+          { skillId: "customer_lookup", label: "customer_lookup" }
+        ],
+        data: [],
+        evaluationSpec: {
+          instruction: "Review the compliance case.",
+          minimumCorrectnessThreshold: 0.75,
+          requiredFindings: [],
+          expectedEvidenceRefs: [],
+          requiredContext: ["kyc onboarding checklist", "proof of address policy"],
+          optionalContext: ["customer risk tier summary"],
+          distractorContext: ["legacy screening note"],
+          duplicateContext: ["duplicated checklist extract"],
+          staleContext: ["superseded branch guidance"],
+          expectedActiveTools: ["policy_search"],
+          overlappingToolNames: ["customer_lookup"],
+          memoryCheckpoints: [],
+          contextCheckpoints: [],
+          staticOverhead: {
+            systemPromptTokens: 180,
+            toolDefinitionTokens: 120
+          }
+        }
+      },
+      mode: "initial",
+      runId: "run-2",
+      traceId: "trace-2",
+      feedbackIds: [],
+      finalResponse: "The proof of address policy is mandatory for onboarding.",
+      outputArtifacts: ["artifact-policy"],
+      tokenUsage: {
+        inputTokens: 900,
+        outputTokens: 100,
+        totalTokens: 1000
+      },
+      agentMetadata: {
+        toolSpecsCreated: [
+          {
+            toolName: "policy_search",
+            description: "Search policy context relevant to compliance work."
+          },
+          {
+            toolName: "customer_lookup",
+            description: "Retrieves compliance evidence needed for the current case."
+          }
+        ],
+        toolCalls: [
+          {
+            toolName: "policy_search",
+            status: "succeeded",
+            inputArtifactRefs: ["artifact-policy"],
+            outputArtifactRefs: ["artifact-policy"]
+          }
+        ],
+        contextMetrics: {
+          relevantContextTokens: 60,
+          retrievedContextTokens: 80,
+          unusedContextTokens: 20,
+          subagentCommunicationTokens: 0
+        }
+      },
+      trace: null,
+      collectedAt: "2026-03-28T00:02:00.000Z",
+      agentLabel: "tool_chain",
+      modelLabel: "local-scenario-agent"
+    });
+
+    const result = await new ContextEfficiencyScorer(
+      new HeuristicEvaluationJudge()
+    ).score(bundle, 0.9);
+
+    expect(result.diagnostics).toMatchObject({
+      contextPrecision: 0.75,
+      activeToolSurfaceArea: 1,
+      unusedToolDefinitionRatio: 0.5,
+      toolOverlapRate: 0.5,
+      artifactReuseRate: 1
+    });
+    expect(result.diagnostics.duplicateContextRate).toBeGreaterThan(0);
+    expect(result.diagnostics.contextBloatIndex).toBeGreaterThan(0.35);
+  });
 });
