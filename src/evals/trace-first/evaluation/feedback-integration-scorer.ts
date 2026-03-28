@@ -12,7 +12,7 @@ export class FeedbackIntegrationScorer {
     bundle: RunBundle,
     baselineBundle: RunBundle | null
   ): MetricResult | null {
-    const expectedFeedback = bundle.example.feedbackTurns.filter(
+    const expectedFeedback = bundle.feedbackTurns.filter(
       (feedbackTurn) => bundle.feedbackIds.includes(feedbackTurn.feedbackId)
     );
 

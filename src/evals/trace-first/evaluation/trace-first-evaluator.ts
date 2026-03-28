@@ -69,10 +69,10 @@ export class TraceFirstEvaluator {
 
         return evaluatedExampleSchema.parse({
           bundleId: runBundle.bundleId,
-          exampleId: runBundle.example.exampleId,
-          variantGroupId: runBundle.example.variantGroupId,
+          exampleId: runBundle.example.example_id,
+          variantGroupId: runBundle.example.variation_group_id,
           runId: runBundle.runId,
-          taskType: runBundle.example.taskType,
+          taskType: runBundle.example.task_type,
             mode: runBundle.mode,
             accuracyScore: accuracy.score,
             domainCorrectnessScore: domainCorrectness.score,
@@ -134,8 +134,8 @@ export class TraceFirstEvaluator {
 
 function buildRunGroupKey(bundle: RunBundle): string {
   return [
-    bundle.example.exampleId,
-    bundle.example.variantGroupId,
+    bundle.example.example_id,
+    bundle.example.variation_group_id,
     bundle.agentLabel,
     bundle.modelLabel
   ].join("::");

@@ -31,14 +31,37 @@ async function main(): Promise<void> {
     process.cwd(),
     outputDirectoryPath
   );
+  const tracesOutputDirectoryPath = path.join(resolvedOutputDirectoryPath, "traces");
+  const scoresOutputDirectoryPath = path.join(resolvedOutputDirectoryPath, "scores");
 
-  await mkdir(resolvedOutputDirectoryPath, { recursive: true });
+  await mkdir(tracesOutputDirectoryPath, { recursive: true });
+  await mkdir(scoresOutputDirectoryPath, { recursive: true });
+  await Promise.all(
+    scoredRunBundles
+      .filter((bundle) => bundle.trace !== null)
+      .map((bundle) =>
+        writeFile(
+          path.join(tracesOutputDirectoryPath, `${bundle.bundleId}.json`),
+          JSON.stringify(
+            {
+              bundleId: bundle.bundleId,
+              runId: bundle.runId,
+              runBatchId: bundle.runBatchId,
+              traceId: bundle.traceId,
+              trace: bundle.trace
+            },
+            null,
+            2
+          )
+        )
+      )
+  );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "evaluated-examples.jsonl"),
+    path.join(scoresOutputDirectoryPath, "evaluated-examples.jsonl"),
     `${evaluation.examples.map((example) => JSON.stringify(example)).join("\n")}\n`
   );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "metric-results.jsonl"),
+    path.join(scoresOutputDirectoryPath, "metric-results.jsonl"),
     `${evaluation.examples
       .flatMap((example) =>
         example.metricResults.map((metricResult) =>
@@ -55,23 +78,19 @@ async function main(): Promise<void> {
       .join("\n")}\n`
   );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "scored-run-bundles.jsonl"),
-    `${scoredRunBundles.map((bundle) => JSON.stringify(bundle)).join("\n")}\n`
-  );
-  await writeFile(
-    path.join(resolvedOutputDirectoryPath, "peer-efficiency.json"),
+    path.join(scoresOutputDirectoryPath, "peer-efficiency.json"),
     JSON.stringify(evaluation.peerEfficiency, null, 2)
   );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "metric-averages.json"),
+    path.join(scoresOutputDirectoryPath, "metric-averages.json"),
     JSON.stringify(summarizeMetricAverages(evaluation.examples), null, 2)
   );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "variant-group-drift.json"),
+    path.join(scoresOutputDirectoryPath, "variant-group-drift.json"),
     JSON.stringify(driftSummaries, null, 2)
   );
   await writeFile(
-    path.join(resolvedOutputDirectoryPath, "evaluation-summary.json"),
+    path.join(scoresOutputDirectoryPath, "evaluation-summary.json"),
     JSON.stringify(
       {
         evaluatedExampleCount: evaluation.examples.length,
@@ -79,7 +98,7 @@ async function main(): Promise<void> {
           (total, example) => total + example.metricResults.length,
           0
         ),
-        scoredRunBundleCount: scoredRunBundles.length,
+        traceFileCount: scoredRunBundles.filter((bundle) => bundle.trace !== null).length,
         peerGroupCount: evaluation.peerEfficiency.length,
         driftGroupCount: driftSummaries.length
       },

@@ -18,7 +18,7 @@ export class HeuristicEvaluationJudge implements EvaluationJudge {
     const readCount = metadata.memoryReads?.length ?? 0;
     const usedReadCount =
       metadata.memoryReads?.filter((memoryRead) => memoryRead.usedInDecision).length ?? 0;
-    const expectedMemoryCount = bundle.example.evaluationSpec.memoryCheckpoints.length;
+    const expectedMemoryCount = bundle.evaluationContext.memoryCheckpoints.length;
 
     if (writeCount > 0 && usedReadCount > 0) {
       return {
