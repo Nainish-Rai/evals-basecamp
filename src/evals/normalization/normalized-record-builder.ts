@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import type { Scenario } from "../../domain/scenarios/scenario-schema.js";
+import { buildTrajectoryContract } from "../contracts/trajectory-contract.js";
 import type { NormalizedEvaluationRecord } from "../contracts/normalized-evaluation-record.js";
 import { normalizedEvaluationRecordSchema } from "../contracts/normalized-evaluation-record.js";
 import type { MaterializedCaseEnvironment } from "../../runtime/materialization/case-environment-materializer.js";
@@ -64,6 +65,11 @@ export class NormalizedRecordBuilder {
         collectNeededMemoryIdsForTurn(runResult.scenario, turnId),
       memoryUsedInDecision: [],
       memoryFailureTypes: [],
+      trajectory: buildTrajectoryContract({
+        ...runResult.scenario.driftEvaluationSpec,
+        allowAdditionalSteps:
+          runResult.scenario.trajectoryHints.allowAdditionalSteps
+      }),
       graphPath: [],
       langfuseTraceId: runResult.traceContext.traceId,
       ...overrides

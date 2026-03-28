@@ -67,6 +67,19 @@ describe("WorkspaceAgentAdapter", () => {
     expect(record.memoryNeededNow).toEqual(["memory-opportunity-governance-001"]);
     expect(record.memoryRetrieved).toEqual(["memory-opportunity-governance-001"]);
     expect(record.memoryUsedInDecision).toEqual(["memory-opportunity-governance-001"]);
+    expect(record.trajectory).toEqual({
+      requiredSteps: [
+        "planCaseWork",
+        "curateWorkspace",
+        "delegateSubagent",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ],
+      criticalTools: ["control_lookup", "workspace_write"],
+      criticalDelegations: ["owner-mapping-subagent"],
+      allowedStepFlexibility: "partial",
+      allowAdditionalSteps: true
+    });
     expect(record.filesystemArtifacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

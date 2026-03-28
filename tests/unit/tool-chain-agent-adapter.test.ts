@@ -65,6 +65,18 @@ describe("ToolChainAgentAdapter", () => {
     ]);
     expect(record.memoryFailureTypes).toEqual([]);
     expect(record.memoryImpact).toBe("positive");
+    expect(record.trajectory).toEqual({
+      requiredSteps: [
+        "planToolWork",
+        "executeTool",
+        "applyFeedback",
+        "composeFinalAnswer"
+      ],
+      criticalTools: ["policy_search", "customer_lookup"],
+      criticalDelegations: [],
+      allowedStepFlexibility: "partial",
+      allowAdditionalSteps: true
+    });
     expect(record.graphPath).toEqual([
       "planToolWork",
       "executeTool",

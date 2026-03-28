@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { NormalizedEvaluationRecord } from "../contracts/normalized-evaluation-record.js";
+import { buildTrajectoryContract } from "../contracts/trajectory-contract.js";
 import type {
   ScenarioExecutionResult,
   ScenarioRunResult
@@ -120,6 +121,11 @@ export class WorkspaceAgentAdapter {
           execution,
           metadata
         ),
+        trajectory: buildTrajectoryContract({
+          ...runResult.scenario.driftEvaluationSpec,
+          allowAdditionalSteps:
+            runResult.scenario.trajectoryHints.allowAdditionalSteps
+        }),
         graphPath:
           metadata.graphPath.length > 0
             ? metadata.graphPath

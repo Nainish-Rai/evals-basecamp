@@ -3,6 +3,7 @@ import {
   type EvaluatedExample
 } from "../contracts/evaluated-example-schema.js";
 import type { RunBundle } from "../contracts/run-bundle-schema.js";
+import { AgentEvalsTrajectoryScorer } from "./agentevals-trajectory-scorer.js";
 import { AccuracyScorer } from "./accuracy-scorer.js";
 import { ContextEfficiencyScorer } from "./context-efficiency-scorer.js";
 import { DomainCorrectnessScorer } from "./domain-correctness-scorer.js";
@@ -11,6 +12,7 @@ import type { EvaluationJudge } from "./evaluation-judge.js";
 import { FeedbackIntegrationScorer } from "./feedback-integration-scorer.js";
 import { MemoryUtilizationScorer } from "./memory-utilization-scorer.js";
 import { ResponseQualityDriftScorer } from "./response-quality-drift-scorer.js";
+import { TrajectoryCoverageScorer } from "./trajectory-coverage-scorer.js";
 
 export type PeerEfficiencySummary = {
   taskType: string;
@@ -29,6 +31,8 @@ export class TraceFirstEvaluator {
   private readonly domainCorrectnessScorer: DomainCorrectnessScorer;
   private readonly feedbackIntegrationScorer: FeedbackIntegrationScorer;
   private readonly memoryScorer: MemoryUtilizationScorer;
+  private readonly trajectoryCoverageScorer: TrajectoryCoverageScorer;
+  private readonly agentEvalsTrajectoryScorer: AgentEvalsTrajectoryScorer;
   private readonly contextScorer: ContextEfficiencyScorer;
   private readonly responseQualityDriftScorer: ResponseQualityDriftScorer;
   private readonly driftAggregator: DriftAggregator;
@@ -38,6 +42,8 @@ export class TraceFirstEvaluator {
     this.domainCorrectnessScorer = new DomainCorrectnessScorer();
     this.feedbackIntegrationScorer = new FeedbackIntegrationScorer();
     this.memoryScorer = new MemoryUtilizationScorer(judge);
+    this.trajectoryCoverageScorer = new TrajectoryCoverageScorer();
+    this.agentEvalsTrajectoryScorer = new AgentEvalsTrajectoryScorer();
     this.contextScorer = new ContextEfficiencyScorer(judge);
     this.responseQualityDriftScorer = new ResponseQualityDriftScorer();
     this.driftAggregator = new DriftAggregator();
@@ -72,6 +78,10 @@ export class TraceFirstEvaluator {
             ? this.feedbackIntegrationScorer.score(baselineBundle, null)
             : null;
           const memory = await this.memoryScorer.score(runBundle);
+          const trajectory = this.trajectoryCoverageScorer.score(runBundle);
+          const agentEvalsTrajectory = await this.agentEvalsTrajectoryScorer.score(
+            runBundle
+          );
           const context = await this.contextScorer.score(
             runBundle,
             accuracy.score
@@ -103,6 +113,8 @@ export class TraceFirstEvaluator {
             memoryScore: memory.score,
             memoryState: memory.state,
             memoryPassed: memory.passed,
+            trajectoryScore: trajectory.score,
+            trajectoryPassed: trajectory.passed,
             contextScore: context.score,
             contextPassed: context.passed,
             retryAttribution: context.retryAttribution,
@@ -113,6 +125,8 @@ export class TraceFirstEvaluator {
               domainCorrectness,
               feedbackIntegration,
               memory.metricResult,
+              trajectory,
+              agentEvalsTrajectory,
               responseQualityDrift,
               {
                 metricId: `context-efficiency:${runBundle.bundleId}`,

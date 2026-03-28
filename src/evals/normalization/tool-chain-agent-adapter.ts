@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { NormalizedEvaluationRecord } from "../contracts/normalized-evaluation-record.js";
+import { buildTrajectoryContract } from "../contracts/trajectory-contract.js";
 import type {
   ScenarioExecutionResult,
   ScenarioRunResult
@@ -137,6 +138,11 @@ export class ToolChainAgentAdapter {
         memoryImpact:
           metadata.memoryReads.find((memoryRead) => memoryRead.usedInDecision)?.impact ?? null,
         memoryFailureTypes,
+        trajectory: buildTrajectoryContract({
+          ...runResult.scenario.driftEvaluationSpec,
+          allowAdditionalSteps:
+            runResult.scenario.trajectoryHints.allowAdditionalSteps
+        }),
         graphPath: metadata.graphPath,
         latencyMs: sumToolLatencies(metadata.toolCalls),
         contextMetrics:

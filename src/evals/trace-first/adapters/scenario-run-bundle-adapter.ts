@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import type { ScenarioRunResult } from "../../../runtime/runner/scenario-runner.js";
+import { buildTrajectoryContract } from "../../contracts/trajectory-contract.js";
 import {
   runBundleSchema,
   type RunBundle
@@ -34,6 +35,13 @@ export class ScenarioRunBundleAdapter {
             minimumCorrectnessThreshold:
               runResult.scenario.contextEvaluationSpec
                 .minimumCorrectnessThreshold,
+            trajectory: buildTrajectoryContract(
+              {
+                ...runResult.scenario.driftEvaluationSpec,
+                allowAdditionalSteps:
+                  runResult.scenario.trajectoryHints.allowAdditionalSteps
+              }
+            ),
             requiredFindings: runResult.scenario.expectedOutcomes.map(
               (expectedOutcome) => expectedOutcome.summary
             ),

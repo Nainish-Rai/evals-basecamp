@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { feedbackEventSchema } from "../../../domain/feedback/feedback-event-schema.js";
+import { trajectoryContractSchema } from "../../contracts/trajectory-contract.js";
 
 export const evalSkillSchema = z.object({
   skillId: z.string().min(1),
@@ -30,6 +31,13 @@ export const evalStaticOverheadSchema = z.object({
 export const evalExampleSpecSchema = z.object({
   instruction: z.string().min(1),
   minimumCorrectnessThreshold: z.number().min(0).max(1).default(0.75),
+  trajectory: trajectoryContractSchema.default({
+    requiredSteps: [],
+    criticalTools: [],
+    criticalDelegations: [],
+    allowedStepFlexibility: "partial",
+    allowAdditionalSteps: true
+  }),
   requiredFindings: z.array(z.string().min(1)).default([]),
   expectedEvidenceRefs: z.array(z.string().min(1)).default([]),
   correctnessExpectation: z.string().min(1).optional(),
@@ -63,3 +71,10 @@ export const evalExampleSchema = z.object({
 
 export type EvalExample = z.infer<typeof evalExampleSchema>;
 export type EvalExampleSpec = z.infer<typeof evalExampleSpecSchema>;
+export type EvalTrajectoryEvaluationSpec = {
+  requiredSteps: string[];
+  criticalTools: string[];
+  criticalDelegations: string[];
+  allowedStepFlexibility: "exact" | "partial" | "unordered";
+  allowAdditionalSteps: boolean;
+};

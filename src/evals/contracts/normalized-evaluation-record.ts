@@ -11,6 +11,7 @@ import {
   agentFamilySchema,
   taskFamilySchema
 } from "../../domain/scenarios/scenario-parts.js";
+import { trajectoryContractSchema } from "./trajectory-contract.js";
 
 const tokenUsageSchema = z.object({
   inputTokens: z.number().int().nonnegative(),
@@ -164,8 +165,10 @@ const contextMetricsSchema = z
         message: "relevant context tokens cannot exceed retrieved context tokens",
         path: ["relevantContextTokens"]
       });
-    }
+  }
   });
+
+const trajectorySchema = trajectoryContractSchema;
 
 export const normalizedEvaluationRecordSchema = z.object({
   scenarioId: z.string().min(1),
@@ -195,6 +198,7 @@ export const normalizedEvaluationRecordSchema = z.object({
   memoryUsedInDecision: z.array(z.string().min(1)).default([]),
   memoryImpact: expectedMemoryImpactSchema.nullable(),
   memoryFailureTypes: z.array(memoryFailureTypeSchema).default([]),
+  trajectory: trajectorySchema,
   graphPath: z.array(z.string().min(1)).default([]),
   latencyMs: z.number().nonnegative(),
   contextMetrics: contextMetricsSchema,

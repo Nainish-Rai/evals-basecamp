@@ -63,11 +63,19 @@ describe("TraceFirstScenarioCollector", () => {
     expect(bundles).toHaveLength(2);
     expect(writtenBundleContents.runId.length).toBeGreaterThan(0);
     expect(writtenBundleContents.trace.spans.length).toBeGreaterThan(0);
+    expect(bundles[0]?.example.evaluationSpec.trajectory).toEqual({
+      requiredSteps: ["planToolWork", "executeTool", "applyFeedback", "composeFinalAnswer"],
+      criticalTools: ["policy_search", "customer_lookup"],
+      criticalDelegations: [],
+      allowedStepFlexibility: "partial",
+      allowAdditionalSteps: true
+    });
     expect(evaluation.examples).toHaveLength(2);
     expect(evaluation.examples[1]).toMatchObject({
       runId: expect.any(String),
       exampleId: "scenario-compliance-001",
-      memoryPassed: true
+      memoryPassed: true,
+      trajectoryPassed: true
     });
     expect(evaluation.examples[1]?.contextScore).toBeGreaterThan(0);
     expect(evaluation.examples[0]?.metricResults).toEqual(
@@ -81,6 +89,9 @@ describe("TraceFirstScenarioCollector", () => {
       expect.arrayContaining([
         expect.objectContaining({
           metricFamily: "memory_utilization"
+        }),
+        expect.objectContaining({
+          metricFamily: "trajectory"
         }),
         expect.objectContaining({
           metricFamily: "feedback_integration"

@@ -84,6 +84,8 @@ export const evaluatedExampleSchema = z.object({
   memoryScore: z.number().min(0).max(1),
   memoryState: z.string().min(1),
   memoryPassed: z.boolean(),
+  trajectoryScore: z.number().min(0).max(1).default(0),
+  trajectoryPassed: z.boolean().default(false),
   contextScore: z.number().min(0).max(1),
   contextPassed: z.boolean(),
   retryAttribution: z.object({

@@ -114,6 +114,13 @@ describe("normalizedEvaluationRecordSchema", () => {
       memoryUsedInDecision: ["memory-opportunity-proof-of-address"],
       memoryImpact: "positive",
       memoryFailureTypes: [],
+      trajectory: {
+        requiredSteps: ["planCase", "retrieveContext", "composeFinalAnswer"],
+        criticalTools: ["policy_search"],
+        criticalDelegations: [],
+        allowedStepFlexibility: "partial",
+        allowAdditionalSteps: true
+      },
       graphPath: ["planCase", "retrieveContext", "applyFeedback", "composeFinalAnswer"],
       latencyMs: 1200,
       contextMetrics: {
@@ -166,6 +173,13 @@ describe("normalizedEvaluationRecordSchema", () => {
         unusedContextTokens: 0,
         workspaceArtifactTokens: 0,
         subagentCommunicationTokens: 0
+      },
+      trajectory: {
+        requiredSteps: [],
+        criticalTools: [],
+        criticalDelegations: [],
+        allowedStepFlexibility: "partial",
+        allowAdditionalSteps: true
       },
       tokenUsage: {
         inputTokens: 100,
@@ -272,6 +286,13 @@ describe("normalizedEvaluationRecordSchema", () => {
         subagentCommunicationTokens: 0
       },
       memoryImpact: null,
+      trajectory: {
+        requiredSteps: ["planCase", "retrieveContext", "composeFinalAnswer"],
+        criticalTools: ["risk_score_lookup"],
+        criticalDelegations: [],
+        allowedStepFlexibility: "partial",
+        allowAdditionalSteps: true
+      },
       tokenUsage: {
         inputTokens: 905,
         outputTokens: 92,
