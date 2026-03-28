@@ -65,6 +65,7 @@ describe("TraceFirstScenarioCollector", () => {
     expect(writtenBundleContents.trace.spans.length).toBeGreaterThan(0);
     expect(evaluation.examples).toHaveLength(2);
     expect(evaluation.examples[1]).toMatchObject({
+      runId: expect.any(String),
       exampleId: "scenario-compliance-001",
       memoryPassed: true
     });

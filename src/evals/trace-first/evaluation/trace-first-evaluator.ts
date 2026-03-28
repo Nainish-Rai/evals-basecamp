@@ -67,10 +67,12 @@ export class TraceFirstEvaluator {
             accuracy.score
           );
 
-          return evaluatedExampleSchema.parse({
-            exampleId: runBundle.example.exampleId,
-            variantGroupId: runBundle.example.variantGroupId,
-            taskType: runBundle.example.taskType,
+        return evaluatedExampleSchema.parse({
+          bundleId: runBundle.bundleId,
+          exampleId: runBundle.example.exampleId,
+          variantGroupId: runBundle.example.variantGroupId,
+          runId: runBundle.runId,
+          taskType: runBundle.example.taskType,
             mode: runBundle.mode,
             accuracyScore: accuracy.score,
             domainCorrectnessScore: domainCorrectness.score,

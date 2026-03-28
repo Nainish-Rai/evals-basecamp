@@ -46,6 +46,15 @@ export class ScenarioRunBundleAdapter {
             expectedDisposition:
               runResult.scenario.driftEvaluationSpec.expectedOutcomeCriteria
                 .expectedDisposition,
+            requiredContext:
+              runResult.scenario.contextEvaluationSpec.requiredContext,
+            optionalContext:
+              runResult.scenario.contextEvaluationSpec.optionalContext,
+            distractorContext:
+              runResult.scenario.contextEvaluationSpec.distractorContext,
+            duplicateContext:
+              runResult.scenario.contextEvaluationSpec.duplicateContext,
+            staleContext: runResult.scenario.contextEvaluationSpec.staleContext,
             expectedActiveTools:
               runResult.scenario.contextEvaluationSpec.toolSurfaceProfile
                 .expectedActiveTools,

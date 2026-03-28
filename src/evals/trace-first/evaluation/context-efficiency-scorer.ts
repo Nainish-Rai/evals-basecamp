@@ -193,9 +193,9 @@ function buildContextDiagnostics(options: {
   const rootParticipant = options.rootParticipant;
   const definedToolNames = [
     ...new Set(
-      options.bundle.example.evaluationSpec.expectedActiveTools.length > 0
-        ? options.bundle.example.evaluationSpec.expectedActiveTools
-        : options.bundle.example.skills.map((skill) => skill.skillId)
+      options.bundle.example.skills.length > 0
+        ? options.bundle.example.skills.map((skill) => skill.skillId)
+        : options.bundle.example.evaluationSpec.expectedActiveTools
     )
   ];
   const activeToolNames = [
@@ -210,22 +210,38 @@ function buildContextDiagnostics(options: {
   const retrievedContextTokens = rootParticipant?.retrievedContextTokens ?? 0;
   const totalInputTokens = rootParticipant?.totalInputTokens ?? options.bundle.tokenUsage.inputTokens;
   const handoffPromptTokens = rootParticipant?.handoffPromptTokens ?? 0;
+  const evaluationSpec = options.bundle.example.evaluationSpec;
+  const staticContextEntries = [
+    ...evaluationSpec.requiredContext,
+    ...evaluationSpec.optionalContext,
+    ...evaluationSpec.distractorContext,
+    ...evaluationSpec.duplicateContext,
+    ...evaluationSpec.staleContext
+  ];
+  const staticNoiseTokenCount = estimateTokenCount(
+    [
+      ...evaluationSpec.distractorContext,
+      ...evaluationSpec.duplicateContext,
+      ...evaluationSpec.staleContext
+    ].join(" ")
+  );
   const totalContextFootprint =
     (rootParticipant?.systemPromptTokens ?? 0) +
     (rootParticipant?.toolDefinitionTokens ?? 0) +
     retrievedContextTokens +
     handoffPromptTokens;
   const estimatedRequiredContextTokens = estimateTokenCount(
-    options.bundle.example.evaluationSpec.contextCheckpoints
-      .map((checkpoint) => checkpoint.description)
+    (evaluationSpec.requiredContext.length > 0
+      ? evaluationSpec.requiredContext
+      : evaluationSpec.contextCheckpoints.map((checkpoint) => checkpoint.description))
       .join(" ")
   );
   const duplicateToolDefinitionRate = rate(
     countDuplicateToolDefinitions(options.toolSpecsCreated),
     Math.max(options.toolSpecsCreated.length, definedToolNames.length)
   );
-  const toolOverlapRate = options.bundle.example.evaluationSpec.overlappingToolNames.length > 0
-    ? rate(options.bundle.example.evaluationSpec.overlappingToolNames.length, definedToolNames.length)
+  const toolOverlapRate = evaluationSpec.overlappingToolNames.length > 0
+    ? rate(evaluationSpec.overlappingToolNames.length, definedToolNames.length)
     : rate(
         countOverlappingToolDefinitions(options.toolSpecsCreated),
         Math.max(options.toolSpecsCreated.length, definedToolNames.length)
@@ -234,23 +250,39 @@ function buildContextDiagnostics(options: {
     rootParticipant?.duplicateReadCount ?? 0,
     rootParticipant?.totalReadCount ?? 0
   );
+  const staticDuplicateContextRate = rate(
+    evaluationSpec.duplicateContext.length,
+    staticContextEntries.length
+  );
 
   return {
     contextPrecision: roundScore(rate(relevantContextTokens, retrievedContextTokens, 1)),
-    contextRecall: roundScore(rate(relevantContextTokens, estimatedRequiredContextTokens, 1)),
+    contextRecall: roundScore(
+      rate(
+        relevantContextTokens,
+        estimatedRequiredContextTokens,
+        evaluationSpec.requiredContext.length === 0 ? 1 : 0
+      )
+    ),
     systemPromptTokenOverhead: rootParticipant?.systemPromptTokens ?? 0,
     toolDefinitionTokenOverhead: rootParticipant?.toolDefinitionTokens ?? 0,
-    tokenToValueRatio: roundValue(totalContextFootprint / Math.max(totalInputTokens * Math.max(options.accuracyScore, 0.01), 1)),
+    tokenToValueRatio: roundValue(
+      totalContextFootprint /
+        Math.max(totalInputTokens * Math.max(options.accuracyScore, 0.01), 1)
+    ),
     contextBloatIndex: roundScore(
       rate(
         (rootParticipant?.systemPromptTokens ?? 0) +
           (rootParticipant?.toolDefinitionTokens ?? 0) +
-          (rootParticipant?.unusedContextTokens ?? 0),
+          (rootParticipant?.unusedContextTokens ?? 0) +
+          staticNoiseTokenCount,
         totalInputTokens,
         0
       )
     ),
-    duplicateContextRate: roundScore(fileReadRedundancyRate),
+    duplicateContextRate: roundScore(
+      Math.max(fileReadRedundancyRate, staticDuplicateContextRate)
+    ),
     contextPartitionEfficiency: roundScore(1 - clamp01(handoffPromptTokens / Math.max(totalInputTokens, 1))),
     artifactReuseRate: roundScore(calculateArtifactReuseRate(options.toolCalls)),
     activeToolSurfaceArea: activeToolNames.length,
@@ -512,28 +544,24 @@ function countOverlappingToolDefinitions(toolSpecs: AgentMetadataToolSpec[]): nu
 }
 
 function calculateArtifactReuseRate(toolCalls: AgentMetadataToolCall[]): number {
-  const seenArtifacts = new Set<string>();
-  let reusableCallCount = 0;
-  let reusedCallCount = 0;
+  const outputArtifactRefs = toolCalls.flatMap((toolCall) => toolCall.outputArtifactRefs ?? []);
 
-  for (const toolCall of toolCalls) {
-    const inputArtifactRefs = toolCall.inputArtifactRefs ?? [];
-    const outputArtifactRefs = toolCall.outputArtifactRefs ?? [];
-
-    if (inputArtifactRefs.length > 0) {
-      reusableCallCount += 1;
-
-      if (inputArtifactRefs.some((artifactRef) => seenArtifacts.has(artifactRef))) {
-        reusedCallCount += 1;
-      }
-    }
-
-    for (const artifactRef of [...inputArtifactRefs, ...outputArtifactRefs]) {
-      seenArtifacts.add(artifactRef);
-    }
+  if (outputArtifactRefs.length === 0) {
+    return 1;
   }
 
-  return rate(reusedCallCount, reusableCallCount, 1);
+  const reusedOutputArtifactCount = toolCalls.reduce((total, toolCall) => {
+    const inputArtifactRefs = new Set(toolCall.inputArtifactRefs ?? []);
+
+    return (
+      total +
+      (toolCall.outputArtifactRefs ?? []).filter((artifactRef) =>
+        inputArtifactRefs.has(artifactRef)
+      ).length
+    );
+  }, 0);
+
+  return rate(reusedOutputArtifactCount, outputArtifactRefs.length, 1);
 }
 
 function normalizeDescription(value: string | undefined): string {

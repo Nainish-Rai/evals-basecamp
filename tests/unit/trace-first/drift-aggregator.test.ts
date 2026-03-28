@@ -38,8 +38,10 @@ function createEvaluatedExample(
   contextScore: number
 ) {
   return evaluatedExampleSchema.parse({
+    bundleId: `${exampleId}-bundle`,
     exampleId,
     variantGroupId,
+    runId: `${exampleId}-run`,
     taskType: "risk",
     mode: "initial",
     accuracyScore: 0.9,
