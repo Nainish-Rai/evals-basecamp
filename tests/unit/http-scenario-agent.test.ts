@@ -28,24 +28,28 @@ describe("HttpScenarioAgent", () => {
   it("posts the materialized scenario payload to the external endpoint", async () => {
     const { scenario, environment, executionPlan } = await loadRuntimeFixture();
     const fetchImplementation = vi.fn(
-      (_input: string | URL | Request, init?: RequestInit) => {
+      (input: string | URL | Request, init?: RequestInit) => {
         const body = init?.body;
 
         if (typeof body !== "string") {
           throw new Error("Expected a JSON string request body");
         }
 
+        const requestUrl = input instanceof URL ? input : new URL(String(input));
+
         const requestBody = JSON.parse(body) as {
           scenario: { scenarioId: string };
-          execution: { mode: string };
+          execution: { mode: string; runId: string };
           environment: {
             artifactSnapshots: Array<{ relativePath: string; content: string }>;
           };
         };
 
         expect(init?.method).toBe("POST");
+        expect(requestUrl.searchParams.get("run_id")).toBe("run-123");
         expect(requestBody.scenario.scenarioId).toBe(scenario.scenarioId);
         expect(requestBody.execution.mode).toBe(executionPlan.mode);
+        expect(requestBody.execution.runId).toBe("run-123");
         expect(requestBody.environment.artifactSnapshots.length).toBeGreaterThan(0);
         expect(
           requestBody.environment.artifactSnapshots[0]?.relativePath.length
@@ -120,6 +124,7 @@ describe("HttpScenarioAgent", () => {
     });
 
     const result = await agent.run({
+      runId: "run-123",
       scenario,
       environment,
       executionPlan,
@@ -158,6 +163,7 @@ describe("HttpScenarioAgent", () => {
 
     await expect(
       agent.run({
+        runId: "run-123",
         scenario,
         environment,
         executionPlan,
@@ -184,6 +190,7 @@ describe("HttpScenarioAgent", () => {
 
     await expect(
       agent.run({
+        runId: "run-123",
         scenario,
         environment,
         executionPlan,

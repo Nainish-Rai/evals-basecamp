@@ -29,6 +29,8 @@ describe("ContextEfficiencyScorer", () => {
         }
       },
       mode: "initial",
+      runId: "run-1",
+      traceId: "trace-1",
       feedbackIds: [],
       finalResponse: "Disposition: maintain_high_residual_risk.",
       outputArtifacts: [],

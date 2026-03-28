@@ -1,5 +1,5 @@
 import { generateText, Output, stepCountIs, tool } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 
 import type { RunBundle } from "../contracts/run-bundle-schema.js";
@@ -37,10 +37,44 @@ const retryAttributionSchema = z.object({
 });
 
 export class AiSdkEvaluationJudge implements EvaluationJudge {
+  private readonly provider;
+
   constructor(
     private readonly modelId: string,
-    private readonly maxSteps: number
-  ) {}
+    private readonly maxSteps: number,
+    options: {
+      baseURL?: string;
+      apiKey?: string;
+      apiKeyHeaderName?: string;
+    } = {}
+  ) {
+    const extraHeaders =
+      options.apiKey && options.apiKeyHeaderName
+        ? {
+            [options.apiKeyHeaderName]: options.apiKey
+          }
+        : undefined;
+
+    this.provider = createOpenAI(
+      {
+        ...(options.baseURL
+          ? {
+              baseURL: options.baseURL
+            }
+          : {}),
+        ...(options.apiKey
+          ? {
+              apiKey: options.apiKey
+            }
+          : {}),
+        ...(extraHeaders
+          ? {
+              headers: extraHeaders
+            }
+          : {})
+      }
+    );
+  }
 
   async judgeMemory(bundle: RunBundle): Promise<MemoryJudgeOutput> {
     const sharedMemoryPacket = {
@@ -53,7 +87,7 @@ export class AiSdkEvaluationJudge implements EvaluationJudge {
       memoryReads: readAgentMetadataArray(bundle.agentMetadata, "memoryReads")
     };
     const { output } = await generateText({
-      model: openai(this.modelId),
+      model: this.provider(this.modelId),
       system:
         "You are an evaluation judge. Always call the shared memory packet tool before deciding. Return exactly one of the allowed memory states.",
       prompt:
@@ -82,7 +116,7 @@ export class AiSdkEvaluationJudge implements EvaluationJudge {
     input: RetryAttributionInput
   ): Promise<RetryAttributionLabel> {
     const { output } = await generateText({
-      model: openai(this.modelId),
+      model: this.provider(this.modelId),
       system:
         "You are an evaluation judge. Always call the retry packet tool before deciding. Return exactly one retry attribution label.",
       prompt:

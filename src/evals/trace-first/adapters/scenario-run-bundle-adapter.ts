@@ -59,12 +59,14 @@ export class ScenarioRunBundleAdapter {
           }
         },
         mode: execution.mode,
+        runId: execution.runId,
+        traceId: execution.agentResult.vendorTraceId ?? runResult.traceExport?.traceId ?? null,
         feedbackIds: execution.feedbackIds,
         finalResponse: execution.agentResult.summary,
         outputArtifacts: execution.agentResult.outputArtifacts,
         tokenUsage: execution.agentResult.tokenUsage,
         agentMetadata: execution.agentResult.metadata ?? {},
-        trace: runResult.traceExport,
+        trace: execution.agentResult.vendorTraceId ? null : runResult.traceExport,
         collectedAt: new Date().toISOString(),
         agentLabel: runResult.scenario.agentFamily,
         modelLabel: "local-scenario-agent"

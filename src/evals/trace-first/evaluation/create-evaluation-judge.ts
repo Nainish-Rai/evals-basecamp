@@ -14,6 +14,23 @@ export function createEvaluationJudge(
 
   return new AiSdkEvaluationJudge(
     config.EVALUATOR_AGENT_MODEL,
-    config.EVALUATOR_AGENT_MAX_STEPS
+    config.EVALUATOR_AGENT_MAX_STEPS,
+    {
+      ...(config.OPENAI_API_KEY
+        ? {
+            apiKey: config.OPENAI_API_KEY
+          }
+        : {}),
+      ...(config.OPENAI_BASE_URL
+        ? {
+            baseURL: config.OPENAI_BASE_URL
+          }
+        : {}),
+      ...(config.OPENAI_API_KEY_HEADER_NAME
+        ? {
+            apiKeyHeaderName: config.OPENAI_API_KEY_HEADER_NAME
+          }
+        : {})
+    }
   );
 }

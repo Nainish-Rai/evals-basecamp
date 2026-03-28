@@ -4,6 +4,7 @@ import type { BenchmarkTrace } from "../tracing/langfuse-tracer.js";
 import type { ScenarioExecutionPlan } from "./feedback-replay-engine.js";
 
 export type ScenarioAgentRunRequest = {
+  runId: string;
   scenario: Scenario;
   environment: MaterializedCaseEnvironment;
   executionPlan: ScenarioExecutionPlan;
@@ -35,6 +36,7 @@ export class StubScenarioAgent implements ScenarioAgent {
 
     return Promise.resolve({
       summary: [
+        `runId=${request.runId}`,
         `mode=${request.executionPlan.mode}`,
         `requiredFindings=${requiredFindings.join(",")}`,
         `feedbackCount=${feedbackCount}`,

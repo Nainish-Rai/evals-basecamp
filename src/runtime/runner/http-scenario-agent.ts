@@ -65,6 +65,7 @@ const externalAgentRequestSchema = z.object({
   scenario: externalAgentScenarioSchema,
   execution: z.object({
     mode: z.enum(["initial", "feedback_rerun"]),
+    runId: z.string().min(1),
     feedbackTurns: z.array(feedbackEventSchema)
   }),
   environment: z.object({
@@ -136,7 +137,7 @@ export class HttpScenarioAgent implements ScenarioAgent {
       },
       async () => {
         const payload = await this.buildExecutionRequest(request);
-        const response = await this.callExternalAgent(payload);
+        const response = await this.callExternalAgent(payload, request.runId);
 
         if (response.vendorTraceId) {
           request.trace.attachVendorTraceId(response.vendorTraceId);
@@ -160,6 +161,7 @@ export class HttpScenarioAgent implements ScenarioAgent {
       scenario: this.pickScenarioFields(request.scenario),
       execution: {
         mode: request.executionPlan.mode,
+        runId: request.runId,
         feedbackTurns: request.executionPlan.feedbackTurns
       },
       environment: {
@@ -215,12 +217,15 @@ export class HttpScenarioAgent implements ScenarioAgent {
   }
 
   private async callExternalAgent(
-    payload: ExternalAgentExecutionRequest
+    payload: ExternalAgentExecutionRequest,
+    runId: string
   ): Promise<ExternalAgentExecutionResponse> {
     let response: Response;
+    const endpointUrl = new URL(this.options.endpoint);
+    endpointUrl.searchParams.set("run_id", runId);
 
     try {
-      response = await this.fetchImplementation(this.options.endpoint, {
+      response = await this.fetchImplementation(endpointUrl, {
         method: "POST",
         headers: {
           "content-type": "application/json",

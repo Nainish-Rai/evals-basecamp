@@ -45,6 +45,8 @@ export const environmentSchema = z
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     OPENAI_API_KEY: z.string().min(1).optional(),
+    OPENAI_BASE_URL: z.url().optional(),
+    OPENAI_API_KEY_HEADER_NAME: z.string().min(1).optional(),
     ANTHROPIC_API_KEY: z.string().min(1).optional(),
     LANGFUSE_ENABLED: booleanFlagSchema.default(false),
     LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),

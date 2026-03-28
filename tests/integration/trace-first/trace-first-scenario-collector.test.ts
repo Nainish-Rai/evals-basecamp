@@ -4,9 +4,11 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import { createToolChainScenarioAgent } from "../../../src/agents/tool-chain/create-tool-chain-agent.js";
 import { TraceFirstScenarioCollector } from "../../../src/evals/trace-first/collection/trace-first-scenario-collector.js";
 import { HeuristicEvaluationJudge } from "../../../src/evals/trace-first/evaluation/heuristic-evaluation-judge.js";
 import { TraceFirstEvaluator } from "../../../src/evals/trace-first/evaluation/trace-first-evaluator.js";
+import { StubScenarioAgent } from "../../../src/runtime/runner/stub-scenario-agent.js";
 
 const fixtureRoot = path.resolve(process.cwd(), "fixtures");
 const cleanupPaths: string[] = [];
@@ -26,7 +28,15 @@ describe("TraceFirstScenarioCollector", () => {
     );
     cleanupPaths.push(outputDirectoryPath);
 
-    const collector = new TraceFirstScenarioCollector();
+    const collector = new TraceFirstScenarioCollector(
+      undefined,
+      (scenario) =>
+        scenario.agentFamily === "tool_chain"
+          ? createToolChainScenarioAgent()
+          : new StubScenarioAgent(),
+      undefined,
+      true
+    );
     const bundles = await collector.collect({
       scenarioFilePath: path.join(fixtureRoot, "scenarios", "compliance-001.json"),
       syntheticPackDirectoryPath: path.join(fixtureRoot, "packs"),
@@ -37,12 +47,13 @@ describe("TraceFirstScenarioCollector", () => {
         path.join(outputDirectoryPath, "run-bundles", `${bundles[0]?.bundleId}.json`),
         "utf8"
       )
-    ) as { trace: { spans: unknown[] } };
+    ) as { runId: string; trace: { spans: unknown[] } };
     const evaluation = await new TraceFirstEvaluator(
       new HeuristicEvaluationJudge()
     ).evaluate(bundles);
 
     expect(bundles).toHaveLength(2);
+    expect(writtenBundleContents.runId.length).toBeGreaterThan(0);
     expect(writtenBundleContents.trace.spans.length).toBeGreaterThan(0);
     expect(evaluation.examples).toHaveLength(2);
     expect(evaluation.examples[1]).toMatchObject({

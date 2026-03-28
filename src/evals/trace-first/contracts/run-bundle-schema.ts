@@ -47,6 +47,8 @@ export const runBundleSchema = z.object({
   bundleId: z.string().min(1),
   example: evalExampleSchema,
   mode: z.enum(["initial", "feedback_rerun"]),
+  runId: z.string().min(1),
+  traceId: z.string().min(1).nullable(),
   feedbackIds: z.array(z.string().min(1)).default([]),
   finalResponse: z.string().min(1),
   outputArtifacts: z.array(z.string().min(1)).default([]),
